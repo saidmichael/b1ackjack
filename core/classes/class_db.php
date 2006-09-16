@@ -1,7 +1,6 @@
 <?php
 
 class bj_db {
-	var $querycount = 0;
 	
 	var $categories;
 	var $comments;
@@ -27,25 +26,34 @@ class bj_db {
 		}
 	}
 	
-	function query($query=false) {
+	function query($query=false,$link=false) {
+		if(!$link) {
+			$link = $this->connect;
+		}
 		if($query) {
-			return mysql_query($query);
+			return mysql_query($query,$link);
 			$this->querycount(0);
 		}
 	}
 	
 	function get_item($query='') {
-		return mysql_fetch_assoc($this->query($query));
+		if(!$link) {
+			$link = $this->connect;
+		}
+		return mysql_fetch_assoc($this->query($query,$link));
 	}
 	
-	function get_rows($query='',$type = "OBJECT") {
+	function get_rows($query='',$type = "OBJECT",$link = false) {
+		if(!$link) {
+			$link = $this->connect;
+		}
 		if($type == "OBJECT") {
-			return mysql_fetch_object($this->query($query));
+			return mysql_fetch_object($this->query($query,$link));
 			
 		}
 		else {
 			//return mysql_fetch_assoc($this->query($query)); So it's returned in an array.
-			$loopquery = $this->query($query);
+			$loopquery = $this->query($query,$link);
 			$i = 0;
 			while($row = mysql_fetch_assoc($loopquery)) {
 				if(is_array($row)) {
@@ -60,11 +68,12 @@ class bj_db {
 	}
 	
 	function querycount($num = 0) {
+		static $querycount = 0;
 		if($num == 0) {
-			$this->querycount++;
+			$querycount++;
 		}
 		else {
-			echo $this->querycount;
+			echo $querycount;
 		}
 	}
 	
