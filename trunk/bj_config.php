@@ -53,6 +53,7 @@ require(BJPATH . 'core/functions-formatting.php');
 require(BJPATH . 'core/functions-user.php');
 require(BJPATH . 'core/functions-lang.php');
 require(BJPATH . 'core/functions-template.php');
+require(BJPATH . 'core/kses.php');
 require(BJPATH . 'core/version.php');
 require(BJPATH . 'core/rss/rss_fetch.inc');
 

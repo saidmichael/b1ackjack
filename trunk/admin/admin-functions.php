@@ -36,7 +36,7 @@ function fancy_altrows($rows) {
 #Function: do_editorform(Post)
 #Destiption: Processes the editor form. The post field defaults to
 #			 an array with just the keys for a new post. 
-function do_editorform($post = array('ID'=>'','title'=>'','shortname'=>'','content'=>'','content'=>'','author'=>'','posted'=>'','type'=>'','parent'=>'','comment_count'=>'','tags'=>'')) { ?>
+function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','content'=>'','content'=>'','author'=>'','posted'=>'','type'=>'','parent'=>'','comment_count'=>'','tags'=>'')) { ?>
 			<form name="edit-<?php echo $post['ID']; ?>" action="" method="post">
 				<div class="column width25">
 					<h2><?php _e('Tags'); ?></h2>
@@ -45,7 +45,7 @@ function do_editorform($post = array('ID'=>'','title'=>'','shortname'=>'','conte
 						$ourtags = return_all_tags();
 						$ti = 0;
 						foreach($ourtags as $tag) { ?>
-						<li<?php tablealt($ti); ?>><label for="category-<?php echo $tag['ID']; ?>"><input type="checkbox" id="category-<?php echo $tag['ID']; ?>" name="categories[<?php echo $tag['ID']; ?>]"<?php
+						<li<?php tablealt($ti); ?>><label for="category-<?php echo $tag['ID']; ?>"><input type="checkbox" id="category-<?php echo $tag['ID']; ?>" name="tags[<?php echo $tag['ID']; ?>]"<?php
 							if(is_array(return_tags())) { foreach(return_tags() as $chtag) {
 								if($tag['ID'] == $chtag['ID']) { ?> checked="checked"<?php }
 							} } ?> /> <?php echo $tag['name']; ?></label></li>
@@ -82,7 +82,15 @@ function do_editorform($post = array('ID'=>'','title'=>'','shortname'=>'','conte
 				<div class="column width75">
 					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo $post['title']; ?>" class="width100 largeinput" /></p>
 					<textarea name="content" id="textarea"><?php formatted_for_editing($post['content']); ?></textarea>
-					<input type="hidden" name="send" value="yes" />
+<?php
+					if($post['ID'] == "0") { ?>
+					<input type="hidden" name="new-post-send" value="yes" />
+<?php
+					} else { ?>
+					<input type="hidden" name="edit-post-send" value="yes" />
+					<input type="hidden" name="edit-post-id" value="<?php echo $post['ID']; ?>" />
+<?php
+					} ?>
 					<div class="submit">
 <?php
 						switch($post['type']) {
@@ -107,6 +115,17 @@ function do_editorform($post = array('ID'=>'','title'=>'','shortname'=>'','conte
 				</div>
 			</form>
 <?php
+}
+
+#Function: run_bj_forms()
+#Description: Carries out the actions for already-existing forms.
+function run_bj_forms() {
+	if(isset($_POST['new-post-send'])) {
+		bj_new_post();
+	}
+	elseif(isset($_POST['edit-post-send'])) {
+		bj_edit_post($_POST['edit-post-id']);
+	}
 }
 
 #Function tablealt()
