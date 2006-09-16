@@ -7,6 +7,8 @@ $admin_thisfile = (basename_withpath($_SERVER['REQUEST_URI']) == "admin") ? "ind
 require("admin-functions.php");
 
 validate_session();
+
+run_bj_forms();
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
