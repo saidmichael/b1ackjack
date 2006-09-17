@@ -95,20 +95,20 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php
 						switch($post['type']) {
 							case "public" : ?>
-						<input type="submit" name="savecont" value="<?php _e('Save And Continue Editing'); ?>" /> 
-						<input type="submit" name="saveme" value="<?php _e('Save Post'); ?>" style="font-weight:bold;" />
+						<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
+						<input type="submit" name="save" value="<?php _e('Save Post'); ?>" style="font-weight:bold;" />
 <?php
 								break;
 							case "mod" : ?>
-						<input type="submit" name="savecont" value="<?php _e('Save And Continue Editing'); ?>" /> 
-						<input type="submit" name="saveme" value="<?php _e('Save Post'); ?>" /> 
-						<input type="submit" name="approve" value="<?php _e('Approve'); ?>" style="font-weight:bold;" />
+						<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
+						<input type="submit" name="save-me" value="<?php _e('Save Post'); ?>" /> 
+						<input type="submit" name="save-approve" value="<?php _e('Approve'); ?>" style="font-weight:bold;" />
 <?php
 								break;
 							default : ?>
-						<input type="submit" name="savecont" value="<?php _e('Save And Continue Editing'); ?>" /> 
-						<input type="submit" name="saveme" value="<?php _e('Save Post'); ?>" /> 
-						<input type="submit" name="publish" value="<?php _e('Publish'); ?>" style="font-weight:bold;" />
+						<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
+						<input type="submit" name="save-me" value="<?php _e('Save Post'); ?>" /> 
+						<input type="submit" name="save-publish" value="<?php _e('Publish'); ?>" style="font-weight:bold;" />
 <?php
 						} ?>
 					</div>

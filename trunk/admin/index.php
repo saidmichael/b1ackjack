@@ -24,13 +24,19 @@ require("admin-head.php");
 					); ?></p>
 			</div>
 			<div class="column width33">
-				<h2>Version Check</h2>
+				<h2><?php _e('Version Check'); ?></h2>
 <?php			$version = @file_get_contents("http://ceeps.blogs.tbomonline.com/bj-versioncheck/?v=".$bj_version);
-				if($version == "good") { ?>
+				if(!$version) { ?>
+				<p><?php _e('Version check is temporarily offline.'); ?></p>
+<?php
+				}
+				else {
+					if($version == "good") { ?>
 				<p><?php _e('Your current version of Blackjack is <strong>up-to-date</strong>. When a new version comes out, you will get a notification in this spot.'); ?></p>
-<?php			} else { ?>
+<?php				} else { ?>
 				<p><?php _e('<strong class="error">Warning!</strong> Your version of Blackjack is currently <strong>out of date</strong>. Please update your version of Blackjack at the <a href="http://ceeps.blogs.tbomonline.com/blackjack/"><strong>Blackjack Minisite</strong></a>.'); ?></p>
-<?php			} ?>
+<?php				}
+				} ?>
 				<h2><?php _e('Blackjack News'); ?></h2>
 				<ul class="altrows">
 <?php			$rss = @fetch_rss("http://ceeps.blogs.tbomonline.com/section/blackjack/feed/");
