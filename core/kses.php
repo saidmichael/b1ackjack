@@ -29,12 +29,12 @@
 #
 # [kses strips evil scripts!]
 
-if(!isset($bj_allowedhtml)) {
-	$bj_allowedhtml = array (
+if(!isset($bj_html_post)) {
+	$bj_html_post = array (
 'address' => array (), 'a' => array ('href' => array (), 'title' => array (), 'rel' => array (), 'rev' => array (), 'name' => array ()), 'abbr' => array ('title' => array ()), 'acronym' => array ('title' => array ()), 'b' => array (), 'big' => array (), 'blockquote' => array ('cite' => array ()), 'br' => array (), 'button' => array ('disabled' => array (), 'name' => array (), 'type' => array (), 'value' => array ()), 'caption' => array ('align' => array ()), 'code' => array (), 'col' => array ('align' => array (), 'char' => array (), 'charoff' => array (), 'span' => array (), 'valign' => array (), 'width' => array ()), 'del' => array ('datetime' => array ()), 'dd' => array (), 'div' => array ('align' => array ()), 'dl' => array (), 'dt' => array (), 'em' => array (), 'fieldset' => array (), 'font' => array ('color' => array (), 'face' => array (), 'size' => array ()), 'form' => array ('action' => array (), 'accept' => array (), 'accept-charset' => array (), 'enctype' => array (), 'method' => array (), 'name' => array (), 'target' => array ()), 'h1' => array ('align' => array ()), 'h2' => array ('align' => array ()), 'h3' => array ('align' => array ()), 'h4' => array ('align' => array ()), 'h5' => array ('align' => array ()), 'h6' => array ('align' => array ()), 'hr' => array ('align' => array (), 'noshade' => array (), 'size' => array (), 'width' => array ()), 'i' => array (), 'img' => array ('alt' => array (), 'align' => array (), 'border' => array (), 'height' => array (), 'hspace' => array (), 'longdesc' => array (), 'vspace' => array (), 'src' => array (), 'width' => array ()), 'ins' => array ('datetime' => array (), 'cite' => array ()), 'kbd' => array (), 'label' => array ('for' => array ()), 'legend' => array ('align' => array ()), 'li' => array (), 'p' => array ('align' => array ()), 'pre' => array ('width' => array ()), 'q' => array ('cite' => array ()), 's' => array (), 'strike' => array (), 'strong' => array (), 'sub' => array (), 'sup' => array (), 'table' => array ('align' => array (), 'bgcolor' => array (), 'border' => array (), 'cellpadding' => array (), 'cellspacing' => array (), 'rules' => array (), 'summary' => array (), 'width' => array ()), 'tbody' => array ('align' => array (), 'char' => array (), 'charoff' => array (), 'valign' => array ()), 'td' => array ('abbr' => array (), 'align' => array (), 'axis' => array (), 'bgcolor' => array (), 'char' => array (), 'charoff' => array (), 'colspan' => array (), 'headers' => array (), 'height' => array (), 'nowrap' => array (), 'rowspan' => array (), 'scope' => array (), 'valign' => array (), 'width' => array ()), 'textarea' => array ('cols' => array (), 'rows' => array (), 'disabled' => array (), 'name' => array (), 'readonly' => array ()), 'tfoot' => array ('align' => array (), 'char' => array (), 'charoff' => array (), 'valign' => array ()), 'th' => array ('abbr' => array (), 'align' => array (), 'axis' => array (), 'bgcolor' => array (), 'char' => array (), 'charoff' => array (), 'colspan' => array (), 'headers' => array (), 'height' => array (), 'nowrap' => array (), 'rowspan' => array (), 'scope' => array (), 'valign' => array (), 'width' => array ()), 'thead' => array ('align' => array (), 'char' => array (), 'charoff' => array (), 'valign' => array ()), 'title' => array (), 'tr' => array ('align' => array (), 'bgcolor' => array (), 'char' => array (), 'charoff' => array (), 'valign' => array ()), 'tt' => array (), 'u' => array (), 'ul' => array (), 'ol' => array (), 'var' => array () );
 }
 
-function bj_kses($string, $allowed_protocols =
+function bj_kses($string, $allowed_html, $allowed_protocols =
                array('http', 'https', 'ftp', 'news', 'nntp', 'telnet',
                      'gopher', 'mailto'))
 ###############################################################################
@@ -44,12 +44,11 @@ function bj_kses($string, $allowed_protocols =
 # call this function.
 ###############################################################################
 {
-  global $bj_allowedhtml;
   $string = bj_kses_no_null($string);
   $string = bj_kses_js_entities($string);
   $string = bj_kses_normalize_entities($string);
   $string = bj_kses_hook($string);
-  $allowed_html_fixed = kses_array_lc($bj_allowedhtml);
+  $allowed_html_fixed = bj_kses_array_lc($allowed_html);
   return bj_kses_split($string, $allowed_html_fixed, $allowed_protocols);
 } # function bj_kses
 
@@ -72,7 +71,7 @@ function bj_kses_version()
 } # function bj_kses_version
 
 
-function bj_kses_split($string, $allowed_protocols)
+function bj_kses_split($string, $allowed_html, $allowed_protocols)
 ###############################################################################
 # This function searches for HTML tags, no matter how malformed. It also
 # matches stray ">" characters.
@@ -82,13 +81,13 @@ function bj_kses_split($string, $allowed_protocols)
                       '[^>]*'. # things that aren't >
                       '(>|$)'. # > or end of string
                       '|>)%e', # OR: just a >
-                      "bj_kses_split2('\\1', ".
+                      "bj_kses_split2('\\1', \$allowed_html, ".
                       '$allowed_protocols)',
                       $string);
 } # function bj_kses_split
 
 
-function bj_kses_split2($string, $allowed_protocols)
+function bj_kses_split2($string, $allowed_html, $allowed_protocols)
 ###############################################################################
 # This function does a lot of work. It rejects some very malformed things
 # like <:::>. It returns an empty string, if the element isn't allowed (look
@@ -96,7 +95,6 @@ function bj_kses_split2($string, $allowed_protocols)
 # attribute list.
 ###############################################################################
 {
-  global $bj_allowedhtml;
   $string = bj_kses_stripslashes($string);
 
   if (substr($string, 0, 1) != '<')
@@ -111,7 +109,7 @@ function bj_kses_split2($string, $allowed_protocols)
   $elem = $matches[2];
   $attrlist = $matches[3];
 
-  if (!@isset($bj_allowedhtml[strtolower($elem)]))
+  if (!@isset($allowed_html[strtolower($elem)]))
     return '';
     # They are using a not allowed HTML element
 
@@ -119,12 +117,12 @@ function bj_kses_split2($string, $allowed_protocols)
     return "<$slash$elem>";
   # No attributes are allowed for closing elements
 
-  return bj_kses_attr("$slash$elem", $attrlist,
+  return bj_kses_attr("$slash$elem", $attrlist, $allowed_html,
                    $allowed_protocols);
 } # function bj_kses_split2
 
 
-function bj_kses_attr($element, $attr, $allowed_protocols)
+function bj_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 ###############################################################################
 # This function removes all attributes, if none are allowed for this element.
 # If some are allowed it calls kses_hair() to split them further, and then it
@@ -134,7 +132,6 @@ function bj_kses_attr($element, $attr, $allowed_protocols)
 # it puts one in the returned code as well.
 ###############################################################################
 {
-global $bj_allowedhtml;
 # Is there a closing XHTML slash at the end of the attributes?
 
   $xhtml_slash = '';
@@ -143,7 +140,7 @@ global $bj_allowedhtml;
 
 # Are any attributes allowed at all for this element?
 
-  if (@count($bj_allowedhtml[strtolower($element)]) == 0)
+  if (@count($allowed_html[strtolower($element)]) == 0)
     return "<$element$xhtml_slash>";
 
 # Split it
@@ -157,11 +154,11 @@ global $bj_allowedhtml;
 
   foreach ($attrarr as $arreach)
   {
-    if (!@isset($bj_allowedhtml[strtolower($element)]
+    if (!@isset($allowed_html[strtolower($element)]
                             [strtolower($arreach['name'])]))
       continue; # the attribute is not allowed
 
-    $current = $bj_allowedhtml[strtolower($element)]
+    $current = $allowed_html[strtolower($element)]
                             [strtolower($arreach['name'])];
 
     if (!is_array($current))
@@ -173,7 +170,7 @@ global $bj_allowedhtml;
     # there are some checks
       $ok = true;
       foreach ($current as $currkey => $currval)
-        if (!bj_kses_check_attr_val($arreach['value'], $arreach['vless'],
+        if (!kses_check_attr_val($arreach['value'], $arreach['vless'],
                                  $currkey, $currval))
         { $ok = false; break; }
 

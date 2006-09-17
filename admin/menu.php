@@ -19,7 +19,7 @@ $submenu['comments.php'][] = array(_r('In Moderation'),2,'comments-mod.php');
 <?php
 foreach($menu as $item) {
 	if($user->user_group >= $item[1]) { ?>
-			<li<?php echo ($admin_thisfile == $item[2]) ? " class=\"active\"" : ""; ?>><a href="<?php echo $item[2]; ?>"><?php echo $item[0]; ?></a></li>
+			<li<?php echo ($parent_file == $item[2]) ? " class=\"active\"" : ""; ?>><a href="<?php echo $item[2]; ?>"><?php echo $item[0]; ?></a></li>
 <?php
 	}
 }

@@ -37,7 +37,7 @@ function available_plugins() {
 			$application = trim($plugin['application'][1]);
 				
 			// Skip plugins designed for other systems
-			if ($application && $application != 'Blackjack')
+			if ($application && $application == 'Blackjack')
 				continue;
 
 			$available_plugins[] = array(
@@ -64,6 +64,17 @@ function load_plugins() {
 		else
 			disable_plugin($plugin_filename);
 	}
+}
+
+function return_plugins() {
+	foreach (unserialize(load_option('active_plugins')) as $plugin_filename => $active) {
+		$path = BJPATH . 'content/plugins/'.$plugin_filename;
+		if (is_file($path))
+			$plug_arr[$plugin_filename] = true;
+		else
+			disable_plugin($plugin_filename);
+	}
+	return $plug_arr;
 }
 
 function is_plugin_enabled($name) {
