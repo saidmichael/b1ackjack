@@ -2,6 +2,9 @@
 
 class bj_db {
 	
+	var $querycount = 0;
+	//var $queries = array(); //For debugging.
+	
 	var $categories;
 	var $comments;
 	var $options;
@@ -27,16 +30,19 @@ class bj_db {
 	}
 	
 	function query($query=false,$link=false) {
+		$this->do_query_ops($query);
+		
 		if(!$link) {
 			$link = $this->connect;
 		}
 		if($query) {
 			return mysql_query($query,$link);
-			$this->querycount(0);
 		}
 	}
 	
 	function get_item($query='') {
+		$this->do_query_ops($query);
+		
 		if(!$link) {
 			$link = $this->connect;
 		}
@@ -44,12 +50,13 @@ class bj_db {
 	}
 	
 	function get_rows($query='',$type = "OBJECT",$link = false) {
+		$this->do_query_ops($query);
+		
 		if(!$link) {
 			$link = $this->connect;
 		}
 		if($type == "OBJECT") {
 			return mysql_fetch_object($this->query($query,$link));
-			
 		}
 		else {
 			//return mysql_fetch_assoc($this->query($query)); So it's returned in an array.
@@ -67,14 +74,15 @@ class bj_db {
 		}
 	}
 	
-	function querycount($num = 0) {
-		static $querycount = 0;
-		if($num == 0) {
-			$querycount++;
+	function do_query_ops($query='') {
+		if(is_array($this->queries)) {
+			$this->queries[] = $query;
 		}
-		else {
-			echo $querycount;
-		}
+		$this->querycount++;
+	}
+	
+	function querycount() {
+		return $this->querycount;
 	}
 	
 	function uhoherror($error) {

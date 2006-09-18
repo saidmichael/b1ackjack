@@ -188,6 +188,20 @@ body.login {
 	display:block;
 }
 
+#footer {
+	clear:both;
+	padding-left:8px;
+	margin-right:280px;
+	padding-top:10px;
+	font-size:10px;
+}
+
+#footer p {
+	margin:0;
+	padding:3px 0;
+	text-align:right;
+}
+
 /* Tables, such as the edit table. */
 
 .edit {
