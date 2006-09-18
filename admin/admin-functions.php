@@ -43,10 +43,11 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 					<ul class="altrows taglist">
 					<?php
 						$ourtags = return_all_tags();
+						$return_tags = return_tags();
 						$ti = 0;
 						foreach($ourtags as $tag) { ?>
 						<li<?php tablealt($ti); ?>><label for="category-<?php echo $tag['ID']; ?>"><input type="checkbox" id="category-<?php echo $tag['ID']; ?>" name="tags[<?php echo $tag['ID']; ?>]"<?php
-							if(is_array(return_tags())) { foreach(return_tags() as $chtag) {
+							if(is_array($return_tags)) { foreach($return_tags as $chtag) {
 								if($tag['ID'] == $chtag['ID']) { ?> checked="checked"<?php }
 							} } ?> /> <?php echo $tag['name']; ?></label></li>
 <?php					$ti++; }
