@@ -10,7 +10,15 @@ function echo_tags($between='',$before='',$after='',$extra=false) {
 	}
 	if(!empty($tags[0])) {
 		foreach($tags as $ID) {
-			$arr = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `ID` = '".$ID."' LIMIT 1");
+			//This checks if the information about a tag was already retrieved.
+			//After all, why do extra queries?
+			if(isset($post['tagbuffer'][$ID])) {
+				$arr = $post['tagbuffer'][$ID];
+			}
+			else {
+				$arr = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `ID` = '".$ID."' LIMIT 1");
+				$post['tagbuffer'][$ID] = $arr;
+			}
 			if($args['nolink'] != "true") { $start_link = ($args['admin'] == "true") ? "<a href=\"tags.php?req=edit&amp;id=".$arr['ID']."\">" : "<a href=\"index.php?tag=".$arr['ID']."\">"; }
 			$text .= $before.$start_link.$arr['name']."</a>".$after.$between;
 		}
