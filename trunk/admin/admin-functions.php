@@ -36,7 +36,7 @@ function fancy_altrows($rows) {
 #Function: do_editorform(Post)
 #Destiption: Processes the editor form. The post field defaults to
 #			 an array with just the keys for a new post. 
-function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','content'=>'','content'=>'','author'=>'','posted'=>'','type'=>'','parent'=>'','comment_count'=>'','tags'=>'')) { ?>
+function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','content'=>'','content'=>'','author'=>'','posted'=>'','ptype'=>'','parent'=>'','comment_count'=>'','tags'=>'')) { ?>
 			<form name="edit-<?php echo $post['ID']; ?>" action="" method="post">
 				<div class="column width25">
 					<h2><?php _e('Tags'); ?></h2>
@@ -59,16 +59,16 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php
 					$public='';
 					$private='';
-					$inmod='';
+					//$inmod=''; Removed moderation functionality.
 					$checked = " checked=\"checked\"";
-					switch($post['type']) {
+					switch($post['ptype']) {
 						case "public" : $public = $checked; break;
 						case "draft" : $private = $checked; break;
-						case "mod" : $inmod = $checked;
+						//case "mod" : $inmod = $checked;
 					} ?>
 					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php echo $public; ?> /> <?php _e('Public'); ?></label><br />
 					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php echo $private; ?> /> <?php _e('Draft'); ?></label><br />
-					<label for="mod_post"><input type="radio" name="ptype" value="mod" id="mod_post"<?php echo $inmod; ?> /> <?php _e('In Moderation'); ?></label></p>
+<?php /*					<label for="mod_post"><input type="radio" name="ptype" value="mod" id="mod_post"<?php echo $inmod; ?> /> <?php _e('In Moderation'); ?></label></p>*/ ?>
 					<h2><?php _e('Post Author'); ?></h2>
 					<select name="author" class="width100">
 <?php
@@ -93,25 +93,8 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php
 					} ?>
 					<div class="submit">
-<?php
-						switch($post['type']) {
-							case "public" : ?>
 						<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
 						<input type="submit" name="save" value="<?php _e('Save Post'); ?>" style="font-weight:bold;" />
-<?php
-								break;
-							case "mod" : ?>
-						<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
-						<input type="submit" name="save-me" value="<?php _e('Save Post'); ?>" /> 
-						<input type="submit" name="save-approve" value="<?php _e('Approve'); ?>" style="font-weight:bold;" />
-<?php
-								break;
-							default : ?>
-						<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
-						<input type="submit" name="save-me" value="<?php _e('Save Post'); ?>" /> 
-						<input type="submit" name="save-publish" value="<?php _e('Publish'); ?>" style="font-weight:bold;" />
-<?php
-						} ?>
 					</div>
 				</div>
 			</form>
