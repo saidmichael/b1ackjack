@@ -49,7 +49,7 @@ require("admin-head.php");
 			</div>
 			<div class="column width33">
 				<h2><?php _e('Recent Posts'); ?></h2>
-<?php			$posts = $bj_db->get_rows("SELECT * FROM `".$bj_db->posts."` WHERE `type` = 'public' ORDER BY `posted` ASC LIMIT 0,5","ASSOC");
+<?php			$posts = get_posts('type=public&sortby=posted&limit=5');
 				if(!$posts) { ?><p><?php _e('None found.'); ?></p><?php }
 				else { ?>
 				<ul class="altrows">

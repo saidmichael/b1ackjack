@@ -22,6 +22,19 @@ switch($_GET['req']) {
 ?>
 		<div id="wrapper">
 			<h1><?php _e('Manage Posts'); ?></h1>
+<?php
+			$drafts = $bj_db->get_rows("SELECT `ID`,`title` FROM `".$bj_db->posts."` WHERE `ptype` = 'draft' ORDER BY `ID` DESC","ASSOC");
+			if($drafts) { ?>
+			<div class="drafts">
+				<h2><?php _e('Drafts'); ?></h2>
+<?php
+				foreach($drafts as $draft) {
+					$draft_string .= "<a href=\"posts.php?req=edit&amp;id=".$draft['ID']."\">".$draft['title']."</a>, ";
+				}
+				echo "<p>".preg_replace("{, $}","",$draft_string)."</p>"; ?>
+			</div>
+<?php
+			} ?>
 			<table class="edit" cellspacing="2">
 				<tr>
 					<th class="width5 table"><?php _e('ID'); ?></th>
@@ -32,14 +45,14 @@ switch($_GET['req']) {
 					<th class="width10 table">&nbsp;</th>
 					<th class="width10 table">&nbsp;</th>
 				</tr>
-<?php			$posts = get_posts('limit=16');
+<?php			$posts = get_posts('limit=16&type=public');
 				foreach($posts as $post) { start_post(); ?>
 				<tr<?php tablealt($i); ?>>
 					<td class="aligncenter"><?php echo $post['ID']; ?></td>
 					<td><?php echo $post['title']; ?></td>
 					<td><?php post_date("M dS Y, h:i a"); ?></td>
 					<td><?php echo_tags(", ","","","admin=true"); ?></td>
-					<td class="capitalize aligncenter"><?php echo $post['type']; ?></td>
+					<td class="capitalize aligncenter"><?php echo $post['ptype']; ?></td>
 					<td class="editbutton"><a href="posts.php?req=edit&amp;id=<?php echo $post['ID']; ?>" class="blockit"><?php _e('Edit'); ?></a></td>
 					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo $post['ID']; ?>" class="blockit"><?php _e('Delete'); ?></a></td>
 				</tr>

@@ -153,10 +153,7 @@ function get_posts($q) {
 		$query .= ")";
 	}
 	if(isset($stuff['type'])) {
-		$query .= " AND `type` = '".$stuff['type']."'";
-	}
-	else {
-		$query .= " AND `type` = 'public'";
+		$query .= " AND `ptype` = '".$stuff['type']."'";
 	}
 	if(isset($stuff['author'])) {
 		$query .= " AND `author` = '".$stuff['author']."'";
