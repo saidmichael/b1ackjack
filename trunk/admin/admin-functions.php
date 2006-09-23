@@ -59,16 +59,13 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php
 					$public='';
 					$private='';
-					//$inmod=''; Removed moderation functionality.
 					$checked = " checked=\"checked\"";
 					switch($post['ptype']) {
 						case "public" : $public = $checked; break;
 						case "draft" : $private = $checked; break;
-						//case "mod" : $inmod = $checked;
 					} ?>
 					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php echo $public; ?> /> <?php _e('Public'); ?></label><br />
 					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php echo $private; ?> /> <?php _e('Draft'); ?></label><br />
-<?php /*					<label for="mod_post"><input type="radio" name="ptype" value="mod" id="mod_post"<?php echo $inmod; ?> /> <?php _e('In Moderation'); ?></label></p>*/ ?>
 					<h2><?php _e('Post Author'); ?></h2>
 					<select name="author" class="width100">
 <?php

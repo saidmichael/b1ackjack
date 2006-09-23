@@ -89,6 +89,15 @@ class bj_db {
 		echo $error;
 		die();
 	}
+	
+	function escape($string,$link=false) {
+		if(!$link) {
+			$link = $this->connect;
+		}
+		$string = stripslashes($string);
+		$string = mysql_real_escape_string($string,$link);
+		return $string;
+	}
 }
 
 $bj_db = new bj_db(DB_USER, DB_PASS, DB_NAME, DB_HOST);
