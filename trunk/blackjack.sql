@@ -68,19 +68,19 @@ CREATE TABLE `bj_posts` (
   `content` longtext NOT NULL,
   `author` text NOT NULL,
   `posted` datetime NOT NULL default '0000-00-00 00:00:00',
-  `type` enum('public','draft','mod') NOT NULL default 'public',
+  `ptype` enum('public','draft','mod') NOT NULL default 'public',
   `parent` bigint(20) NOT NULL default '0',
   `comment_count` bigint(20) NOT NULL default '0',
   `tags` text NOT NULL,
   PRIMARY KEY  (`ID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=8 ;
 
 -- 
 -- Dumping data for table `bj_posts`
 -- 
 
-INSERT INTO `bj_posts` VALUES (1, 'Test Post', 'test-post', '<p>Funfuntest.</p>\r\n<p>&raquo; Wheee.</p>', 'Mark', '2006-08-21 10:05:20', 'public', 0, 0, '2');
-INSERT INTO `bj_posts` VALUES (2, 'More Fun', 'more-fun', 'yeehaw', 'Mark', '2006-08-21 09:40:12', 'public', 0, 0, '');
+INSERT INTO `bj_posts` VALUES (1, 'Test Post', 'test-post', '<p>Funfuntest.</p> <p>&raquo; Wheee.</p><p>bobob&nbsp;</p>', 'Mark', '2006-08-21 10:05:20', 'public', 0, 0, '2');
+INSERT INTO `bj_posts` VALUES (2, 'More Fun', 'more-fun', 'yeehaw', 'Mark', '2006-08-21 09:40:12', 'public', 0, 0, '2');
 
 -- --------------------------------------------------------
 
