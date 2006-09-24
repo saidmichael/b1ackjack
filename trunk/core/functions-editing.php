@@ -12,8 +12,11 @@ function bj_edit_post($id=0) {
 	$_POST['title'] = bj_clean_string($_POST['title'],array(),'mysql=true');
 	$_POST['shortname'] = bj_clean_string($_POST['shortname'],array(),'mysql=true');
 	$_POST['content'] = bj_clean_string($_POST['content'],$bj_html_post);
-	foreach($_POST['tags'] as $tag=>$on) {
-		$tag_string .= $tag.',';
+	$tag_string = "";
+	if(is_array($_POST['tags'])) {
+		foreach($_POST['tags'] as $tag=>$on) {
+			$tag_string .= $tag.',';
+		}
 	}
 	$_POST['tags'] = preg_replace('{,$}','',$tag_string);
 	#Now let's build our update query.
