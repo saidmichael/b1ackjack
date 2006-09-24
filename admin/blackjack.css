@@ -215,12 +215,12 @@ body.login {
 }
 
 .edit td {
-	background:#ebebeb;
+	background:transparent;
 	padding:3px;
 }
 
 .edit .alt td {
-	background:transparent;
+	background:#ebebeb;
 }
 
 .edit .editbutton {
@@ -333,6 +333,15 @@ strong.error {
 }
 
 /* Misc */
+.drafts {
+	border:1px solid #e2e2e2;
+	background:#f4f4f4;
+	padding:4px;
+	margin-bottom:7px;
+}
+.drafts p {
+	padding-bottom:0 !important;
+}
 .capitalize {
 	text-transform:capitalize;
 }
