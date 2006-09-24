@@ -3,24 +3,14 @@
 #Function: echo_tags(Between[, Before[, After[, Extra]]])
 #Description: Outputs the tags for a post. Can be used only in a loop. 
 function echo_tags($between='',$before='',$after='',$extra=false) {
-	global $post,$bj_db;
-	$tags = explode(",",$post['tags']);
+	$tags = return_tags();
 	if($extra) {
 		parse_str($extra,$args);
 	}
 	if(!empty($tags[0])) {
-		foreach($tags as $ID) {
-			//This checks if the information about a tag was already retrieved.
-			//After all, why do extra queries?
-			if(isset($post['tagbuffer'][$ID])) {
-				$arr = $post['tagbuffer'][$ID];
-			}
-			else {
-				$arr = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `ID` = '".$ID."' LIMIT 1");
-				$post['tagbuffer'][$ID] = $arr;
-			}
-			if($args['nolink'] != "true") { $start_link = ($args['admin'] == "true") ? "<a href=\"tags.php?req=edit&amp;id=".$arr['ID']."\">" : "<a href=\"index.php?tag=".$arr['ID']."\">"; }
-			$text .= $before.$start_link.$arr['name']."</a>".$after.$between;
+		foreach($tags as $tag) {
+			if($args['nolink'] != "true") { $start_link = ($args['admin'] == "true") ? "<a href=\"tags.php?req=edit&amp;id=".$tag['ID']."\">" : "<a href=\"index.php?tag=".$tag['ID']."\">"; }
+			$text .= $before.$start_link.$tag['name']."</a>".$after.$between;
 		}
 		echo preg_replace('{'.$between.'$}', '', $text);
 	}
@@ -29,7 +19,7 @@ function echo_tags($between='',$before='',$after='',$extra=false) {
 #Function: return_tags(Extra)
 #Description: Returns the tags for a post. Can be used only in a loop. 
 function return_tags($extra=false) {
-	global $post,$bj_db;
+	global $post,$posts,$bj_db;
 	$tags = explode(",",$post['tags']);
 	$retarr = array();
 	if($extra) {
@@ -37,7 +27,15 @@ function return_tags($extra=false) {
 	}
 	if(!empty($tags[0])) {
 		foreach($tags as $ID) {
-			$arr = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `ID` = '".$ID."' LIMIT 1");
+			//This checks if the information about a tag was already retrieved.
+			//After all, why do extra queries?
+			if(isset($posts['tagbuffer'][$ID])) {
+				$arr = $posts['tagbuffer'][$ID];
+			}
+			else {
+				$arr = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `ID` = '".$ID."' LIMIT 1");
+				$posts['tagbuffer'][$ID] = $arr;
+			}
 			$retarr[] = $arr;
 		}
 		return $retarr;
