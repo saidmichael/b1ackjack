@@ -1,24 +1,26 @@
 <?php
 $parent_file = "posts.php";
 require("admin-head.php");
-switch($_GET['req']) {
-	case "edit" :
-		if(isset($_GET['id'])) {
-			$posts = get_posts('id='.intval($_GET['id']).'&limit=1');
-			foreach($posts as $post) { start_post(); ?>
+if(we_can('edit_posts')) {
+	get_admin_header();
+	switch($_GET['req']) {
+		case "edit" :
+			if(isset($_GET['id'])) {
+				$posts = get_posts('id='.intval($_GET['id']).'&limit=1');
+				foreach($posts as $post) { start_post(); ?>
 		<div id="wrapper">
 			<h1><?php printf(_r('Editing %1$s'),$post['title']); ?></h1>
 <?php do_editorform($post); ?>
 		</div>
-<?php		}
-		}	
-		break;
+<?php			}
+			}	
+			break;
 	
-	case "delete" :
+		case "delete" :
 		
-		break;
+			break;
 		
-	default :
+		default :
 ?>
 		<div id="wrapper">
 			<h1><?php _e('Manage Posts'); ?></h1>
@@ -61,6 +63,10 @@ switch($_GET['req']) {
 			<h3 class="gothere"><a href="post-write.php"><?php _e('Create a Post'); ?> &gt;&gt;</a></h3>
 		</div>
 <?php
+	}
+	get_admin_footer();
 }
-require("admin-foot.php");
+else {
+	_e('You don\'t have permission to access this file.');
+}
 ?>

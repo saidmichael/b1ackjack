@@ -71,4 +71,31 @@ function get_users($extra=false) {
 	}
 }
 
+#Function: we_can(Capability)
+#Description: Determines if a user can carry out an action based on Capability.
+function we_can($str) {
+	global $user;
+	function we_can_check($int) {
+		global $user;
+		return ($user->user_group >= $int) ? true : false;
+	}
+	switch($str) {
+		case 'view_frontpage' :
+			$check = we_can_check(1);
+			break;
+		case 'create_posts' :
+			$check = we_can_check(2);
+			break;
+		case 'edit_posts' :
+			$check = we_can_check(2);
+			break;
+		case 'write_posts' :
+			$check = we_can_check(2);
+			break;
+		default:
+			$check = true;
+	}
+	return $check;
+}
+
 ?>
