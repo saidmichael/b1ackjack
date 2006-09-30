@@ -48,7 +48,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 						foreach($ourtags as $tag) { ?>
 						<li<?php tablealt($ti); ?>><label for="category-<?php echo $tag['ID']; ?>"><input type="checkbox" id="category-<?php echo $tag['ID']; ?>" name="tags[<?php echo $tag['ID']; ?>]"<?php
 							if(is_array($return_tags)) { foreach($return_tags as $chtag) {
-								if($tag['ID'] == $chtag['ID']) { ?> checked="checked"<?php }
+								bj_checked($tag['ID'],$chtag['ID']);
 							} } ?> /> <?php echo $tag['name']; ?></label></li>
 <?php					$ti++; }
 						unset($ti); ?>
@@ -56,22 +56,14 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 					<h2><label for="shortname"><?php _e('Shortname'); ?></label></h2>
 					<p><input type="text" name="shortname" id="shortname" value="<?php echo $post['shortname']; ?>" class="width100" /></p>
 					<h2><?php _e('Post Type'); ?></h2>
-<?php
-					$public='';
-					$private='';
-					$checked = " checked=\"checked\"";
-					switch($post['ptype']) {
-						case "public" : $public = $checked; break;
-						case "draft" : $private = $checked; break;
-					} ?>
-					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php echo $public; ?> /> <?php _e('Public'); ?></label><br />
-					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php echo $private; ?> /> <?php _e('Draft'); ?></label><br />
+					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php bj_checked($post['ptype'],'public'); ?> /> <?php _e('Public'); ?></label><br />
+					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php bj_checked($post['ptype'],'draft'); ?> /> <?php _e('Draft'); ?></label><br />
 					<h2><?php _e('Post Author'); ?></h2>
 					<select name="author" class="width100">
 <?php
 					$authors = get_users('gop=>=&group=2');
 					foreach($authors as $author) { start_post(); ?>
-						<option value="<?php echo $author['display_name']; ?>"<?php if($post['author'] == $author['display_name']) { ?> selected="selected"<?php } ?>><?php echo $author['display_name']; ?></option>
+						<option value="<?php echo $author['display_name']; ?>"<?php bj_selected($post['author'],$author['display_name']); ?>><?php echo $author['display_name']; ?></option>
 <?php
 					}
 					unset($i); ?>
@@ -109,10 +101,69 @@ function run_bj_forms() {
 	}
 }
 
-#Function tablealt()
+#Function: tablealt()
 #Description: Just provides a class="alt" for the table row.
 function tablealt($i) {
 	echo ($i%2 == 0) ? "" : " class=\"alt\"";
 }
 
+#Function: get_admin_header()
+#Description: Outputs the admin header.
+function get_admin_header() {
+	global $user,$parent_file,$admin_thisfile; ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title><?php _e('Blackjack Admin Panel'); ?></title>
+		<link rel="stylesheet" href="blackjack.css" type="text/css" />
+		<!-- tinyMCE -->
+		<script language="javascript" type="text/javascript" src="../jscripts/tiny_mce/tiny_mce.js"></script>
+		<script language="javascript" type="text/javascript">
+		tinyMCE.init({
+			theme : "advanced",
+			mode : "exact",
+			elements : "textarea",
+			extended_valid_elements : "a[href|target|name]",
+			//plugins : "table",
+			//theme_advanced_buttons1_add_before : "tablecontrols,separator",
+			//theme_advanced_styles : "Header 1=header1;Header 2=header2;Header 3=header3;Table Row=tableRow1", Theme specific setting CSS classes
+			debug : false,
+			theme_advanced_toolbar_location : "top",
+			theme_advanced_toolbar_align : "left",
+			theme_advanced_statusbar_location : "bottom",
+			theme_advanced_resize_horizontal : false,
+			theme_advanced_resizing : true
+		});
+		</script>
+		<!-- /tinyMCE -->
+<?php run_actions('admin_header'); ?>
+	</head>
+	<body>
+		<div id="top">
+			<div class="alignleft userinfo">
+				<strong><?php echo load_option('sitename'); ?></strong> - <?php printf(_r('Logged in as <a href="profile.php">%1$s</a>'),$user->display_name); ?>
+			</div>
+			<div class="alignright lightpart">
+				<a href="profile.php" class="profile"><?php _e('Profile'); ?></a>
+				<a href="login.php?req=logout" class="logout"><?php _e('Logout'); ?></a>
+			</div>
+			<div class="c"></div>
+		</div>
+<?php
+	require("menu.php");
+}
+
+#Function: get_admin_footer()
+#Description: Outputs the admin footer.
+function get_admin_footer() {
+	global $bj_db,$bj_version; ?>
+<?php run_actions('admin_footer'); ?>
+		<div id="footer">
+			<p><?php printf(_r('Blackjack %1$s - %2$s Queries'),$bj_version,$bj_db->querycount()); ?></p>
+		</div>
+	</body>
+</html>
+<?php
+}
 ?>

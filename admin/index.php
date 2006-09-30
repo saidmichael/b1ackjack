@@ -1,6 +1,8 @@
 <?php
 $parent_file = "index.php";
 require("admin-head.php");
+if(we_can('view_frontpage')) {
+	get_admin_header();
 ?>
 		<div id="wrapper">
 			<h1><?php _e('Front Page'); ?></h1>
@@ -74,4 +76,9 @@ require("admin-head.php");
 				<?php run_actions('end_frontpage'); ?>
 			</div>
 		</div>
-<?php require("admin-foot.php"); ?>
+<?php
+	get_admin_footer();
+}
+else {
+	_e('You don\'t have permission to access this file.');
+}?>
