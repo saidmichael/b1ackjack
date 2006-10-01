@@ -23,6 +23,10 @@ function bj_edit_post($id=0) {
 			}
 		}
 		$epost['tags'] = preg_replace('{,$}','',$tag_string);
+		#Change date handling.
+		if($_POST['editstamp'] == "yes") {
+			$epost['posted'] = intval($_POST['stamp_year']).'-'.intval($_POST['stamp_month']).'-'.intval($_POST['stamp_date']).' '.intval($_POST['stamp_hour']).':'.intval($_POST['stamp_min']).':'.intval($_POST['stamp_sec']);
+		}
 		run_filters('post_edit',$epost);
 		#Now let's build our update query.
 		$query = "UPDATE `".$bj_db->posts."` SET `ID` = '".$id."'";

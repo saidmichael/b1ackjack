@@ -57,9 +57,9 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 					<p><input type="text" name="shortname" id="shortname" value="<?php echo $post['shortname']; ?>" class="width100" /></p>
 					<h2><?php _e('Post Type'); ?></h2>
 					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php bj_checked($post['ptype'],'public'); ?> /> <?php _e('Public'); ?></label><br />
-					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php bj_checked($post['ptype'],'draft'); ?> /> <?php _e('Draft'); ?></label><br />
+					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php bj_checked($post['ptype'],'draft'); ?> /> <?php _e('Draft'); ?></label></p>
 					<h2><?php _e('Post Author'); ?></h2>
-					<select name="author" class="width100">
+					<p><select name="author" class="width100">
 <?php
 					$authors = get_users('gop=>=&group=2');
 					foreach($authors as $author) { start_post(); ?>
@@ -67,7 +67,34 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php
 					}
 					unset($i); ?>
-					</select>
+					</select></p>
+<?php
+					if($post['posted'] != "") { ?>
+					<h2><?php _e('Edit Timestamp'); ?></h2>
+					<p><?php printf(_r('Timestamp is %1$s on %2$s.'),get_post_date('F dS, Y'),get_post_date('H:i:s')); ?></p>
+					<p><input type="checkbox" id="editstamp" name="editstamp" value="yes"> <label for="editstamp"><?php _e('Edit timestamp?'); ?></label><br />
+					<select name="stamp_month">
+						<option value="01"<?php bj_selected(get_post_date('m'),'01'); ?>><?php _e('January'); ?></option>
+						<option value="02"<?php bj_selected(get_post_date('m'),'02'); ?>><?php _e('February'); ?></option>
+						<option value="03"<?php bj_selected(get_post_date('m'),'03'); ?>><?php _e('March'); ?></option>
+						<option value="04"<?php bj_selected(get_post_date('m'),'04'); ?>><?php _e('April'); ?></option>
+						<option value="05"<?php bj_selected(get_post_date('m'),'05'); ?>><?php _e('May'); ?></option>
+						<option value="06"<?php bj_selected(get_post_date('m'),'06'); ?>><?php _e('June'); ?></option>
+						<option value="07"<?php bj_selected(get_post_date('m'),'07'); ?>><?php _e('July'); ?></option>
+						<option value="08"<?php bj_selected(get_post_date('m'),'08'); ?>><?php _e('August'); ?></option>
+						<option value="09"<?php bj_selected(get_post_date('m'),'09'); ?>><?php _e('September'); ?></option>
+						<option value="10"<?php bj_selected(get_post_date('m'),'10'); ?>><?php _e('October'); ?></option>
+						<option value="11"<?php bj_selected(get_post_date('m'),'11'); ?>><?php _e('November'); ?></option>
+						<option value="12"<?php bj_selected(get_post_date('m'),'12'); ?>><?php _e('December'); ?></option>
+					</select> 
+					<input type="text" name="stamp_date" maxlength="2" size="2" value="<?php post_date('d'); ?>" class="aligncenter" /> 
+					<input type="text" name="stamp_year" maxlength="4" size="4" value="<?php post_date('Y'); ?>" class="aligncenter" /> <?php _e('on'); ?> 
+					<input type="text" name="stamp_hour" maxlength="2" size="2" value="<?php post_date('H'); ?>" class="aligncenter" /> :
+					<input type="text" name="stamp_min" maxlength="2" size="2" value="<?php post_date('i'); ?>" class="aligncenter" /> :
+					<input type="text" name="stamp_sec" maxlength="2" size="2" value="<?php post_date('s'); ?>" class="aligncenter" />
+						</p>
+<?php
+					} ?>
 				</div>
 				<div class="column width75">
 					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo $post['title']; ?>" class="width100 largeinput" /></p>
