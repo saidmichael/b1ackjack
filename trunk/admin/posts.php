@@ -82,7 +82,7 @@ if(we_can('edit_posts')) {
 				<tr<?php tablealt($i); ?> id="post-<?php echo $post['ID']; ?>">
 					<td class="aligncenter"><?php echo $post['ID']; ?></td>
 					<td><?php echo $post['title']; ?></td>
-					<td><?php post_date("M dS Y, h:i a"); ?></td>
+					<td><?php post_date("M jS Y, h:i a"); ?></td>
 					<td><?php echo_tags(", ","","","admin=true"); ?></td>
 					<td class="capitalize aligncenter"><?php echo $post['ptype']; ?></td>
 					<td class="editbutton"><a href="posts.php?req=edit&amp;id=<?php echo $post['ID']; ?>" class="blockit"><?php _e('Edit'); ?></a></td>
