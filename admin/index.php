@@ -56,7 +56,7 @@ if(we_can('view_frontpage')) {
 				else { ?>
 				<ul class="altrows">
 <?php			foreach($posts as $post) {
-					$bjposts[$post['title']] = "posts.php?req=edit&amp;id=".$post['ID'];
+					$bjposts[return_title()] = "posts.php?req=edit&amp;id=".$post['ID'];
 				}
 				fancy_altrows($bjposts); ?>
 				</ul>
