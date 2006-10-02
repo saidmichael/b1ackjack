@@ -188,7 +188,7 @@ function get_posts($q) {
 #Function: get_post_date(Date Format[, Date Resource])
 #Description: Creates the date from a mysql datetime format. Can be used in the
 #			  loop or, if the resource is defined, outside of it. Your choice. :)
-function get_post_date($format='F dS Y',$res=false) {
+function get_post_date($format='F jS, Y',$res=false) {
 	if(!$res) {
 		global $post;
 		$res = $post['posted'];
@@ -199,7 +199,7 @@ function get_post_date($format='F dS Y',$res=false) {
 
 #Function: post_date(Date Format[, Date Resource])
 #Description: Wrapper for get_post_date().
-function post_date($format='F dS Y',$res=false) {
+function post_date($format='F jS, Y',$res=false) {
 	echo get_post_date($format,$res);
 }
 

@@ -71,7 +71,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php
 					if($post['posted'] != "") { ?>
 					<h2><?php _e('Edit Timestamp'); ?></h2>
-					<p><?php printf(_r('Timestamp is %1$s on %2$s.'),get_post_date('F dS, Y'),get_post_date('H:i:s')); ?></p>
+					<p><?php printf(_r('Timestamp is %1$s on %2$s.'),get_post_date('F jS, Y'),get_post_date('H:i:s')); ?></p>
 					<p><input type="checkbox" id="editstamp" name="editstamp" value="yes"> <label for="editstamp"><?php _e('Edit timestamp?'); ?></label><br />
 					<select name="stamp_month">
 						<option value="01"<?php bj_selected(get_post_date('m'),'01'); ?>><?php _e('January'); ?></option>
