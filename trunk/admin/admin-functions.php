@@ -56,8 +56,8 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 					<h2><label for="shortname"><?php _e('Shortname'); ?></label></h2>
 					<p><input type="text" name="shortname" id="shortname" value="<?php echo $post['shortname']; ?>" class="width100" /></p>
 					<h2><?php _e('Post Type'); ?></h2>
-					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php bj_checked($post['ptype'],'public'); ?> /> <?php _e('Public'); ?></label><br />
-					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php bj_checked($post['ptype'],'draft'); ?> /> <?php _e('Draft'); ?></label></p>
+					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php bj_checked(get_post_type(),'public'); ?> /> <?php _e('Public'); ?></label><br />
+					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php bj_checked(get_post_type(),'draft'); ?> /> <?php _e('Draft'); ?></label></p>
 					<h2><?php _e('Post Author'); ?></h2>
 					<p><select name="author" class="width100">
 <?php
@@ -94,12 +94,14 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 					<input type="text" name="stamp_sec" maxlength="2" size="2" value="<?php post_date('s'); ?>" class="aligncenter" />
 						</p>
 <?php
-					} ?>
+					}
+					run_actions('end_editor_sidebar'); ?>
 				</div>
 				<div class="column width75">
-					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo str_replace(array('\'','"'),array('&#039;','&#034;'),$post['title']); ?>" class="width100 largeinput" /></p>
+					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo bj_clean_string($post['title']); ?>" class="width100 largeinput" /></p>
 					<textarea name="content" id="textarea"><?php formatted_for_editing($post['content']); ?></textarea>
 <?php
+					run_actions('end_editor_main');
 					if($post['ID'] == "0") { ?>
 					<input type="hidden" name="new-post-send" value="yes" />
 <?php
