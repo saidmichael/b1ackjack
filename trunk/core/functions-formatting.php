@@ -63,6 +63,7 @@ function wptexturize($text){
 	$text = str_replace(
 		array(
 			'&#039;',
+			'&#39;',
 			'&amp;'
 		),
 		'\'',
@@ -70,6 +71,7 @@ function wptexturize($text){
 	$text = str_replace(
 		array(
 			'&#034;',
+			'&#34;',
 			'&quot;'
 		),
 		'"',
