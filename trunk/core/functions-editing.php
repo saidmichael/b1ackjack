@@ -13,7 +13,7 @@ function bj_edit_post($id=0) {
 		}
 		$epost['title'] = bj_clean_string($_POST['title'],array(),'mysql=true');
 		$epost['shortname'] = bj_clean_string($_POST['shortname'],array(),'mysql=true');
-		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
+		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post,'content=true');
 		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$epost['author'] = $_POST['author'];
 		$tag_string = "";
@@ -59,7 +59,7 @@ function bj_new_post() {
 		run_actions('pre_post_new');
 		$epost['title'] = bj_clean_string($_POST['title'],array(),'mysql=true');
 		$epost['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($epost['title']) : bj_clean_string($_POST['shortname'],array(),'mysql=true');
-		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
+		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post,'content=true');
 		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$epost['author'] = $_POST['author'];
 		$tag_string = "";
@@ -103,7 +103,9 @@ function bj_clean_string($string,$allowed_html=array(),$q=false) {
 	if(get_magic_quotes_gpc()) {
 		$string = stripslashes($string);
 	}
-	$string = str_replace("\"","&quot;",$string); # To prevent funny title errors.
+	if(!isset($args['content'])) {
+		$string = str_replace("\"","&quot;",$string); # To prevent funny title errors.
+	}
 	$string = str_replace("'","&#039;",$string);
 	$string = bj_kses($string,$allowed_html);
 	if(isset($args['mysql'])) { # Is this for insertion in a SQL database?
