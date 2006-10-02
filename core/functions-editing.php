@@ -104,9 +104,8 @@ function bj_clean_string($string,$allowed_html=array(),$q=false) {
 		$string = stripslashes($string);
 	}
 	if(!isset($args['content'])) {
-		$string = str_replace("\"","&quot;",$string); # To prevent funny title errors.
+		$string = str_replace(array('\'','"'),array('&#039;','&#034;'),$string);
 	}
-	$string = str_replace("'","&#039;",$string);
 	$string = bj_kses($string,$allowed_html);
 	if(isset($args['mysql'])) { # Is this for insertion in a SQL database?
 		$string = $bj_db->escape($string);

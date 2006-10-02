@@ -9,7 +9,7 @@ if(we_can('edit_posts')) {
 				$posts = get_posts('id='.intval($_GET['id']).'&limit=1');
 				foreach($posts as $post) { start_post(); ?>
 		<div id="wrapper">
-			<h1><?php printf(_r('Editing %1$s'),$post['title']); ?></h1>
+			<h1><?php printf(_r('Editing %1$s'),return_title()); ?></h1>
 <?php do_editorform($post); ?>
 		</div>
 <?php			}
@@ -81,10 +81,10 @@ if(we_can('edit_posts')) {
 				foreach($posts as $post) { start_post(); ?>
 				<tr<?php tablealt($i); ?> id="post-<?php echo $post['ID']; ?>">
 					<td class="aligncenter"><?php echo $post['ID']; ?></td>
-					<td><?php echo $post['title']; ?></td>
+					<td><?php echo_title(); ?></td>
 					<td><?php post_date("M jS Y, h:i a"); ?></td>
 					<td><?php echo_tags(", ","","","admin=true"); ?></td>
-					<td class="capitalize aligncenter"><?php echo $post['ptype']; ?></td>
+					<td class="capitalize aligncenter"><?php echo get_post_type(); ?></td>
 					<td class="editbutton"><a href="posts.php?req=edit&amp;id=<?php echo $post['ID']; ?>" class="blockit"><?php _e('Edit'); ?></a></td>
 					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo $post['ID']; ?>" class="blockit" onclick="deletePost(<?php echo $post['ID']; ?>);return false;"><?php _e('Delete'); ?></a></td>
 				</tr>
