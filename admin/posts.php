@@ -20,7 +20,6 @@ if(we_can('edit_posts')) {
 		case "delete" :
 			if(isset($_GET['id'])) {
 				$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
-				run_actions('delete_post');
 				@header("Location: ".load_option('siteurl')."admin/posts.php");
 				die();
 			}
@@ -63,8 +62,8 @@ if(we_can('edit_posts')) {
 <?php
 				foreach($drafts as $draft) {
 					$draft_string .= "<a href=\"posts.php?req=edit&amp;id=".$draft['ID']."\">".$draft['title']."</a>, ";
-				}
-				echo "<p>".preg_replace("{, $}","",$draft_string)."</p>"; ?>
+				} ?>
+				<p><?php echo preg_replace("{, $}","",$draft_string); ?></p>
 			</div>
 <?php
 			} ?>
