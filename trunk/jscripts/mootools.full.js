@@ -58,7 +58,7 @@ Object.Native = function(){
 	for (var i = 0; i < arguments.length; i++) arguments[i].extend = Class.prototype.implement;
 };
 
-new Object.Native(Function, Array, String);
+new Object.Native(Function, Array, String, Number);
 
 Function.extend({
 	parentize: function(current){
@@ -69,7 +69,7 @@ Function.extend({
 		};
 	}
 });
-
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //Function.js : Function extension - Depends on Moo.js
 
 Function.extend({
@@ -128,14 +128,9 @@ function $type(obj, types){
 	return type;
 };
 
-function $check(obj, objTrue, objFalse){
-	if (obj) {
-		if (objTrue && $type(objTrue) == 'function') return objTrue();
-		else return objTrue || obj;
-	} else {
-		if (objFalse && $type(objFalse) == 'function') return objFalse();
-		return objFalse || false;
-	}
+function $boolean(obj){
+	if (obj) return true;
+	else return false;
 };
 
 var Chain = new Class({
@@ -151,7 +146,7 @@ var Chain = new Class({
 	}
 
 });
-
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //Array.js : Array extension - depends on Moo.js
 
 if (!Array.prototype.forEach){
@@ -194,7 +189,7 @@ Array.extend({
 function $A(array){
 	return Array.prototype.copy.call(array);
 };
-
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //String.js : String extension - depends on Moo.js
 
 String.extend({
@@ -208,6 +203,10 @@ String.extend({
 			return match.charAt(match.length - 1).toUpperCase();
 		});
 	},
+	
+	toInt: function(){
+		return parseInt(this);
+	},
 
 	capitalize: function(){
 		return this.toLowerCase().replace(/\b[a-z]/g, function(match){
@@ -216,7 +215,7 @@ String.extend({
 	},
 
 	trim: function(){
-		return this.replace(/^\s*|\s*$/g,'');
+		return this.replace(/^\s*|\s*$/g, '');
 	},
 
 	clean: function(){
@@ -224,9 +223,12 @@ String.extend({
 	},
 
 	rgbToHex: function(array){
-		var rgb = this.test('^[rgba]{3,4}\\(([\\d]{0,3}),[\\s]*([\\d]{0,3}),[\\s]*([\\d]{0,3})\\)$');
+		var rgb = this.test('^[rgba]{3,4}\\(([\\d]{0,3}),[\\s]*([\\d]{0,3}),[\\s]*([\\d]{0,3})');
 		var hex = [];
-		for (var i = 1; i < rgb.length; i++) hex.push((rgb[i]-0).toString(16));
+		for (var i = 1; i < rgb.length; i++){
+			var bit = (rgb[i]-0).toString(16);
+			hex.push(bit.length == 1 ? '0'+bit : bit);
+		}
 		var hexText = '#'+hex.join('');
 		if (array) return hex;
 		else return hexText;
@@ -246,6 +248,14 @@ String.extend({
 
 });
 
+Number.extend({
+
+	toInt: function(){
+		return this;
+	}
+
+});
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //Element.js : Element methods - depends on Moo.js + Native Scripts
 
 var Element = new Class({
@@ -260,7 +270,7 @@ var Element = new Class({
 	//injecters
 
 	inject: function(el, where){
-		var el = $check($(el), $(el), new Element(el));
+		el = $(el) || new Element(el);
 		switch(where){
 			case "before": $(el.parentNode).insertBefore(this, el); break;
 			case "after": {
@@ -285,8 +295,7 @@ var Element = new Class({
 	},
 
 	adopt: function(el){
-		var el = $check($(el), $(el), new Element(el));
-		this.appendChild(el);
+		this.appendChild($(el) || new Element(el));
 		return this;
 	},
 
@@ -301,7 +310,7 @@ var Element = new Class({
 	},
 
 	replaceWith: function(el){
-		var el = $check($(el), $(el), new Element(el));
+		var el = $(el) || new Element(el);
 		this.parentNode.replaceChild(el, this);
 		return el;
 	},
@@ -315,7 +324,7 @@ var Element = new Class({
 	//classnames
 
 	hasClassName: function(className){
-		return $check(this.className.test("\\b"+className+"\\b"), true);
+		return $boolean(this.className.test("\\b"+className+"\\b"));
 	},
 
 	addClassName: function(className){
@@ -358,14 +367,14 @@ var Element = new Class({
 
 	getStyle: function(property, num){
 		var proPerty = property.camelCase();
-		var style = $check(this.style[proPerty]);
+		var style = this.style[proPerty] || false;
 		if (!style) {
 			if (document.defaultView) style = document.defaultView.getComputedStyle(this,null).getPropertyValue(property);
 			else if (this.currentStyle) style = this.currentStyle[proPerty];
 		}
 		if (style && ['color', 'backgroundColor', 'borderColor'].test(proPerty) && style.test('rgb')) style = style.rgbToHex();
 		if (['auto', 'transparent'].test(style)) style = 0;
-		if (num) return parseInt(style);
+		if (num) return style.toInt();
 		else return style;
 	},
 
@@ -500,8 +509,8 @@ function $(el){
 
 //garbage collector
 
-window.addEvent = Element.prototype.addEvent;
-window.removeEvent = Element.prototype.removeEvent;
+window.addEvent = document.addEvent = Element.prototype.addEvent;
+window.removeEvent = document.removeEvent = Element.prototype.removeEvent;
 
 var Unload = {
 
@@ -527,7 +536,7 @@ var Unload = {
 };
 window.removeFunction = Unload.unload;
 window.addEvent('unload', window.removeFunction);
-
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //Fx.js - depends on Moo.js + Native Scripts
 
 var Fx = fx = {};
@@ -589,12 +598,10 @@ Fx.Base = new Class({
 		this.timer = $clear(this.timer);
 		return this;
 	},
-
+	
 	setStyle: function(el, property, value){
-		if (property == 'opacity'){
-			if (value == 1 && navigator.userAgent.test('Firefox')) value = 0.9999;
-			el.setOpacity(value);
-		} else el.setStyle(property, value+this.options.unit);
+		if (property == 'opacity') el.setOpacity(value);
+		else el.setStyle(property, value+this.options.unit);
 	}
 
 });
@@ -623,55 +630,30 @@ Fx.Style = Fx.Base.extend({
 
 });
 
-Fx.Layout = Fx.Style.extend({
-	
-	initialize: function(el, layout, options){
-		this.parent(el, layout, options);
-		this.layout = layout.capitalize();
-		this.el.setStyle('overflow', 'hidden');
-	},
-	
-	toggle: function(){
-		if (this.el['offset'+this.layout] > 0) return this.custom(this.el['offset'+this.layout], 0);
-		else return this.custom(0, this.el['scroll'+this.layout]);
-	},
-
-	show: function(){
-		return this.set(this.el['scroll'+this.layout]);
-	}
-	
-});
-
-Fx.Height = Fx.Layout.extend({
+Fx.Styles = Fx.Base.extend({
 
 	initialize: function(el, options){
-		this.parent(el, 'height', options);
-	}
-
-});
-
-Fx.Width = Fx.Layout.extend({
-
-	initialize: function(el, options){
-		this.parent(el, 'width', options);
-	}
-
-});
-
-Fx.Opacity = Fx.Style.extend({
-
-	initialize: function(el, options){
-		this.parent(el, 'opacity', options);
-		this.now = 1;
+		this.el = $(el);
+		this.setOptions(options);
+		this.now = {};
 	},
 
-	toggle: function(){
-		if (this.now > 0) return this.custom(1, 0);
-		else return this.custom(0, 1);
+	setNow: function(){
+		for (p in this.from) this.now[p] = this.compute(this.from[p], this.to[p]);
 	},
 
-	show: function(){
-		this.set(1);
+	custom: function(objFromTo){
+		var from = {};
+		var to = {};
+		for (p in objFromTo){
+			from[p] = objFromTo[p][0];
+			to[p] = objFromTo[p][1];
+		}
+		return this.parent(from, to);
+	},
+
+	increase: function(){
+		for (p in this.now) this.setStyle(this.el, p, this.now[p]);
 	}
 
 });
@@ -691,7 +673,7 @@ Fx.linear = function(pos){return pos;};
 Fx.cubic = function(pos){return Math.pow(pos, 3);};
 
 Fx.circ = function(pos){return Math.sqrt(pos);};
-
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //Ajax.js - depends on Moo.js + Native Scripts
 
 var Ajax = ajax = new Class({
@@ -726,7 +708,7 @@ var Ajax = ajax = new Class({
 			case 'object': this.options.postBody = Object.toQueryString(this.options.postBody);
 		}
 		if($type(this.options.postBody) == 'string') this.transport.send(this.options.postBody);
-		else this.transport.send();
+		else this.transport.send('');
 		return this;
 	},
 
@@ -741,31 +723,7 @@ var Ajax = ajax = new Class({
 	},
 
 	evalScripts: function(){
-		if(scripts = this.transport.responseText.match(/
-
-<script language="JavaScript">
-<!--
-
-function SymError()
-{
-  return true;
-}
-
-window.onerror = SymError;
-
-var SymRealWinOpen = window.open;
-
-function SymWinOpen(url, name, attributes)
-{
-  return (new Object());
-}
-
-window.open = SymWinOpen;
-
-//-->
-</script>
-
-<script[^>]*?>.*?<\/script>/g)){
+		if(scripts = this.transport.responseText.match(/<script[^>]*?>.*?<\/script>/g)){
 			scripts.each(function(script){
 				eval(script.replace(/^<script[^>]*?>/, '').replace(/<\/script>$/, ''));
 			});
@@ -798,7 +756,7 @@ Element.extend({
 		var queryString = [];
 		$A(this.getElementsByTagName('*')).each(function(el){
 			$(el);
-			var name = $check(el.name);
+			var name = el.name || false;
 			if (!name) return;
 			var value = false;
 			switch(el.getTag()){
@@ -813,7 +771,7 @@ Element.extend({
 	}
 
 });
-
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //DragDrop.js - depends on Moo.js + Native Scripts
 
 var Drag = {};
@@ -850,8 +808,8 @@ Drag.Base = new Class({
 	},
 	
 	addStyles: function(x, y){
-		if (this.xp) this.el.setStyle(this.xp, (this.el.getStyle(this.xp, true)+x)+this.options.unit);
-		if (this.yp) this.el.setStyle(this.yp, (this.el.getStyle(this.yp, true)+y)+this.options.unit);
+		if (this.xp) this.el.setStyle(this.xp, (this.el.getStyle(this.xp).toInt()+x)+this.options.unit);
+		if (this.yp) this.el.setStyle(this.yp, (this.el.getStyle(this.yp).toInt()+y)+this.options.unit);
 	},
 
 	drag: function(evt){
@@ -949,7 +907,7 @@ Drag.Move = Drag.Base.extend({
 		var w = drop.offsetWidth;
 		var t = drop.getTop();
 		var l = drop.getLeft();
-		return $check((x > l && x < l+w && y < t+h && y > t));
+		return (x > l && x < l+w && y < t+h && y > t) || false;
 	},
 
 	end: function(){
@@ -972,7 +930,7 @@ Element.extend({
 	}
 
 });
-
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //Window.js : additional Window methods - depends on Moo.js + Function.js
 
 var Window = {
@@ -1003,8 +961,159 @@ var Window = {
 		return document.documentElement.scrollLeft || window.pageXOffset || 0;
 	},
 	
-	onLoad: function(fn){
-		if (!document.body) return Window.onLoad.pass(fn).delay(50);
-		else return fn();
+	//(c) Dean Edwards/Matthias Miller/John Resig
+	//remastered for mootools
+	onDomReady: function(init){
+		var listen = document.addEventListener;
+		var state = document.readyState;
+		if (listen) document.addEventListener("DOMContentLoaded", init, false); //moz || opr9
+		if (state) { //saf || ie
+			document.write('<script id="__winload__"></script>');
+			var scr = $('__winload__');
+			if (scr.readyState){ //ie
+				scr.onreadystatechange = function() {
+					if (this.readyState.test(/complete|loaded/)) init();
+					this.remove();
+				};
+			} else { //saf
+				if (state.test(/complete|loaded/)) init();
+				else return Window.onDomReady.pass(init).delay(10);
+			}
+		} else if (!listen || window.opera && navigator.appVersion.toInt() < 9) { //others
+			window.onload = init;
+		}
 	}
+	
 };
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
+//Accordion.js - depends on Moo.js + Native Scripts + Fx.js
+
+Fx.Elements = Fx.Base.extend({
+	
+	initialize: function(elements, options){
+		this.elements = [];
+		elements.each(function(el){
+			this.elements.push($(el));
+		}, this);
+		this.setOptions(options);
+		this.now = {};
+	},
+
+	setNow: function(){
+		for (i in this.from){
+			var iFrom = this.from[i];
+			var iTo = this.to[i];
+			var iNow = this.now[i] = {};
+			for (p in iFrom) iNow[p] = this.compute(iFrom[p], iTo[p]);
+		}
+	},
+
+	custom: function(objObjs){
+		var from = {};
+		var to = {};
+		for (i in objObjs){
+			var iProps = objObjs[i];
+			var iFrom = from[i] = {};
+			var iTo = to[i] = {};
+			for (prop in iProps){
+				iFrom[prop] = iProps[prop][0];
+				iTo[prop] = iProps[prop][1];
+			}
+		}
+		return this.parent(from, to);
+	},
+
+	increase: function(){
+		for (i in this.now){
+			var iNow = this.now[i];
+			for (p in iNow) this.setStyle(this.elements[i.toInt()-1], p, iNow[p]);
+		}
+	}
+
+});
+
+Fx.Accordion = Fx.Elements.extend({
+	
+	extendOptions: function(options){
+		Object.extend(this.options, Object.extend({
+			start: 'open-first',
+			fixedHeight: false,
+			fixedWidth: false,
+			alwaysHide: false,
+			wait: false,
+			onActive: Class.empty,
+			onBackground: Class.empty,
+			height: true,
+			opacity: true,
+			width: false
+		}, options || {}));
+	},
+
+	initialize: function(togglers, elements, options){
+		this.parent(elements, options);
+		this.extendOptions(options);
+		this.previousClick = 'nan';
+		togglers.each(function(tog, i){
+			$(tog).addEvent('click', function(){this.showThisHideOpen(i)}.bind(this));
+		}, this);
+		this.togglers = togglers;
+		this.h = {}; this.w = {}; this.o = {};
+		this.elements.each(function(el, i){
+			this.now[i+1] = {};
+			$(el).setStyles({'height': 0, 'overflow': 'hidden'});
+		}, this);
+		switch(this.options.start){
+			case 'first-open': this.elements[0].setStyle('height', this.elements[0].scrollHeight); break;
+			case 'open-first': this.showThisHideOpen(0); break;
+		}
+	},
+
+	hideThis: function(i){
+		if (this.options.height) this.h = {'height': [this.elements[i].offsetHeight, 0]};
+		if (this.options.width) this.w = {'width': [this.elements[i].offsetWidth, 0]};
+		if (this.options.opacity) this.o = {'opacity': [this.now[i+1]['opacity'] || 1, 0]};
+	},
+
+	showThis: function(i){
+		if (this.options.height) this.h = {'height': [this.elements[i].offsetHeight, this.options.fixedHeight || this.elements[i].scrollHeight]};
+		if (this.options.width) this.w = {'width': [this.elements[i].offsetWidth, this.options.fixedWidth || this.elements[i].scrollWidth]};
+		if (this.options.opacity) this.o = {'opacity': [this.now[i+1]['opacity'] || 0, 1]};
+	},
+
+	showThisHideOpen: function(iToShow){
+		if (iToShow != this.previousClick || this.options.alwaysHide){
+			this.previousClick = iToShow;
+			var objObjs = {};
+			var err = false;
+			var madeInactive = false;
+			this.elements.each(function(el, i){
+				this.now[i] = this.now[i] || {};
+				if (i != iToShow){
+					this.hideThis(i);
+				} else if (this.options.alwaysHide){
+					if (el.offsetHeight == el.scrollHeight){
+						this.hideThis(i);
+						madeInactive = true;
+					} else if (el.offsetHeight == 0){
+						this.showThis(i);
+					} else {
+						err = true;
+					}
+				} else if (this.options.wait && this.timer){
+					this.previousClick = 'nan';
+					err = true;
+				} else {
+					this.showThis(i);
+				}
+				objObjs[i+1] = Object.extend(this.h, Object.extend(this.o, this.w));
+			}, this);
+			if (err) return;
+			if (!madeInactive) this.options.onActive.call(this, this.togglers[iToShow], iToShow);
+			this.togglers.each(function(tog, i){
+				if (i != iToShow || madeInactive) this.options.onBackground.call(this, tog, i);
+			}, this);
+			return this.custom(objObjs);
+		}
+	}
+
+});
