@@ -210,4 +210,25 @@ function start_post() {
 	$i++;
 }
 
+#Function: echo_title()
+#Description: Wrapper for return_title().
+function echo_title() {
+	echo return_title();
+}
+
+#Function: return_title()
+#Description: Returns the title. Can only be used in the loop.
+function return_title() {
+	global $post;
+	$title = wptexturize($post['title']);
+	return run_filters('post_title',$title);
+}
+
+#Function: get_post_type()
+#Description: The post type.
+function get_post_type() {
+	global $post;
+	return $post['ptype'];
+}
+
 ?>

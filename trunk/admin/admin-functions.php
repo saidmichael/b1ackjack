@@ -97,7 +97,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 					} ?>
 				</div>
 				<div class="column width75">
-					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo $post['title']; ?>" class="width100 largeinput" /></p>
+					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo str_replace(array('\'','"'),array('&#039;','&#034;'),$post['title']); ?>" class="width100 largeinput" /></p>
 					<textarea name="content" id="textarea"><?php formatted_for_editing($post['content']); ?></textarea>
 <?php
 					if($post['ID'] == "0") { ?>
