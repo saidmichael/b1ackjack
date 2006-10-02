@@ -28,7 +28,7 @@ if(we_can('edit_posts')) {
 		case "ajaxdelete" :
 			if(isset($_GET['id'])) {
 				$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
-				_e('Post deleted.');
+				echo _r('Post deleted').'.';
 			}
 			break;
 		
