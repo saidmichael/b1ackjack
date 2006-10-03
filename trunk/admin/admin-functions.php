@@ -53,7 +53,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php					$ti++; }
 						unset($ti); ?>
 					</ul>
-					<h2><label for="shortname"><?php _e('Shortname'); ?></label></h2>
+					<h2><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h2>
 					<p><input type="text" name="shortname" id="shortname" value="<?php echo $post['shortname']; ?>" class="width100" /></p>
 					<h2><?php _e('Post Type'); ?></h2>
 					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php bj_checked(get_post_type(),'public'); ?> /> <?php _e('Public'); ?></label><br />
@@ -162,6 +162,9 @@ function get_admin_header() {
 			theme_advanced_resize_horizontal : false,
 			theme_advanced_resizing : true
 		});
+		window.onload = function() {
+			new Tips($S('var'), {titleAttribute: 'tooltitle'});
+		};
 		</script>
 		<!-- /tinyMCE -->
 <?php run_actions('admin_header'); ?>
