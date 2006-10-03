@@ -674,6 +674,154 @@ Fx.cubic = function(pos){return Math.pow(pos, 3);};
 
 Fx.circ = function(pos){return Math.sqrt(pos);};
 //part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
+//SuperDom.js - depends on Moo.js + Native Scripts
+
+function $S(){
+	var els = [];
+	$A(arguments).each(function(sel){
+		if ($type(sel) == 'string') els.extend(document.getElementsBySelector(sel));
+		else if ($type(sel) == 'element') els.push($(sel));
+	});
+	return $Elements(els);
+};
+
+var $$ = $S;
+
+function $E(selector, filter){
+	return ($(filter) || document).getElement(selector);
+};
+
+function $Elements(elements){
+	return Object.extend(elements, new Elements);
+};
+
+Element.extend({
+
+	getElements: function(selector){
+		var filters = [];
+		selector.clean().split(' ').each(function(sel, i){
+			var bits = [];
+			var param = [];
+			var attr = [];
+			if (bits = sel.test('^([\\w]*)')) param['tag'] = bits[1] || '*';
+			if (bits = sel.test('([.#]{1})([\\w-]*)$')){
+				if (bits[1] == '.') param['class'] = bits[2];
+				else param['id'] = bits[2];
+			}
+			if (bits = sel.test('\\[["\'\\s]{0,1}([\\w-]*)["\'\\s]{0,1}([\\W]{0,1}=){0,2}["\'\\s]{0,1}([\\w-]*)["\'\\s]{0,1}\\]$')){
+				attr['name'] = bits[1];
+				attr['operator'] = bits[2];
+				attr['value'] = bits[3];
+			}
+			if (i == 0){
+				if (param['id']){
+					var el = this.getElementById(param['id']);
+					if (el && (param['tag'] == '*' || $(el).getTag() == param['tag'])) filters = [el];
+					else return false;
+				} else {
+					filters = $A(this.getElementsByTagName(param['tag']));
+				}
+			} else {
+				filters = $Elements(filters).filterByTagName(param['tag']);
+				if (param['id']) filters = $Elements(filters).filterById(param['id']);
+			}
+			if (param['class']) filters = $Elements(filters).filterByClassName(param['class']);
+			if (attr['name']) filters = $Elements(filters).filterByAttribute(attr['name'], attr['value'], attr['operator']);
+		
+		}, this);
+		filters.each(function(el){
+			$(el);
+		});
+		return $Elements(filters);
+	},
+	
+	getElement: function(selector){
+		return this.getElementsBySelector(selector)[0];
+	},
+
+	getElementsBySelector: function(selector){
+		var els = [];
+		selector.split(',').each(function(sel){
+			els.extend(this.getElements(sel));
+		}, this);
+		return $Elements(els);
+	}
+
+});
+
+document.extend = Object.extend;
+
+document.extend({
+
+	getElementsByClassName: function(className){
+		return document.getElements('.'+className);
+	},
+	getElement: Element.prototype.getElement,
+	getElements: Element.prototype.getElements,
+	getElementsBySelector: Element.prototype.getElementsBySelector
+	
+});
+
+var Elements = new Class({
+	
+	action: function(actions){
+		this.each(function(el){
+			el = $(el);
+			if (actions.initialize) actions.initialize.apply(el);
+			for(action in actions){
+				var evt = false;
+				if (action.test('^on[\\w]{1,}')) el[action] = actions[action];
+				else if (evt = action.test('([\\w-]{1,})event$')) el.addEvent(evt[1], actions[action]);
+			}
+		});
+	},
+
+	filterById: function(id){
+		var found = [];
+		this.each(function(el){
+			if (el.id == id) found.push(el);
+		});
+		return found;
+	},
+
+	filterByClassName: function(className){
+		var found = [];
+		this.each(function(el){
+			if ($Element(el, 'hasClassName', className)) found.push(el);
+		});
+		return found;
+	},
+
+	filterByTagName: function(tagName){
+		var found = [];
+		this.each(function(el){
+			found.extend($A(el.getElementsByTagName(tagName)));
+		});
+		return found;
+	},
+	
+	filterByAttribute: function(name, value, operator){
+		var found = [];
+		this.each(function(el){
+			var att = el.getAttribute(name);
+			if(!att) return;
+			if (!operator) return found.push(el);
+			
+			switch(operator){
+				case '*=': if (att.test(value)) found.push(el); break;
+				case '=': if (att == value) found.push(el); break;
+				case '^=': if (att.test('^'+value)) found.push(el); break;
+				case '$=': if (att.test(value+'$')) found.push(el);
+			}
+
+		});
+		return found;
+	}
+
+});
+
+new Object.Native(Elements);
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //Ajax.js - depends on Moo.js + Native Scripts
 
 var Ajax = ajax = new Class({
@@ -722,7 +870,7 @@ var Ajax = ajax = new Class({
 		}
 	},
 
-	evalScripts: function(){
+	evals: function(){
 		if(scripts = this.transport.responseText.match(/<script[^>]*?>.*?<\/script>/g)){
 			scripts.each(function(script){
 				eval(script.replace(/^<script[^>]*?>/, '').replace(/<\/script>$/, ''));
@@ -985,6 +1133,79 @@ var Window = {
 	}
 	
 };
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
+//Tips.js : Display a tip on any element with a title and/or href - depends on Moo.js + Native Scripts +  Fx.js
+//Credits : Tips.js is based on Bubble Tooltips (http://web-graphics.com/mtarchive/001717.php) by Alessandro Fulcitiniti (http://web-graphics.com)
+
+var Tips = new Class({
+
+	setOptions: function(options){
+		this.options = {
+			transitionStart: fx.sinoidal,
+			transitionEnd: fx.sinoidal,
+			maxTitleChars: 30,
+			fxDuration: 150,
+			maxOpacity: 1,
+			timeOut: 100,
+			className: 'tooltip'
+		}
+		Object.extend(this.options, options || {});
+	},
+
+	initialize: function(elements, options){
+		this.elements = elements;
+		this.setOptions(options);
+		this.toolTip = new Element('div').addClassName(this.options.className).setStyle('position', 'absolute').injectInside(document.body);
+		this.toolTitle = new Element('H4').injectInside(this.toolTip);
+		this.toolText = new Element('p').injectInside(this.toolTip);
+		this.fx = new fx.Style(this.toolTip, 'opacity', {duration: this.options.fxDuration, wait: false}).hide();
+		$A(elements).each(function(el){
+			$(el).myText = el.title || false;
+			if (el.myText) el.removeAttribute('title');
+			if (el.href){
+				if (el.href.test('http://')) el.myTitle = el.href.replace('http://', '');
+				if (el.href.length > this.options.maxTitleChars) el.myTitle = el.href.substr(0,this.options.maxTitleChars-3)+"...";
+			}
+			if (el.myText && el.myText.test('::')){
+				var dual = el.myText.split('::');
+				el.myTitle = dual[0].trim();
+				el.myText = dual[1].trim();
+			} 
+			el.onmouseover = function(){
+				this.show(el);
+				return false;
+			}.bind(this);
+			el.onmousemove = this.locate.bindAsEventListener(this);
+			el.onmouseout = function(){
+				this.timer = $clear(this.timer);
+				this.disappear();
+			}.bind(this);
+		}, this);
+	},
+
+	show: function(el){
+		this.toolTitle.innerHTML = el.myTitle;
+		this.toolText.innerHTML = el.myText;
+		this.timer = $clear(this.timer);
+		this.fx.options.transition = this.options.transitionStart;
+		this.timer = this.appear.delay(this.options.timeOut, this);
+	},
+
+	appear: function(){
+		this.fx.custom(this.fx.now, this.options.maxOpacity);
+	},
+
+	locate: function(evt){
+		var doc = document.documentElement;
+		this.toolTip.setStyles({'top': evt.clientY + doc.scrollTop + 15 + 'px', 'left': evt.clientX + doc.scrollLeft - 30 + 'px'});
+	},
+
+	disappear: function(){
+		this.fx.options.transition = this.options.transitionEnd;
+		this.fx.custom(this.fx.now, 0);
+	}
+
+});
 //part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //Accordion.js - depends on Moo.js + Native Scripts + Fx.js
 
