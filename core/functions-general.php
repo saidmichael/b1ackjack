@@ -4,8 +4,15 @@
 #Description: Loads an option's value.
 function load_option($name) {
 	global $bj_db;
-	$option = $bj_db->get_item("SELECT `option_value` FROM `".$bj_db->options."` WHERE `option_name` = '".$name."' LIMIT 1","ASSOC");
-	return $option['option_value'];
+	static $optionsbuffer = array();
+	if(isset($optionsbuffer[$name])) {
+		return $optionsbuffer[$name]['option_value'];
+	}
+	else {
+		$option = $bj_db->get_item("SELECT `option_value` FROM `".$bj_db->options."` WHERE `option_name` = '".$name."' LIMIT 1","ASSOC");
+		$optionsbuffer[$name] = $option;
+		return $option['option_value'];
+	}
 }
 
 #Function: create_option(Option Name[, Value[, Description]])
