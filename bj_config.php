@@ -55,6 +55,7 @@ require(BJPATH . 'core/functions-lang.php');
 require(BJPATH . 'core/functions-plugins.php');
 require(BJPATH . 'core/functions-template.php');
 require(BJPATH . 'core/functions-editing.php');
+require(BJPATH . 'core/functions-skins.php');
 require(BJPATH . 'core/version.php');
 require(BJPATH . 'core/rss/rss_fetch.inc');
 
