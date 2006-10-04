@@ -67,6 +67,7 @@ function load_plugins() {
 }
 
 function return_plugins() {
+	$plug_arr = array();
 	foreach (unserialize(load_option('active_plugins')) as $plugin_filename => $active) {
 		$path = BJPATH . 'content/plugins/'.$plugin_filename;
 		if (is_file($path))
