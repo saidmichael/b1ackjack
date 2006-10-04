@@ -11,19 +11,13 @@ if(BJ_LANG != "") {
 	}
 }
 
-#Function: lecho(Text)
+#Function: _e(Text)
 #Description: Prints based upon a language.
 function _e($text) {
-	global $lang;
-	if(isset($lang[$text])) {
-		echo $lang[$text];
-	}
-	else {
-		echo $text;
-	}
+	echo _r($text);
 }
 
-#Function: leturn(Text)
+#Function: _r(Text)
 #Description: Returns based upon a language.
 function _r($text) {
 	global $lang;
