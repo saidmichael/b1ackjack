@@ -1,10 +1,14 @@
+-- phpMyAdmin SQL Dump
+-- version 2.6.1
+-- http://www.phpmyadmin.net
+-- 
 -- Host: localhost
--- Generation Time: Sep 07, 2006 at 05:57 PM
+-- Generation Time: Oct 03, 2006 at 10:40 PM
 -- Server version: 4.1.9
 -- PHP Version: 4.3.10
 -- 
 -- Database: `blackjack`
--- Change the values as needed.
+-- Change values as needed, but you really don't want to change the structure.
 -- 
 
 -- --------------------------------------------------------
@@ -45,7 +49,7 @@ CREATE TABLE `bj_options` (
   `option_value` longtext NOT NULL,
   `option_description` tinytext NOT NULL,
   PRIMARY KEY  (`option_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=6 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=7 ;
 
 -- 
 -- Dumping data for table `bj_options`
@@ -54,6 +58,7 @@ CREATE TABLE `bj_options` (
 INSERT INTO `bj_options` VALUES (1, 'active_plugins', 'a:0:{}', '');
 INSERT INTO `bj_options` VALUES (4, 'sitename', 'BlackJack Test Site', 'CMS Title');
 INSERT INTO `bj_options` VALUES (5, 'siteurl', 'http://localhost/blackjack/', 'URL');
+INSERT INTO `bj_options` VALUES (6, 'db_version', '0.1', '');
 
 -- --------------------------------------------------------
 
@@ -73,14 +78,14 @@ CREATE TABLE `bj_posts` (
   `comment_count` bigint(20) NOT NULL default '0',
   `tags` text NOT NULL,
   PRIMARY KEY  (`ID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=8 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=30 ;
 
 -- 
 -- Dumping data for table `bj_posts`
 -- 
 
-INSERT INTO `bj_posts` VALUES (1, 'Test Post', 'test-post', '<p>Funfuntest.</p> <p>&raquo; Wheee.</p><p>bobob&nbsp;</p>', 'Mark', '2006-08-21 10:05:20', 'public', 0, 0, '2');
-INSERT INTO `bj_posts` VALUES (2, 'More Fun', 'more-fun', 'yeehaw', 'Mark', '2006-08-21 09:40:12', 'public', 0, 0, '2');
+INSERT INTO `bj_posts` VALUES (27, 'Beepboopbop!', 'beepboopbop', '<p>Strange. I keep writing pointless posts.</p><p>&quot;Do you think it&#39;s strange?&quot;</p><p><a href="http://beepboopbop.com">Test.</a>&nbsp;</p>', 'Mark', '2006-10-02 14:10:33', 'public', 0, 0, '2');
+INSERT INTO `bj_posts` VALUES (28, '&#34;YOUR FAT&#34;', 'your-fat', '<p>Yes.</p><p>He actually said &quot;YOUR FAT&quot;.</p><p>It&#39;s kind of sad, really: Normall, you&#39;d expect that they&#39;d make more sense about something like that. But <em>nooooo</em>. They said &quot;YOUR FAT&quot;.</p><p>It&#39;s a shame.&nbsp;</p>', 'Mark', '2006-10-02 18:11:36', 'public', 0, 0, '1,2');
 
 -- --------------------------------------------------------
 
@@ -150,6 +155,6 @@ CREATE TABLE `bj_users` (
 -- Dumping data for table `bj_users`
 -- 
 
-INSERT INTO `bj_users` VALUES (1, 'Epsilon', 'Mark', 'c2aadac2ca30ca8aadfbe331ae180d28', 'Kraahkanite@gmail.com', 'http://epsilon.blogs.tbomonline.com', 'true', '2006-08-15 11:53:14', '', 'fe676d63fc4c1f7c00435891e70a4de9', 4);
+INSERT INTO `bj_users` VALUES (1, 'Epsilon', 'Mark', 'c2aadac2ca30ca8aadfbe331ae180d28', 'Kraahkanite@gmail.com', 'http://epsilon.blogs.tbomonline.com', 'true', '2006-08-15 11:53:14', '', '8bf1034fad166d34e9b0c4244943d71f', 4);
 
 -- I think the password is "canada".
