@@ -40,10 +40,13 @@ if(we_can('edit_posts')) {
 			document.getElementById("ajaxmessage").innerHTML="<strong class=\"error\">" + text +"</strong>";
 		};
 		deletePost = function(id){
-			var delCall = new Ajax('posts.php?req=ajaxdelete&id='+id,{onComplete:confirmus});
-			delCall.request();
-			var hideThis = $('post-'+id).effect('opacity', {duration: 750, transition: fx.linear});
-			hideThis.custom(1.0,0.2);
+			var j00sure = confirm("<?php _e('Are you sure you wish to delete this post?'); ?>");
+			if(j00sure) {
+				var delCall = new Ajax('posts.php?req=ajaxdelete&id='+id,{onComplete:confirmus});
+				delCall.request();
+				var hideThis = $('post-'+id).effect('opacity', {duration: 750, transition: fx.linear});
+				hideThis.custom(1.0,0.2);
+			}
 		};
 		</script>
 <?php
