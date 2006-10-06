@@ -15,6 +15,12 @@ function load_option($name) {
 	}
 }
 
+#Function: siteinfo(Option Name)
+#Description: Just a wrapper for load_option().
+function siteinfo($name) {
+	echo load_option($name);
+}
+
 #Function: create_option(Option Name[, Value[, Description]])
 #Description: Creates an option.
 function create_option($name,$value='',$description='') {

@@ -134,18 +134,21 @@ function get_posts($q) {
 	if(isset($stuff['year'])) {
 		$query .= " AND YEAR(`posted`) = '".$stuff['year']."'";
 	}
+	if(isset($stuff['shortname'])) {
+		$query .= " AND `shortname` = '".$stuff['shortname']."'";
+	}
 	if(isset($stuff['tag'])) {
 		$query .= " AND (";
 		$tags = explode(",",$stuff['tag']);
-		foreach($tags as $num=>$category) {
+		foreach($tags as $num=>$tag) {
 			if($num != 0) {
 				$query .= " OR ";
 			}
-			if(substr($category,0,1) == "-") {
-				$query .= "`tags` NOT REGEXP '".substr($category,1)."'";
+			if(substr($tag,0,1) == "-") {
+				$query .= "`tags` NOT REGEXP '".substr($tag,1)."'";
 			}
 			else {
-				$query .= "`tags` REGEXP '".$category."'";
+				$query .= "`tags` REGEXP '".$tag."'";
 			}
 		}
 		$query .= ")";
