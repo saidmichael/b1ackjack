@@ -16,9 +16,24 @@ function load_option($name) {
 }
 
 #Function: siteinfo(Option Name)
-#Description: Just a wrapper for load_option().
+#Description:Wrapper for get_siteinfo().
 function siteinfo($name) {
-	echo load_option($name);
+	echo get_siteinfo($name);
+}
+
+#Function: get_siteinfo(Option Name)
+#Description: A few choice options for the site.
+function get_siteinfo($name) {
+	switch($name) {
+		case 'stylesheet' :
+			return load_option('siteurl').'content/skins/'.current_skinname().'/style.css';
+			break;
+		case 'skinurl' :
+			return load_option('siteurl').'content/skins/'.current_skinname().'/';
+			break;
+		default :
+			return load_option($name);
+	}
 }
 
 #Function: create_option(Option Name[, Value[, Description]])
