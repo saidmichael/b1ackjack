@@ -9,8 +9,6 @@
 -- 
 -- Database: `blackjack`
 -- Change values as needed, but you really don't want to change the structure.
--- 
-
 -- --------------------------------------------------------
 
 -- 
@@ -49,7 +47,7 @@ CREATE TABLE `bj_options` (
   `option_value` longtext NOT NULL,
   `option_description` tinytext NOT NULL,
   PRIMARY KEY  (`option_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=7 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=10 ;
 
 -- 
 -- Dumping data for table `bj_options`
@@ -59,6 +57,9 @@ INSERT INTO `bj_options` VALUES (1, 'active_plugins', 'a:0:{}', '');
 INSERT INTO `bj_options` VALUES (4, 'sitename', 'BlackJack Test Site', 'CMS Title');
 INSERT INTO `bj_options` VALUES (5, 'siteurl', 'http://localhost/blackjack/', 'URL');
 INSERT INTO `bj_options` VALUES (6, 'db_version', '0.1', '');
+INSERT INTO `bj_options` VALUES (7, 'current_skin', 'twentyone', '');
+INSERT INTO `bj_options` VALUES (8, 'default_section', 'fun-section', '');
+INSERT INTO `bj_options` VALUES (9, 'permalink_format', 'entry/%title%/', '');
 
 -- --------------------------------------------------------
 
@@ -84,7 +85,7 @@ CREATE TABLE `bj_posts` (
 -- Dumping data for table `bj_posts`
 -- 
 
-INSERT INTO `bj_posts` VALUES (27, 'Beepboopbop!', 'beepboopbop', '<p>Strange. I keep writing pointless posts.</p><p>&quot;Do you think it&#39;s strange?&quot;</p><p><a href="http://beepboopbop.com">Test.</a>&nbsp;</p>', 'Mark', '2006-10-02 14:10:33', 'public', 0, 0, '2');
+INSERT INTO `bj_posts` VALUES (27, 'Beepboopbop!', 'beepboopbop', '<p>Strange. I keep writing pointless posts.</p><p>&quot;Do you think it&#39;s strange?&quot; <a href="http://beepboopbop.com">Test</a>.&nbsp;</p>', 'Mark', '2006-10-02 14:10:33', 'public', 0, 0, '2');
 INSERT INTO `bj_posts` VALUES (28, '&#34;YOUR FAT&#34;', 'your-fat', '<p>Yes.</p><p>He actually said &quot;YOUR FAT&quot;.</p><p>It&#39;s kind of sad, really: Normall, you&#39;d expect that they&#39;d make more sense about something like that. But <em>nooooo</em>. They said &quot;YOUR FAT&quot;.</p><p>It&#39;s a shame.&nbsp;</p>', 'Mark', '2006-10-02 18:11:36', 'public', 0, 0, '1,2');
 
 -- --------------------------------------------------------
@@ -96,18 +97,22 @@ INSERT INTO `bj_posts` VALUES (28, '&#34;YOUR FAT&#34;', 'your-fat', '<p>Yes.</p
 CREATE TABLE `bj_sections` (
   `ID` bigint(20) unsigned NOT NULL auto_increment,
   `title` text NOT NULL,
-  `static` enum('yes','no') NOT NULL default 'no',
-  `filter` varchar(200) NOT NULL default '',
+  `shortname` text NOT NULL,
+  `onepost` text NOT NULL,
+  `handler` varchar(200) NOT NULL default '',
+  `tags` varchar(200) NOT NULL default '',
   `hidden` enum('yes','no') NOT NULL default 'no',
   `page_order` int(11) NOT NULL default '0',
   `last_updated` datetime NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (`ID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
 
 -- 
 -- Dumping data for table `bj_sections`
 -- 
 
+INSERT INTO `bj_sections` VALUES (1, 'Fun Section', 'fun-section', '', '', '', 'no', 0, '0000-00-00 00:00:00');
+INSERT INTO `bj_sections` VALUES (2, 'Cool Section', 'cool-section', '', '', '', 'no', 1, '0000-00-00 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -118,6 +123,7 @@ CREATE TABLE `bj_sections` (
 CREATE TABLE `bj_tags` (
   `ID` bigint(20) NOT NULL auto_increment,
   `name` varchar(55) NOT NULL default '',
+  `shortname` varchar(55) NOT NULL default '',
   `parent` bigint(20) NOT NULL default '0',
   `posts_num` bigint(20) NOT NULL default '0',
   PRIMARY KEY  (`ID`)
@@ -127,8 +133,8 @@ CREATE TABLE `bj_tags` (
 -- Dumping data for table `bj_tags`
 -- 
 
-INSERT INTO `bj_tags` VALUES (1, 'Test Tag', 0, 1);
-INSERT INTO `bj_tags` VALUES (2, 'Nother Test', 0, 1);
+INSERT INTO `bj_tags` VALUES (1, 'Test Tag', 'test-tag', 0, 1);
+INSERT INTO `bj_tags` VALUES (2, 'Nother Test', 'nother-test', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -156,5 +162,4 @@ CREATE TABLE `bj_users` (
 -- 
 
 INSERT INTO `bj_users` VALUES (1, 'Epsilon', 'Mark', 'c2aadac2ca30ca8aadfbe331ae180d28', 'Kraahkanite@gmail.com', 'http://epsilon.blogs.tbomonline.com', 'true', '2006-08-15 11:53:14', '', '8bf1034fad166d34e9b0c4244943d71f', 4);
-
 -- I think the password is "canada".
