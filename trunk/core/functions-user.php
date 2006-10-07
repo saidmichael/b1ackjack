@@ -5,7 +5,7 @@
 function get_user_info() {
 	global $bj_db;
 	if(isset($_COOKIE['bj_auth'])) {
-		$user = $bj_db->get_rows("SELECT * FROM `".$bj_db->users."` WHERE `login_key` = '".$_COOKIE['bj_auth']."' LIMIT 1","OBJECT");
+		$user = $bj_db->get_rows("SELECT * FROM `".$bj_db->users."` WHERE `login_key` = '".bj_clean_string($_COOKIE['bj_auth'],array(),'mysql=true')."' LIMIT 1","OBJECT");
 		return $user;
 	}
 }
