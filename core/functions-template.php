@@ -188,6 +188,59 @@ function get_posts($q) {
 	}
 }
 
+#Function: return_sections()
+#Description: Returns all sections in use. Also checks the current section.
+function return_sections() {
+	global $bj_db;
+	$sections = $bj_db->get_rows("SELECT * FROM `".$bj_db->sections."` ORDER BY `page_order` ASC","ASSOC");
+	$i = 0;
+	foreach($sections as $this_section) {
+		if(is_section($this_section['shortname'])) {
+			$sections[$i]['this'] = 1;
+		}
+		else {
+			$sections[$i]['this'] = 0;
+		}
+		$i++;
+	}
+	return run_filters('sections_array',$sections);
+}
+
+#Function: echo_sections()
+#Description: Returns the sections in a list.
+function echo_sections() {
+	$sections = return_sections();
+	foreach($sections as $this_section) { ?>
+<li class="section-li<?php echo ($this_section['this'] == 1) ? ' current-section' : ''; ?>"><a href="<?php echo get_section_permalink($this_section); ?>"><?php echo wptexturize($this_section['title']); ?></a></li>
+<?php
+	}
+}
+
+#Function: get_section_permalink()
+#Description: Section permalink. I've been getting lazy when it comes to
+#			  descriptions, haven't I?
+function get_section_permalink($this_section) {
+	if(defined('BJ_REWRITE')) {
+		return load_option('siteurl').'section/'.$this_section['shortname'].'/';
+	}
+	else {
+		return load_option('siteurl').'index.php?req=section&amp;name='.$this_section['shortname'];
+	}
+}
+
+#Function: echo_ID()
+#Description: Wrapper for return_ID().
+function echo_ID() {
+	echo return_ID();
+}
+
+#Function: return_ID()
+#Description: Outputs the ID. Loop-only.
+function return_ID() {
+	global $post;
+	return $post['ID'];
+}
+
 #Function: get_post_date(Date Format[, Date Resource])
 #Description: Creates the date from a mysql datetime format. Can be used in the
 #			  loop or, if the resource is defined, outside of it. Your choice. :)
@@ -213,18 +266,44 @@ function start_post() {
 	$i++;
 }
 
-#Function: echo_title()
-#Description: Wrapper for return_title().
-function echo_title() {
-	echo return_title();
-}
-
 #Function: return_title()
 #Description: Returns the title. Can only be used in the loop.
 function return_title() {
 	global $post;
 	$title = wptexturize($post['title']);
 	return run_filters('post_title',$title);
+}
+
+#Function: echo_content()
+#Description: Echos the content.
+function echo_content() {
+	global $post;
+	$content = wptexturize($post['content']);
+	echo run_filters('post_content',$content);
+}
+
+#Function: echo_title()
+#Description: Wrapper for return_title().
+function echo_title() {
+	echo return_title();
+}
+
+#Function: echo_permalink()
+#Description: Wrapper for return_permalink().
+function echo_permalink() {
+	echo return_permalink();
+}
+
+#Function: return_permalink()
+#Description: Outputs the permalink.
+function return_permalink() {
+	global $post;
+	if(defined('BJ_REWRITE')) {
+		return load_option('siteurl').'entry/'.$post['shortname'].'/';
+	}
+	else {
+		return load_option('siteurl').'index.php?req=entry&amp;name='.$post['shortname'];
+	}
 }
 
 #Function: get_post_type()

@@ -56,8 +56,13 @@ require(BJPATH . 'core/functions-lang.php');
 require(BJPATH . 'core/functions-template.php');
 require(BJPATH . 'core/functions-editing.php');
 require(BJPATH . 'core/functions-skins.php');
+require(BJPATH . 'core/functions-condition.php');
 require(BJPATH . 'core/version.php');
 require(BJPATH . 'core/rss/rss_fetch.inc');
+
+if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/functions.php')) {
+	require_once(BJPATH . 'content/skins/' . current_skinname() . '/functions.php');
+}
 
 if(load_option('db_version') != $bj_version) {
 	_e('The database\'s Blackjack version is not equal to that of your software copy. It is likely that you may need to upgrade so you can get your site running once more.');
