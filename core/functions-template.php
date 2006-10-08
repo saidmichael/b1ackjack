@@ -184,6 +184,7 @@ function get_posts($q) {
 			$limit = (isset($stuff['limit'])) ? $stuff['limit'] : 10;
 			$query .= " LIMIT ".$offset.",".$limit;
 		}
+		$bj_db->do_query_ops($query);
 		return mysql_num_rows($bj_db->query($query));
 	}
 }
