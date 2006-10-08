@@ -1,6 +1,11 @@
 <?php skin_header(); ?>
 <?php
-			if($posts) {
+			if($posts) { ?>
+			<div class="navigation">
+			<?php prev_page_link(_r('&laquo; Newer'),'<div class="alignleft">','</div>'); ?>
+			<?php next_page_link(_r('Older &raquo;'),'<div class="alignright">','</div>'); ?>
+			</div>
+<?php
 				foreach($posts as $post) { start_post(); //$post should stay $post. Don't change. ?>
 
 			<div class="post" id="post-<?php echo_ID(); ?>">
