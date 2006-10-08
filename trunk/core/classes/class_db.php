@@ -30,7 +30,7 @@ class bj_db {
 	}
 	
 	function query($query=false,$link=false) {
-		$this->do_query_ops($query);
+		//$this->do_query_ops($query);
 		
 		if(!$link) {
 			$link = $this->connect;
