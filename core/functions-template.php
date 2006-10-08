@@ -322,8 +322,18 @@ function next_page_link($text,$before='',$after='',$args='') {
 	parse_str($args,$a);
 	$num = (isset($a['num'])) ? intval($a['num']) : 10;
 	$older = intval($_GET['offset']) + $num;
-	$extra_string = '';
-	if(get_posts('num=yes') - $older > 0) {
+	$posts_string = 'num=yes';
+	if(is_tag()) {
+		global $tag;
+		$posts_string .= '&tag='.$tag['ID'];
+	}
+	elseif(is_section()) {
+		global $section;
+		if(!empty($section['tags'])) {
+			$posts_string .= '&tag='.$section['tags'];
+		}
+	}
+	if(get_posts($posts_string) - $older > 0 && !is_entry()) {
 		if(!is_admin()) {
 			if(defined('BB_REWRITE')) {
 				if(is_section()) {
@@ -359,7 +369,7 @@ function prev_page_link($text,$before='',$after='',$args='') {
 	$offset = intval($_GET['offset']);
 	$newer = $offset - $num;
 	$extra_string = '';
-	if($offset > 0) {
+	if($offset > 0 && !is_entry()) {
 		if(!is_admin()) {
 			if(defined('BB_REWRITE')) {
 				if(is_section()) {
