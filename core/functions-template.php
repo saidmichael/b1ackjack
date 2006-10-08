@@ -304,6 +304,7 @@ function return_permalink() {
 	else {
 		return load_option('siteurl').'index.php?req=entry&amp;name='.$post['shortname'];
 	}
+		
 }
 
 #Function: get_post_type()
@@ -311,6 +312,77 @@ function return_permalink() {
 function get_post_type() {
 	global $post;
 	return $post['ptype'];
+}
+
+#Function: next_post_link(Text[, Before[, After]])
+#Description: Next post link.
+function next_page_link($text,$before='',$after='',$args='') {
+	global $posts,$query_string;
+	parse_str($args,$a);
+	$num = (isset($a['num'])) ? intval($a['num']) : 10;
+	$older = intval($_GET['offset']) + $num;
+	$extra_string = '';
+	if(get_posts('num=yes') - $older > 0) {
+		if(!is_admin()) {
+			if(defined('BB_REWRITE')) {
+				if(is_section()) {
+					$extra_string = 'section/'.$_GET['name'].'/';
+				}
+				elseif(is_tag()) {
+					$extra_string = 'tag/'.$_GET['name'].'/';
+				}
+				echo $before.'<a href="'.load_option('siteurl').$extra_string.'paged/'.$older.'/">'.$text.'</a>'.$after;
+			}
+			else {
+				if(is_section()) {
+					$extra_string = 'req=section&amp;name='.$_GET['name'];
+				}
+				elseif(is_tag()) {
+					$extra_string = 'req=tag&amp;name='.$_GET['name'];
+				}
+				echo $before.'<a href="'.load_option('siteurl').'index.php?'.$extra_string.'&amp;offset='.$older.'">'.$text.'</a>'.$after;
+			}
+		}
+		else {
+			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?offset='.$older.'">'.$text.'</a>'.$after;
+		}
+	}
+}
+
+#Function: prev_post_link(Text[, Before[, After]])
+#Description: Previous post link.
+function prev_page_link($text,$before='',$after='',$args='') {
+	global $posts,$query_string;
+	parse_str($args,$a);
+	$num = (isset($a['num'])) ? intval($a['num']) : 10;
+	$offset = intval($_GET['offset']);
+	$newer = $offset - $num;
+	$extra_string = '';
+	if($offset > 0) {
+		if(!is_admin()) {
+			if(defined('BB_REWRITE')) {
+				if(is_section()) {
+					$extra_string = 'section/'.$_GET['name'].'/';
+				}
+				elseif(is_tag()) {
+					$extra_string = 'tag/'.$_GET['name'].'/';
+				}
+				echo $before.'<a href="'.load_option('siteurl').$extra_string.'paged/'.$newer.'/">'.$text.'</a>'.$after;
+			}
+			else {
+				if(is_section()) {
+					$extra_string = 'req=section&amp;name='.$_GET['name'];
+				}
+				elseif(is_tag()) {
+					$extra_string = 'req=tag&amp;name='.$_GET['name'];
+				}
+				echo $before.'<a href="'.load_option('siteurl').'index.php?'.$extra_string.'&amp;offset='.$newer.'">'.$text.'</a>'.$after;
+			}
+		}
+		else {
+			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?offset='.$newer.'">'.$text.'</a>'.$after;
+		}
+	}
 }
 
 ?>

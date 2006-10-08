@@ -5,6 +5,8 @@ if(!defined('BJPATH')) {
 	die();
 }
 
+$offset = intval($_GET['offset']);
+$getname = bj_clean_string($_GET['name'],array(),'mysql=true');
 switch($_GET['req']) {
 	case 'section' :
 		$section = $bj_db->get_item("SELECT * FROM `".$bj_db->sections."` WHERE `shortname` = '".$getname."' LIMIT 1");

@@ -6,4 +6,11 @@
 	</head>
 	<body<?php TO_body_class(); ?>>
 		<div id="page">
-		<?php echo_sections(); ?>
+			<div id="header">
+				<h1><a href="<?php siteinfo('siteurl'); ?>"><?php siteinfo('sitename'); ?></a></h1>
+				<ul class="menu">
+<?php
+					echo_sections(); ?>
+				</ul>
+			</div>
+			<hr />

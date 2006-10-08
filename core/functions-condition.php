@@ -45,4 +45,27 @@ function is_section($name='') {
 	}
 }
 
+#Function: is_tag()
+function is_tag($name='') {
+	global $tag;
+	if($name == '') {
+		if($_GET['req'] == 'tag') {
+			return true;
+		}
+	}
+	else {
+		if($_GET['req'] == 'tag' && $_GET['name'] == $name) {
+			return true;
+		}
+	}
+}
+
+#Function: is_admin()
+function is_admin() {
+	global $admin_thisfile;
+	if($admin_thisfile != '') {
+		return true;
+	}
+}
+
 ?>

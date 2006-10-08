@@ -70,6 +70,10 @@ if(we_can('edit_posts')) {
 			</div>
 <?php
 			} ?>
+			<div class="navigation">
+			<?php prev_page_link(_r('&laquo; Newer'),'<div class="alignleft">','</div>','num=16'); ?>
+			<?php next_page_link(_r('Older &raquo;'),'<div class="alignright">','</div>','num=16'); ?>
+			</div>
 			<table class="edit" cellspacing="2">
 				<tr>
 					<th class="width5 table"><?php _e('ID'); ?></th>
