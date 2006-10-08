@@ -30,7 +30,7 @@ class bj_db {
 	}
 	
 	function query($query=false,$link=false) {
-		//$this->do_query_ops($query);
+		$this->do_query_ops($query);
 		
 		if(!$link) {
 			$link = $this->connect;
@@ -41,7 +41,6 @@ class bj_db {
 	}
 	
 	function get_item($query='') {
-		$this->do_query_ops($query);
 		
 		if(!$link) {
 			$link = $this->connect;
@@ -50,7 +49,6 @@ class bj_db {
 	}
 	
 	function get_rows($query='',$type = "OBJECT",$link = false) {
-		$this->do_query_ops($query);
 		
 		if(!$link) {
 			$link = $this->connect;
