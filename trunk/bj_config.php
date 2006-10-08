@@ -60,10 +60,6 @@ require(BJPATH . 'core/functions-condition.php');
 require(BJPATH . 'core/version.php');
 require(BJPATH . 'core/rss/rss_fetch.inc');
 
-if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/functions.php')) {
-	require_once(BJPATH . 'content/skins/' . current_skinname() . '/functions.php');
-}
-
 if(load_option('db_version') != $bj_version) {
 	_e('The database\'s Blackjack version is not equal to that of your software copy. It is likely that you may need to upgrade so you can get your site running once more.');
 	die();
@@ -71,9 +67,13 @@ if(load_option('db_version') != $bj_version) {
 
 $time = time(); //Just so a second doesn't pass during the pageload and it sets a different time.
 
+$user = get_user_info();
+
 load_plugins(); //Load plugins (of course).
 
-$user = get_user_info();
+if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/functions.php')) {
+	require_once(BJPATH . 'content/skins/' . current_skinname() . '/functions.php');
+}
 
 run_actions('init');
 
