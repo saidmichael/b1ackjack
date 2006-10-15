@@ -11,6 +11,7 @@
 				<ul class="menu">
 <?php
 					echo_sections(); ?>
+					<li class="admintab"><?php bj_signup_link(); ?></li>
 				</ul>
 			</div>
 			<hr />

@@ -153,6 +153,9 @@ function bj_shortname($title) {
 			'-'),
 	$title);
     $title = trim($title, '-');
+    if(empty($title)) {
+		$title = '-';
+	}
 
     return $title;
 }

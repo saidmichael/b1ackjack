@@ -63,7 +63,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php
 					$authors = get_users('gop=>=&group=2');
 					foreach($authors as $author) { start_post(); ?>
-						<option value="<?php echo $author['display_name']; ?>"<?php bj_selected($post['author'],$author['display_name']); ?>><?php echo $author['display_name']; ?></option>
+						<option value="<?php echo $author['display_name']; ?>"<?php bj_selected(get_post_author(),$author['display_name']); ?>><?php echo $author['display_name']; ?></option>
 <?php
 					}
 					unset($i); ?>
