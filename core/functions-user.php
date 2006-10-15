@@ -71,14 +71,18 @@ function get_users($extra=false) {
 	}
 }
 
+#Function: bj_signup_link()
+#Description: Outputs a link for a "register" or "admin".
+function bj_signup_link() {
+	global $user;
+	if($user) { ?><a href="<?php siteinfo('siteurl'); ?>admin/index.php"><?php _e('Admin'); ?></a><?php }
+	else { ?><a href="<?php siteinfo('siteurl'); ?>admin/register.php"><?php _e('Register'); ?></a><?php }
+}
+
 #Function: we_can(Capability)
 #Description: Determines if a user can carry out an action based on Capability.
 function we_can($str) {
 	global $user;
-	function we_can_check($int) {
-		global $user;
-		return ($user->user_group >= $int) ? true : false;
-	}
 	switch($str) {
 		case 'view_frontpage' :
 			$check = we_can_check(1);
@@ -96,6 +100,10 @@ function we_can($str) {
 			$check = true;
 	}
 	return $check;
+}
+function we_can_check($int) {
+	global $user;
+	return ($user->user_group >= $int) ? true : false;
 }
 
 ?>

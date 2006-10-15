@@ -52,4 +52,20 @@ function skin_footer() {
 	}
 }
 
+#Function: get_sidebar()
+#Description: Displays sidebar1 (if it exists).
+if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/sidebar.php')) :
+function skin_sidebar() {
+	include(BJPATH . 'content/skins/' . current_skinname() . '/sidebar.php');
+}
+endif;
+
+#Function: get_sidebar2()
+#Description: Displays sidebar2 (if it exists).
+if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/sidebar2.php')) :
+function skin_sidebar2() {
+	include(BJPATH . 'content/skins/' . current_skinname() . '/sidebar2.php');
+}
+endif;
+
 ?>

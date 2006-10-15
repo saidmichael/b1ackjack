@@ -39,7 +39,7 @@ function is_section($name='') {
 		if($_GET['req'] == 'section' && $_GET['name'] == $name) {
 			return true;
 		}
-		elseif($_GET['req'] == '' && $section['shortname'] == load_option('default_section')) {
+		elseif($_GET['req'] == '' && $name == load_option('default_section')) {
 			return true;
 		}
 	}
@@ -64,6 +64,14 @@ function is_tag($name='') {
 function is_admin() {
 	global $admin_thisfile;
 	if($admin_thisfile != '') {
+		return true;
+	}
+}
+
+#Function: is_404()
+function is_404() {
+	global $fourohfour;
+	if($fourohfour) {
 		return true;
 	}
 }

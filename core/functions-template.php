@@ -2,14 +2,24 @@
 
 #Function: echo_tags(Between[, Before[, After[, Extra]]])
 #Description: Outputs the tags for a post. Can be used only in a loop. 
-function echo_tags($between='',$before='',$after='',$extra=false) {
+function echo_tags($between=', ',$before='',$after='',$extra=false) {
 	$tags = return_tags();
 	if($extra) {
 		parse_str($extra,$args);
 	}
 	if(!empty($tags[0])) {
 		foreach($tags as $tag) {
-			if($args['nolink'] != "true") { $start_link = ($args['admin'] == "true") ? "<a href=\"tags.php?req=edit&amp;id=".$tag['ID']."\">" : "<a href=\"index.php?tag=".$tag['ID']."\">"; }
+			if($args['admin'] == "true") {
+				$start_link = "<a href=\"tags.php?req=edit&amp;id=".$tag['ID']."\">";
+			}
+			else {
+				if(defined('BJ_REWRITE')) {
+					$start_link = "<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."/\">";
+				}
+				else {
+					$start_link = "<a href=\"".load_option('siteurl')."index.php?req=tag&amp;name=".$tag['shortname']."\">";
+				}
+			}
 			$text .= $before.$start_link.$tag['name']."</a>".$after.$between;
 		}
 		echo preg_replace('{'.$between.'$}', '', $text);
@@ -40,6 +50,9 @@ function return_tags($extra=false) {
 		}
 		return $retarr;
 	}
+	else {
+		return array();
+	}
 }
 
 #Function: echo_all_tags(Extra)
@@ -67,7 +80,12 @@ function echo_all_tags($extra=false) {
 	}
 	$tags = $bj_db->get_rows($query,"ASSOC");
 	foreach($tags as $tag) {
-		echo"<li class=\"list_tag\">".$before."<a href=\"index.php?tag=".$tag['ID']."\">".$tag['name']."</a>".$after."</li>";
+		if(defined('BJ_REWRITE')) {
+			echo"<li class=\"list_tag\">".$before."<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."/\">".$tag['name']."</a>".$after."</li>";
+		}
+		else {
+			echo"<li class=\"list_tag\">".$before."<a href=\"".load_option('siteurl')."index.php?req=tag&amp;name=".$tag['shortname']."\">".$tag['name']."</a>".$after."</li>";
+		}
 	}
 }
 
@@ -99,6 +117,19 @@ function return_all_tags($extra=false) {
 		$thesetags[] = $tag;
 	}
 	return $thesetags;
+}
+
+#Function: post_author()
+#Description: Wrapper for get_post_author().
+function post_author() {
+	echo get_post_author();
+}
+
+#Function: get_post_author()
+#Description: Post author returned. Loop-only.
+function get_post_author() {
+	global $post;
+	return run_filters('post_author',$post['author']);
 }
 
 #Function: get_posts(Stuff)
@@ -206,6 +237,12 @@ function return_sections() {
 	return run_filters('sections_array',$sections);
 }
 
+#Function: entry_edit_link([Text[, Before[, After]]])
+#Description: Will display an edit link if the user is logged in and can edit posts.
+function edit_entry_link($text='Edit',$before='',$after='') {
+	if(we_can('edit_posts')) { ?><a href="<?php siteinfo('siteurl'); ?>admin/posts.php?req=edit&amp;id=<?php echo_ID(); ?>"><?php echo $text; ?></a><?php }
+}
+
 #Function: echo_sections()
 #Description: Returns the sections in a list.
 function echo_sections() {
@@ -216,7 +253,7 @@ function echo_sections() {
 	}
 }
 
-#Function: get_section_permalink()
+#Function: get_section_permalink(This section)
 #Description: Section permalink. I've been getting lazy when it comes to
 #			  descriptions, haven't I?
 function get_section_permalink($this_section) {
@@ -238,7 +275,7 @@ function echo_ID() {
 #Description: Outputs the ID. Loop-only.
 function return_ID() {
 	global $post;
-	return $post['ID'];
+	return run_filters('post_id',$post['ID']);
 }
 
 #Function: get_post_date(Date Format[, Date Resource])
@@ -307,6 +344,24 @@ function return_permalink() {
 		
 }
 
+#Function: comments_link(No Comments[, One Comment[, Multiple Comments[, Comments Closed]]])
+#Description: Comments link. Loop-only, kids!
+function comments_link($none='0 Comments',$one='1 Comment',$multi='% Comments',$closed='Closed') {
+	global $post;
+	if($post['comments_open'] == 0) {
+		$comments_text = $closed;
+	}
+	else {
+		switch($post['comment_count']) {
+			case 0 : $comments_text = $none; break;
+			case 1 : $comments_text = $one; break;
+			default : $comments_text = str_replace('%',$post['comment_count'],$multi);
+		}
+	}
+?>
+<a href="<?php echo_permalink(); ?>#comments"><?php echo $comments_text; ?></a><?php
+}
+
 #Function: get_post_type()
 #Description: The post type.
 function get_post_type() {
@@ -334,7 +389,7 @@ function next_page_link($text,$before='',$after='',$args='') {
 	}
 	if(get_posts($posts_string) - $older > 0 && !is_entry()) {
 		if(!is_admin()) {
-			if(defined('BB_REWRITE')) {
+			if(defined('BJ_REWRITE')) {
 				if(is_section()) {
 					$extra_string = 'section/'.$_GET['name'].'/';
 				}
@@ -370,7 +425,7 @@ function prev_page_link($text,$before='',$after='',$args='') {
 	$extra_string = '';
 	if($offset > 0 && !is_entry()) {
 		if(!is_admin()) {
-			if(defined('BB_REWRITE')) {
+			if(defined('BJ_REWRITE')) {
 				if(is_section()) {
 					$extra_string = 'section/'.$_GET['name'].'/';
 				}
