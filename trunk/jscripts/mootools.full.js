@@ -31,20 +31,20 @@ Class.create = function(properties){
 
 Class.prototype = {
 	extend: function(properties){
-		var prototype = new this('noinit');
+		var pr0t0typ3 = new this('noinit');
 		for (property in properties){
-			var previous = prototype[property];
+			var previous = pr0t0typ3[property];
 			var current = properties[property];
 			if (previous && previous != current) current = previous.parentize(current) || current;
-			prototype[property] = current;
+			pr0t0typ3[property] = current;
 		}
-		return new Class(prototype);
+		return new Class(pr0t0typ3);
 	},
 	
 	implement: function(properties){
 		for (property in properties) this.prototype[property] = properties[property];
 	}
-}
+};
 
 Object.extend = function(){
 	var args = arguments;
@@ -78,7 +78,7 @@ Function.extend({
 		var fn = this;
 		if ($type(args) != 'array') args = [args];
 		return function(){
-			fn.apply(bind || fn._proto_ || fn, args);
+			return fn.apply(bind || fn._proto_ || fn, args);
 		};
 	},
 
@@ -128,11 +128,6 @@ function $type(obj, types){
 	return type;
 };
 
-function $boolean(obj){
-	if (obj) return true;
-	else return false;
-};
-
 var Chain = new Class({
 
 	chain: function(fn){
@@ -143,6 +138,10 @@ var Chain = new Class({
 
 	callChain: function(){
 		if (this.chains && this.chains.length) this.chains.splice(0, 1)[0].delay(10, this);
+	},
+	
+	clearChain: function(){
+		this.chains = [];
 	}
 
 });
@@ -197,15 +196,15 @@ String.extend({
 	test: function(value, params){
 		return this.match(new RegExp(value, params));
 	},
-
+	
+	toInt: function(){
+		return parseInt(this);
+	},
+	
 	camelCase: function(){
 		return this.replace(/-\D/gi, function(match){
 			return match.charAt(match.length - 1).toUpperCase();
 		});
-	},
-	
-	toInt: function(){
-		return parseInt(this);
 	},
 
 	capitalize: function(){
@@ -223,9 +222,10 @@ String.extend({
 	},
 
 	rgbToHex: function(array){
-		var rgb = this.test('^[rgba]{3,4}\\(([\\d]{0,3}),[\\s]*([\\d]{0,3}),[\\s]*([\\d]{0,3})');
+		var rgb = this.test('([\\d]{1,3})', 'g');
+		if (rgb[3] == 0) return 'transparent';
 		var hex = [];
-		for (var i = 1; i < rgb.length; i++){
+		for (var i = 0; i < 3; i++){
 			var bit = (rgb[i]-0).toString(16);
 			hex.push(bit.length == 1 ? '0'+bit : bit);
 		}
@@ -305,8 +305,8 @@ var Element = new Class({
 		this.parentNode.removeChild(this);
 	},
 
-	clone: function(){
-		return $(this.cloneNode(true));
+	clone: function(contents){
+		return $(this.cloneNode(contents || true));
 	},
 
 	replaceWith: function(el){
@@ -323,29 +323,29 @@ var Element = new Class({
 
 	//classnames
 
-	hasClassName: function(className){
-		return $boolean(this.className.test("\\b"+className+"\\b"));
+	hasClass: function(className){
+		return !!this.className.test("\\b"+className+"\\b");
 	},
 
-	addClassName: function(className){
-		if (!this.hasClassName(className)) this.className = (this.className+' '+className.trim()).clean();
+	addClass: function(className){
+		if (!this.hasClass(className)) this.className = (this.className+' '+className.trim()).clean();
 		return this;
 	},
 
-	removeClassName: function(className){
-		if (this.hasClassName(className)) this.className = this.className.replace(className.trim(), '').clean();
+	removeClass: function(className){
+		if (this.hasClass(className)) this.className = this.className.replace(className.trim(), '').clean();
 		return this;
 	},
 
-	toggleClassName: function(className){
-		if (this.hasClassName(className)) return this.removeClassName(className);
-		else return this.addClassName(className);
+	toggleClass: function(className){
+		if (this.hasClass(className)) return this.removeClass(className);
+		else return this.addClass(className);
 	},
 
 	//styles
 
 	setStyle: function(property, value){
-		if (property == 'opacity') this.setOpacity(value);
+		if (property == 'opacity') this.setOpacity(parseFloat(value));
 		else this.style[property.camelCase()] = value;
 		return this;
 	},
@@ -353,7 +353,10 @@ var Element = new Class({
 	setStyles: function(source){
 		if ($type(source) == 'object') {
 			for (property in source) this.setStyle(property, source[property]);
-		} else if ($type(source) == 'string') this.setAttribute('style', source);
+		} else if ($type(source) == 'string') {
+			if (window.ActiveXObject) this.cssText = source;
+			else this.setAttribute('style', source);
+		}
 		return this;
 	},
 
@@ -373,7 +376,6 @@ var Element = new Class({
 			else if (this.currentStyle) style = this.currentStyle[proPerty];
 		}
 		if (style && ['color', 'backgroundColor', 'borderColor'].test(proPerty) && style.test('rgb')) style = style.rgbToHex();
-		if (['auto', 'transparent'].test(style)) style = 0;
 		if (num) return style.toInt();
 		else return style;
 	},
@@ -424,6 +426,13 @@ var Element = new Class({
 	getFirst: function(){
 		var el = this.firstChild;
 		while ($type(el) == 'textnode') el = el.nextSibling;
+		return $(el);
+	},
+	
+	getLast: function(){
+		var el = this.lastChild;
+		while ($type(el) == 'textnode')
+		el = el.previousSibling;
 		return $(el);
 	},
 
@@ -488,12 +497,19 @@ var Element = new Class({
 
 });
 
+new Object.Native(Element);
+
+Element.extend({
+	hasClassName: Element.prototype.hasClass,
+	addClassName: Element.prototype.addClass,
+	removeClassName: Element.prototype.removeClass,
+	toggleClassName: Element.prototype.toggleClass
+});
+
 function $Element(el, method, args){
 	if ($type(args) != 'array') args = [args];
 	return Element.prototype[method].apply(el, args);
 };
-
-new Object.Native(Element);
 
 function $(el){
 	if ($type(el) == 'string') el = document.getElementById(el);
@@ -507,10 +523,10 @@ function $(el){
 	} else return false;
 };
 
-//garbage collector
-
 window.addEvent = document.addEvent = Element.prototype.addEvent;
 window.removeEvent = document.removeEvent = Element.prototype.removeEvent;
+
+//garbage collector
 
 var Unload = {
 
@@ -576,10 +592,18 @@ Fx.Base = new Class({
 	compute: function(from, to){
 		return this.options.transition(this.tPos) * (to-from) + from;
 	},
+	
+	check: function(){
+		if (this.timer){
+			if (this.options.wait) return 0;
+			else return 2;
+		} else return 1;
+	},
 
 	custom: function(from, to){
-		if(!this.options.wait) this.clearTimer();
-		if (this.timer) return;
+		var chk = this.check();
+		if (chk == 2) this.clearTimer();
+		else if (!chk) return;
 		this.options.onStart.pass(this.el, this).delay(10);
 		this.from = from;
 		this.to = to;
@@ -643,6 +667,7 @@ Fx.Styles = Fx.Base.extend({
 	},
 
 	custom: function(objFromTo){
+		if (!this.check()) return;
 		var from = {};
 		var to = {};
 		for (p in objFromTo){
@@ -662,6 +687,10 @@ Element.extend({
 
 	effect: function(property, options){
 		return new Fx.Style(this, property, options);
+	},
+	
+	effects: function(options){
+		return new Fx.Styles(this, options);
 	}
 
 });
@@ -689,6 +718,10 @@ var $$ = $S;
 
 function $E(selector, filter){
 	return ($(filter) || document).getElement(selector);
+};
+
+function $ES(selector, filter){
+	return ($(filter) || document).getElementsBySelector(selector);
 };
 
 function $Elements(elements){
@@ -787,7 +820,7 @@ var Elements = new Class({
 	filterByClassName: function(className){
 		var found = [];
 		this.each(function(el){
-			if ($Element(el, 'hasClassName', className)) found.push(el);
+			if ($Element(el, 'hasClass', className)) found.push(el);
 		});
 		return found;
 	},
@@ -829,9 +862,10 @@ var Ajax = ajax = new Class({
 	setOptions: function(options){
 		this.options = {
 			method: 'post',
-			postBody: '',
+			postBody: null,
 			async: true,
 			onComplete: Class.empty,
+			onStateChange: Class.empty,
 			update: null,
 			evalScripts: false
 		};
@@ -856,11 +890,12 @@ var Ajax = ajax = new Class({
 			case 'object': this.options.postBody = Object.toQueryString(this.options.postBody);
 		}
 		if($type(this.options.postBody) == 'string') this.transport.send(this.options.postBody);
-		else this.transport.send('');
+		else this.transport.send(null);
 		return this;
 	},
 
 	onStateChange: function(){
+		this.options.onStateChange.bind(this).delay(10);
 		if (this.transport.readyState == 4 && this.transport.status == 200){
 			if (this.options.update) $(this.options.update).setHTML(this.transport.responseText);
 			this.options.onComplete.pass([this.transport.responseText, this.transport.responseXML], this).delay(20);
@@ -870,8 +905,8 @@ var Ajax = ajax = new Class({
 		}
 	},
 
-	evals: function(){
-		if(scripts = this.transport.responseText.match(/<script[^>]*?>.*?<\/script>/g)){
+	evalScripts: function(){
+		if(scripts = this.transport.responseText.match(/<script[^>]*?>[\S\s]*?<\/script>/g)){
 			scripts.each(function(script){
 				eval(script.replace(/^<script[^>]*?>/, '').replace(/<\/script>$/, ''));
 			});
@@ -920,7 +955,7 @@ Element.extend({
 
 });
 //part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
-//DragDrop.js - depends on Moo.js + Native Scripts
+//Drag.js - depends on Moo.js + Native Scripts
 
 var Drag = {};
 
@@ -932,14 +967,18 @@ Drag.Base = new Class({
 			unit: 'px', 
 			onStart: Class.empty, 
 			onComplete: Class.empty, 
-			onDrag: Class.empty
+			onDrag: Class.empty,
+			xMax: false,
+			xMin: false,
+			yMax: false,
+			yMin: false
 		}, options || {});
 	},
 
 	initialize: function(el, xModifier, yModifier, options){
 		this.setOptions(options);
 		this.el = $(el);
-		this.handle = $(this.options.handle) || el;
+		this.handle = $(this.options.handle) || this.el;
 		if (xModifier) this.xp = xModifier.camelCase();
 		if (yModifier) this.yp = yModifier.camelCase();
 		this.handle.onmousedown = this.start.bind(this);
@@ -949,6 +988,11 @@ Drag.Base = new Class({
 		evt = evt || window.event;
 		this.startX = evt.clientX;
 		this.startY = evt.clientY;
+		
+		this.handleX = this.startX - this.handle.getLeft();
+		this.handleY = this.startY - this.handle.getTop();
+		
+		this.set(evt);
 		this.options.onStart.pass(this.el, this).delay(10);
 		document.onmousemove = this.drag.bind(this);
 		document.onmouseup = this.end.bind(this);
@@ -956,8 +1000,37 @@ Drag.Base = new Class({
 	},
 	
 	addStyles: function(x, y){
-		if (this.xp) this.el.setStyle(this.xp, (this.el.getStyle(this.xp).toInt()+x)+this.options.unit);
-		if (this.yp) this.el.setStyle(this.yp, (this.el.getStyle(this.yp).toInt()+y)+this.options.unit);
+		if (this.xp){
+			var stylex = this.el.getStyle(this.xp).toInt();
+		
+			var movex = function(val){
+				this.el.setStyle(this.xp, val+this.options.unit);
+			}.bind(this);
+		
+			if (this.options.xMax && stylex >= this.options.xMax){
+				if (this.clientX <= this.handleX+this.handle.getLeft()) movex(stylex+x);
+				if (stylex > this.options.xMax) movex(this.options.xMax);
+			} else if(this.options.xMin && stylex <= this.options.xMin){
+				if (this.clientX >= this.handleX+this.handle.getLeft()) movex(stylex+x);
+				if (stylex < this.options.xMin) movex(this.options.xMin);
+			} else movex(stylex+x);
+		}
+		
+		if (this.yp){
+			var styley = this.el.getStyle(this.yp).toInt();
+
+			var movey = function(val){
+				this.el.setStyle(this.yp, val+this.options.unit);
+			}.bind(this);
+
+			if (this.options.yMax && styley >= this.options.yMax){
+				if (this.clientY <= this.handleY+this.handle.getTop()) movey(styley+y);
+				if (styley > this.options.yMax) movey(this.options.yMax);
+			} else if(this.options.yMin && styley <= this.options.yMin){
+				if (this.clientY >= this.handleY+this.handle.getTop()) movey(styley+y);
+				if (styley < this.options.yMin) movey(this.options.yMin);
+			} else movey(styley+y);
+		}
 	},
 
 	drag: function(evt){
@@ -968,14 +1041,6 @@ Drag.Base = new Class({
 		this.addStyles((this.clientX-this.lastMouseX), (this.clientY-this.lastMouseY));
 		this.set(evt);
 		return false;
-	},
-	
-	pause: function(){
-		this.handle.onmousedown = null;
-	},
-	
-	resume: function(){
-		this.handle.onmousedown = this.start.bind(this);
 	},
 	
 	set: function(evt){
@@ -1001,23 +1066,29 @@ Drag.Move = Drag.Base.extend({
 			snapDistance: 8,
 			snap: true,
 			xModifier: 'left',
-			yModifier: 'top'
+			yModifier: 'top',
+			container: false
 		}, options || {}));
 	},
 
 	initialize: function(el, options){
 		this.extendOptions(options);
+		this.container = $(this.options.container);
 		this.parent(el, this.options.xModifier, this.options.yModifier, this.options);
+		if (this.options.container) {
+			var cont = $(this.options.container).getPosition();
+			Object.extend(this.options, {
+				xMax: cont.right-this.el.offsetWidth,
+				xMin: cont.left,
+				yMax: cont.bottom-this.el.offsetHeight,
+				yMin: cont.top
+			});
+		}
 	},
 
 	start: function(evt){
 		this.parent(evt);
-		if (this.options.snap){
-			document.onmousemove = this.checkAndDrag.bind(this);
-		} else {
-			this.set(evt);
-			document.onmousemove = this.drag.bind(this);
-		}
+		if (this.options.snap) document.onmousemove = this.checkAndDrag.bind(this);
 		return false;
 	},
 
@@ -1047,16 +1118,12 @@ Drag.Move = Drag.Base.extend({
 		return false;
 	},
 
-	checkAgainst: function(drop){
+	checkAgainst: function(el){
 		x = this.clientX+Window.getScrollLeft();
 		y = this.clientY+Window.getScrollTop();
-		drop = $(drop);
-		var h = drop.offsetHeight;
-		var w = drop.offsetWidth;
-		var t = drop.getTop();
-		var l = drop.getLeft();
-		return (x > l && x < l+w && y < t+h && y > t) || false;
-	},
+		var el = $(el).getPosition();
+		return (x > el.left && x < el.right && y < el.bottom && y > el.top);
+	}, 
 
 	end: function(){
 		this.parent();
@@ -1075,6 +1142,17 @@ Element.extend({
 
 	makeResizable: function(options){
 		return new Drag.Base(this, 'width', 'height', options);
+	},
+	
+	getPosition: function(){
+		var obj = {};
+		obj.width = this.offsetWidth;
+		obj.height = this.offsetHeight;
+		obj.left = this.getLeft();
+		obj.top = this.getTop();
+		obj.right = obj.left + obj.width;
+		obj.bottom = obj.top + obj.height;
+		return obj;
 	}
 
 });
@@ -1116,23 +1194,217 @@ var Window = {
 		var state = document.readyState;
 		if (listen) document.addEventListener("DOMContentLoaded", init, false); //moz || opr9
 		if (state) { //saf || ie
-			document.write('<script id="__winload__"></script>');
-			var scr = $('__winload__');
+			document.write('<script id="_ie_load_" defer="true"></script>');
+			var scr = $('_ie_load_');
 			if (scr.readyState){ //ie
 				scr.onreadystatechange = function() {
 					if (this.readyState.test(/complete|loaded/)) init();
-					this.remove();
 				};
 			} else { //saf
 				if (state.test(/complete|loaded/)) init();
 				else return Window.onDomReady.pass(init).delay(10);
 			}
 		} else if (!listen || window.opera && navigator.appVersion.toInt() < 9) { //others
-			window.onload = init;
+			window.addEvent('init', init);
 		}
 	}
 	
 };
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
+//FxPack.js - depends on Moo.js + Native Scripts + Fx.js
+
+Fx.Scroll = Fx.Base.extend({
+
+	initialize: function(el, options) {
+		this.el = $(el);
+		this.setOptions(options);
+	},
+	
+	down: function(){
+		return this.custom(this.el.scrollTop, this.el.scrollHeight-this.el.offsetHeight);
+	},
+	
+	up: function(){
+		return this.custom(this.el.scrollTop, 0);
+	},
+
+	increase: function(){
+		this.el.scrollTop = this.now;
+	}
+
+});
+
+Fx.Slide = Fx.Base.extend({
+
+	initialize: function(el, options){
+		this.el = $(el);
+		this.wrapper = new Element('div').injectAfter(this.el).setStyle('overflow', 'hidden').adopt(this.el);
+		this.setOptions(options);
+		this.now = [];
+	},
+	
+	setNow: function(){
+		[0,1].each(function(i){
+			this.now[i] = this.compute(this.from[i], this.to[i]);
+		}, this);
+	},
+	
+	vertical: function(){
+		this.margin = 'top';
+		this.layout = 'height';
+		this.startPosition = [this.el.scrollHeight, '0'];
+		this.endPosition = ['0', -this.el.scrollHeight];
+		this.mode = 'vertical';
+		return this;
+	},
+	
+	horizontal: function(){
+		this.margin = 'left';
+		this.layout = 'width';
+		this.startPosition = [this.el.scrollWidth, '0'];
+		this.endPosition = ['0', -this.el.scrollWidth];
+		this.mode = 'horizontal';
+		return this;
+	},
+	
+	hide: function(mode){
+		if (mode) this[mode]();
+		else if (this.mode) this[this.mode]();
+		else this.vertical();
+		this.wrapper.setStyle(this.layout, '0');
+		this.el.setStyle('margin-'+this.margin, -this.el['scroll'+this.layout.capitalize()]);
+		return this;
+	},
+	
+	toggle: function(mode){
+		if (!this.check()) return;
+		if (mode) this[mode]();
+		else if (this.mode) this[this.mode]();
+		else this.vertical();
+		if (this.wrapper['offset'+this.layout.capitalize()] > 0) return this.custom(this.startPosition, this.endPosition);
+		else return this.custom(this.endPosition, this.startPosition);
+	},
+	
+	increase: function(){		
+		this.wrapper.setStyle(this.layout, this.now[0]+this.options.unit);
+		this.el.setStyle('margin-'+this.margin, this.now[1]+this.options.unit);
+	}
+	
+});
+
+//fx.Color, originally by Tom Jensen (http://neuemusic.com) MIT-style LICENSE.
+
+Fx.Color = Fx.Base.extend({
+	
+	initialize: function(el, property, options){
+		this.el = $(el);
+		this.setOptions(options);
+		this.property = property;
+		this.now = [];
+	},
+
+	custom: function(from, to){
+		return this.parent(from.hexToRgb(true), to.hexToRgb(true));
+	},
+
+	setNow: function(){
+		[0,1,2].each(function(i){
+			this.now[i] = Math.round(this.compute(this.from[i], this.to[i]));
+		}, this);
+	},
+
+	increase: function(){
+		this.el.setStyle(this.property, "rgb("+this.now[0]+","+this.now[1]+","+this.now[2]+")");
+	},
+
+	fromColor: function(color){
+		return this.custom(color, this.el.getStyle(this.property));
+	},
+
+	toColor: function(color){
+		return this.custom(this.el.getStyle(this.property), color);
+	}
+
+});
+
+//Easing Equations (c) 2003 Robert Penner (http://www.robertpenner.com/easing/), Open Source BSD License.
+
+Fx.expoIn = function(pos){return Math.pow(2, 10 * (pos - 1))};
+Fx.expoOut = function(pos){return (-Math.pow(2, -10 * pos) + 1)};
+
+Fx.quadIn = function(pos){return Math.pow(pos, 2)};
+Fx.quadOut = function(pos){return -(pos)*(pos-2)};
+
+Fx.circOut = function(pos){return Math.sqrt(1 - Math.pow(pos-1,2))};
+Fx.circIn = function(pos){return -(Math.sqrt(1 - Math.pow(pos, 2)) - 1)};
+
+Fx.backIn = function(pos){return (pos)*pos*((2.7)*pos - 1.7)};
+Fx.backOut = function(pos){return ((pos-1)*(pos-1)*((2.7)*(pos-1) + 1.7) + 1)};
+
+Fx.sineOut = function(pos){return Math.sin(pos * (Math.PI/2))};
+Fx.sineIn = function(pos){return -Math.cos(pos * (Math.PI/2)) + 1};
+Fx.sineInOut = function(pos){return -(Math.cos(Math.PI*pos) - 1)/2};
+
+//scriptaculous transitions
+Fx.wobble = function(pos){return (-Math.cos(pos*Math.PI*(9*pos))/2) + 0.5};
+Fx.pulse = function(pos){return (Math.floor(pos*10) % 2 == 0 ? (pos*10-Math.floor(pos*10)) : 1-(pos*10-Math.floor(pos*10)))};
+//part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
+//Fx.Utils.js - depends on Moo.js + Native Scripts + Fx.js
+
+Fx.Height = Fx.Style.extend({
+	
+	initialize: function(el, layout, options){
+		this.parent(el, 'height', options);
+		this.el.setStyle('overflow', 'hidden');
+	},
+	
+	toggle: function(){
+		if (this.el.offsetHeight > 0) return this.custom(this.el.offsetHeight, 0);
+		else return this.custom(0, this.el.scrollHeight);
+	},
+	
+	show: function(){
+		return this.set(this.el.scrollHeight);
+	}
+	
+});
+
+Fx.Width = Fx.Style.extend({
+	
+	initialize: function(el, options){
+		this.parent(el, 'width', options);
+		this.el.setStyle('overflow', 'hidden');
+		this.iniWidth = this.el.offsetWidth;
+	},
+	
+	toggle: function(){
+		if (this.el.offsetWidth > 0) return this.custom(this.el.offsetWidth, 0);
+		else return this.custom(0, this.iniWidth);
+	},
+	
+	show: function(){
+		return this.set(this.iniWidth);
+	}
+	
+});
+
+Fx.Opacity = Fx.Style.extend({
+
+	initialize: function(el, options){
+		this.parent(el, 'opacity', options);
+		this.now = 1;
+	},
+
+	toggle: function(){
+		if (this.now > 0) return this.custom(1, 0);
+		else return this.custom(0, 1);
+	},
+
+	show: function(){
+		return this.set(1);
+	}
+
+});
 //part of mootools.js - by Valerio Proietti (http://mad4milk.net). MIT-style license.
 //Tips.js : Display a tip on any element with a title and/or href - depends on Moo.js + Native Scripts +  Fx.js
 //Credits : Tips.js is based on Bubble Tooltips (http://web-graphics.com/mtarchive/001717.php) by Alessandro Fulcitiniti (http://web-graphics.com)
@@ -1230,6 +1502,7 @@ Fx.Elements = Fx.Base.extend({
 	},
 
 	custom: function(objObjs){
+		if (!this.check()) return;
 		var from = {};
 		var to = {};
 		for (i in objObjs){
