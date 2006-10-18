@@ -14,7 +14,7 @@ function echo_tags($between=', ',$before='',$after='',$extra=false) {
 			}
 			else {
 				if(defined('BJ_REWRITE')) {
-					$start_link = "<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."/\">";
+					$start_link = "<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."\">";
 				}
 				else {
 					$start_link = "<a href=\"".load_option('siteurl')."index.php?req=tag&amp;name=".$tag['shortname']."\">";
@@ -97,7 +97,7 @@ function echo_all_tags($extra=false) {
 	$tags = $bj_db->get_rows($query,"ASSOC");
 	foreach($tags as $tag) {
 		if(defined('BJ_REWRITE')) {
-			echo"<li class=\"list_tag\">".$before."<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."/\">".$tag['name']."</a>".$after."</li>";
+			echo"<li class=\"list_tag\">".$before."<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."\">".$tag['name']."</a>".$after."</li>";
 		}
 		else {
 			echo"<li class=\"list_tag\">".$before."<a href=\"".load_option('siteurl')."index.php?req=tag&amp;name=".$tag['shortname']."\">".$tag['name']."</a>".$after."</li>";
@@ -312,7 +312,7 @@ function echo_permalink() {
 function return_permalink() {
 	global $post;
 	if(defined('BJ_REWRITE')) {
-		return load_option('siteurl').'entry/'.$post['shortname'].'/';
+		return load_option('siteurl').'entry/'.$post['shortname'];
 	}
 	else {
 		return load_option('siteurl').'index.php?req=entry&amp;name='.$post['shortname'];
@@ -372,7 +372,7 @@ function next_page_link($text,$before='',$after='',$args='') {
 				elseif(is_tag()) {
 					$extra_string = 'tag/'.$_GET['name'].'/';
 				}
-				echo $before.'<a href="'.load_option('siteurl').$extra_string.'page/'.$older.'/">'.$text.'</a>'.$after;
+				echo $before.'<a href="'.load_option('siteurl').$extra_string.'page/'.$older.'">'.$text.'</a>'.$after;
 			}
 			else {
 				if(is_section()) {
@@ -408,7 +408,7 @@ function prev_page_link($text,$before='',$after='',$args='') {
 				elseif(is_tag()) {
 					$extra_string = 'tag/'.$_GET['name'].'/';
 				}
-				echo $before.'<a href="'.load_option('siteurl').$extra_string.'page/'.$newer.'/">'.$text.'</a>'.$after;
+				echo $before.'<a href="'.load_option('siteurl').$extra_string.'page/'.$newer.'">'.$text.'</a>'.$after;
 			}
 			else {
 				if(is_section()) {
@@ -463,7 +463,7 @@ function get_section_permalink($section) {
 	}
 	else {
 		if(defined('BJ_REWRITE')) {
-			return load_option('siteurl').'section/'.$section['shortname'].'/';
+			return load_option('siteurl').'section/'.$section['shortname'];
 		}
 		else {
 			return load_option('siteurl').'index.php?req=section&amp;name='.$section['shortname'];
