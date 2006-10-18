@@ -5,7 +5,7 @@ define('DB_USER','root'); # Database user
 define('DB_PASS',''); # Database user's password
 define('DB_HOST','localhost'); # The host. Localhost should do just fine.
 
-#define('BJ_REWRITE',true); # This will make links turn into pretty URLs if uncommented.
+define('BJ_REWRITE',true); # This will make links turn into pretty URLs if uncommented.
 
 
 define('BJ_LANG',''); # Use this to localize Blackjack. Drop the language
