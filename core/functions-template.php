@@ -26,6 +26,22 @@ function echo_tags($between=', ',$before='',$after='',$extra=false) {
 	}
 }
 
+#Function: rss_tags(Between[, Before[, After[, Extra]]])
+#Description: Outputs the tags for a post, RSS-style.
+function rss_tags($between='',$before='',$after='',$extra=false) {
+	$tags = return_tags();
+	if($extra) {
+		parse_str($extra,$args);
+	}
+	if(!empty($tags[0])) {
+		$text = '';
+		foreach($tags as $tag) {
+			$text .= $before.'<dc:subject>'.$tag['name'].'</dc:subject>'.$after.$between;
+		}
+		echo preg_replace('{'.$between.'$}', '', $text);
+	}
+}
+
 #Function: return_tags(Extra)
 #Description: Returns the tags for a post. Can be used only in a loop. 
 function return_tags($extra=false) {
@@ -139,8 +155,8 @@ function get_posts($q) {
 	parse_str($q,$stuff);
 	$num_off = (isset($_GET['offset'])) ? intval($_GET['offset']) : 0; //So the offset will update itself automatically.
 	$i = 0;
-	$newer = $num_off-(isset($stuff['limit'])) ? $stuff['limit'] : 10;
-	$older = $num_off+(isset($stuff['limit'])) ? $stuff['limit'] : 10;
+	$newer = $num_off-(isset($stuff['limit'])) ? $stuff['limit'] : load_option('entries_per_page');
+	$older = $num_off+(isset($stuff['limit'])) ? $stuff['limit'] : load_option('entries_per_page');
 	$query = "SELECT * FROM ".$bj_db->posts." WHERE";
 	if(isset($stuff['id'])) {
 		$query .= " `ID` = '".intval($stuff['id'])."'";
@@ -205,64 +221,24 @@ function get_posts($q) {
 	#Limit and offset.
 	if($stuff['num'] != "yes") {
 		$offset = (isset($stuff['offset'])) ? $stuff['offset'] : $num_off;
-		$limit = (isset($stuff['limit'])) ? $stuff['limit'] : 10;
+		$limit = (isset($stuff['limit'])) ? $stuff['limit'] : load_option('entries_per_page');
 		$query .= " LIMIT ".$offset.",".$limit;
 		return $bj_db->get_rows($query,"ASSOC");
 	}
 	else {
 		if($stuff['inclimit'] == "yes") {
 			$offset = (isset($stuff['offset'])) ? $stuff['offset'] : $num_off;
-			$limit = (isset($stuff['limit'])) ? $stuff['limit'] : 10;
+			$limit = (isset($stuff['limit'])) ? $stuff['limit'] : load_option('entries_per_page');
 			$query .= " LIMIT ".$offset.",".$limit;
 		}
 		return mysql_num_rows($bj_db->query($query));
 	}
 }
 
-#Function: return_sections()
-#Description: Returns all sections in use. Also checks the current section.
-function return_sections() {
-	global $bj_db;
-	$sections = $bj_db->get_rows("SELECT * FROM `".$bj_db->sections."` ORDER BY `page_order` ASC","ASSOC");
-	$i = 0;
-	foreach($sections as $this_section) {
-		if(is_section($this_section['shortname'])) {
-			$sections[$i]['this'] = 1;
-		}
-		else {
-			$sections[$i]['this'] = 0;
-		}
-		$i++;
-	}
-	return run_filters('sections_array',$sections);
-}
-
 #Function: entry_edit_link([Text[, Before[, After]]])
 #Description: Will display an edit link if the user is logged in and can edit posts.
 function edit_entry_link($text='Edit',$before='',$after='') {
 	if(we_can('edit_posts')) { ?><a href="<?php siteinfo('siteurl'); ?>admin/posts.php?req=edit&amp;id=<?php echo_ID(); ?>"><?php echo $text; ?></a><?php }
-}
-
-#Function: echo_sections()
-#Description: Returns the sections in a list.
-function echo_sections() {
-	$sections = return_sections();
-	foreach($sections as $this_section) { ?>
-<li class="section-li<?php echo ($this_section['this'] == 1) ? ' current-section' : ''; ?>"><a href="<?php echo get_section_permalink($this_section); ?>"><?php echo wptexturize($this_section['title']); ?></a></li>
-<?php
-	}
-}
-
-#Function: get_section_permalink(This section)
-#Description: Section permalink. I've been getting lazy when it comes to
-#			  descriptions, haven't I?
-function get_section_permalink($this_section) {
-	if(defined('BJ_REWRITE')) {
-		return load_option('siteurl').'section/'.$this_section['shortname'].'/';
-	}
-	else {
-		return load_option('siteurl').'index.php?req=section&amp;name='.$this_section['shortname'];
-	}
 }
 
 #Function: echo_ID()
@@ -374,7 +350,7 @@ function get_post_type() {
 function next_page_link($text,$before='',$after='',$args='') {
 	global $posts,$query_string;
 	parse_str($args,$a);
-	$num = (isset($a['num'])) ? intval($a['num']) : 10;
+	$num = (isset($a['num'])) ? intval($a['num']) : load_option('entries_per_page');
 	$older = intval($_GET['offset']) + $num;
 	$posts_string = 'num=yes';
 	if(is_tag()) {
@@ -396,7 +372,7 @@ function next_page_link($text,$before='',$after='',$args='') {
 				elseif(is_tag()) {
 					$extra_string = 'tag/'.$_GET['name'].'/';
 				}
-				echo $before.'<a href="'.load_option('siteurl').$extra_string.'paged/'.$older.'/">'.$text.'</a>'.$after;
+				echo $before.'<a href="'.load_option('siteurl').$extra_string.'page/'.$older.'/">'.$text.'</a>'.$after;
 			}
 			else {
 				if(is_section()) {
@@ -419,7 +395,7 @@ function next_page_link($text,$before='',$after='',$args='') {
 function prev_page_link($text,$before='',$after='',$args='') {
 	global $posts,$query_string;
 	parse_str($args,$a);
-	$num = (isset($a['num'])) ? intval($a['num']) : 10;
+	$num = (isset($a['num'])) ? intval($a['num']) : load_option('entries_per_page');
 	$offset = intval($_GET['offset']);
 	$newer = $offset - $num;
 	$extra_string = '';
@@ -432,7 +408,7 @@ function prev_page_link($text,$before='',$after='',$args='') {
 				elseif(is_tag()) {
 					$extra_string = 'tag/'.$_GET['name'].'/';
 				}
-				echo $before.'<a href="'.load_option('siteurl').$extra_string.'paged/'.$newer.'/">'.$text.'</a>'.$after;
+				echo $before.'<a href="'.load_option('siteurl').$extra_string.'page/'.$newer.'/">'.$text.'</a>'.$after;
 			}
 			else {
 				if(is_section()) {
@@ -448,6 +424,64 @@ function prev_page_link($text,$before='',$after='',$args='') {
 			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?offset='.$newer.'">'.$text.'</a>'.$after;
 		}
 	}
+}
+
+#Function: return_sections()
+#Description: Returns all sections in use. Also checks the current section.
+function return_sections() {
+	global $bj_db;
+	$sections = $bj_db->get_rows("SELECT * FROM `".$bj_db->sections."` ORDER BY `page_order` ASC","ASSOC");
+	$i = 0;
+	foreach($sections as $this_section) {
+		if(is_section($this_section['shortname'])) {
+			$sections[$i]['this'] = 1;
+		}
+		else {
+			$sections[$i]['this'] = 0;
+		}
+		$i++;
+	}
+	return run_filters('sections_array',$sections);
+}
+
+#Function: echo_sections()
+#Description: Returns the sections in a list.
+function echo_sections() {
+	$sections = return_sections();
+	foreach($sections as $this_section) { ?>
+<li class="section-li<?php echo ($this_section['this'] == 1) ? ' current-section' : ''; ?>"><a href="<?php echo get_section_permalink($this_section); ?>"><?php echo wptexturize($this_section['title']); ?></a></li>
+<?php
+	}
+}
+
+#Function: get_section_permalink(This section)
+#Description: Section permalink. I've been getting lazy when it comes to
+#			  descriptions, haven't I?
+function get_section_permalink($section) {
+	if(load_option('default_section') == $section['shortname']) {
+		return load_option('siteurl');
+	}
+	else {
+		if(defined('BJ_REWRITE')) {
+			return load_option('siteurl').'section/'.$section['shortname'].'/';
+		}
+		else {
+			return load_option('siteurl').'index.php?req=section&amp;name='.$section['shortname'];
+		}
+	}
+}
+
+#Function: section_shortname()
+#Description: Wrapper for get_section_shortname().
+function setion_shortname() {
+	echo get_section_shortname();
+}
+
+#Function: get_section_shortname()
+#Description: The shortname for a section. Only for sections (obviously).
+function get_section_shortname() {
+	global $section;
+	return run_filters('section_shortname',$section['shortname']);
 }
 
 ?>
