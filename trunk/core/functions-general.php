@@ -31,6 +31,14 @@ function get_siteinfo($name) {
 		case 'skinurl' :
 			return load_option('siteurl').'content/skins/'.current_skinname().'/';
 			break;
+		case 'rss_language' :
+			if(BJ_LANG != '') {
+				return BJ_LANG;
+			}
+			else {
+				return 'en-us';
+			}
+			break;
 		default :
 			return load_option($name);
 	}

@@ -58,11 +58,17 @@ switch($_GET['req']) {
 		if(!$section) {
 			load_404_instead();
 		}
-		$query_string = 'offset='.$offset;
-		if(!empty($section['tags'])) { # Are we filtering by any tags?
-			$query_string .= '&tag='.$section['tags'];
+		if($section['onepost'] != '') {
+			$query_string = 'shortname='.$section['onepost'].'&limit=1';
+			$posts = get_posts($query_string);
 		}
-		$posts = get_posts($query_string);
+		else {
+			$query_string = 'offset='.$offset;
+			if(!empty($section['tags'])) { # Are we filtering by any tags?
+				$query_string .= '&tag='.$section['tags'];
+			}
+			$posts = get_posts($query_string);
+		}
 		include(BJPATH . 'content/skins/' . current_skinname() . '/index.php');
 }
 
