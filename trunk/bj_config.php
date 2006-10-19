@@ -8,8 +8,9 @@ define('DB_HOST','localhost'); # The host. Localhost should do just fine.
 define('BJ_REWRITE',true); # This will make links turn into pretty URLs if uncommented.
 
 
-define('BJ_LANG',''); # Use this to localize Blackjack. Drop the language
+define('BJ_LANG','en'); # Use this to localize Blackjack. Drop the main language
 					  # file in the content/langs/ folder.
+					  # You can add a "langs.php" file to your theme.
 
 /* Table Prefix: Useful for multiple installations.
 			     Just letters and underscores, if you can. */
@@ -66,6 +67,8 @@ if(load_option('db_version') != $bj_version) {
 	_e('The database\'s Blackjack version is not equal to that of your software copy. It is likely that you may need to upgrade so you can get your site running once more.');
 	die();
 }
+
+define('BJTEMPLATE',BJPATH.'content/skins/'.current_skinname());
 
 $time = time(); //Just so a second doesn't pass during the pageload and it sets a different time.
 

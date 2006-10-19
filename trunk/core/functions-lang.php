@@ -1,13 +1,16 @@
 <?php
 
-if(BJ_LANG != "") {
+if(BJ_LANG != "en") {
 	if(file_exists(BJPATH."content/langs/".BJ_LANG.".php")) {
 		require BJPATH."content/langs/".BJ_LANG.".php";
 	}
 	foreach(return_plugins() as $plugin=>$null) {
-		if(file_exists(BJPATH."content/langs/plug_ext/".urlencode($plugin)."-".BJ_LANG.".php")) {
-			require BJPATH."content/langs/plug_ext/".urlencode($plugin)."-".BJ_LANG.".php";
+		if(file_exists(BJPATH."content/langs/plugin/".urlencode($plugin)."_".BJ_LANG.".php")) {
+			require BJPATH."content/langs/plugin/".urlencode($plugin)."_".BJ_LANG.".php";
 		}
+	}
+	if(file_exists(BJPATH."content/".current_skinname()."/langs.php")) {
+		require BJPATH."content/".current_skinname()."/langs.php";
 	}
 }
 

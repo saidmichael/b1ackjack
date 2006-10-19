@@ -2,9 +2,13 @@
 RewriteEngine On
 RewriteBase /blackjack/
 RewriteRule ^page/([0-9]+)$ /blackjack/index.php?offset=$1 [L,QSA]
+RewriteRule ^section/(.*)/rss$ /blackjack/rss.php?req=section&name=$1 [L,QSA]
 RewriteRule ^section/(.*)/page/([0-9]+)$ /blackjack/index.php?req=section&name=$1&offset=$2 [L,QSA]
 RewriteRule ^section/(.*)$ /blackjack/index.php?req=section&name=$1 [L,QSA]
+RewriteRule ^tag/(.*)/rss$ /blackjack/rss.php?req=tag&name=$1 [L,QSA]
 RewriteRule ^tag/(.*)/page/([0-9]+)$ /blackjack/index.php?req=tag&name=$1&offset=$2 [L,QSA]
 RewriteRule ^tag/(.*)$ /blackjack/index.php?req=tag&name=$1 [L,QSA]
+RewriteRule ^entry/(.*)/rss$ /blackjack/rss.php?req=entry&name=$1 [L,QSA]
 RewriteRule ^entry/(.*)$ /blackjack/index.php?req=entry&name=$1 [L,QSA]
+RewriteRule ^rss$ /blackjack/rss.php [L,QSA]
 </ifmodule>
