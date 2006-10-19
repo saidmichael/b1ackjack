@@ -68,4 +68,17 @@ function skin_sidebar2() {
 }
 endif;
 
+#Function: load_404_instead()
+#Description: Loads the 404 template.
+function load_404_instead() {
+	unset($section,$tag);
+	if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/404.php')) {
+		include(BJPATH . 'content/skins/' . current_skinname() . '/404.php');
+	}
+	else {
+		include(BJPATH . 'content/skins/' . current_skinname() . '/index.php');
+	}
+	die();
+}
+
 ?>

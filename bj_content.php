@@ -19,11 +19,11 @@ switch($_GET['req']) {
 		}
 		$posts = get_posts($query_string);
 		
-		if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/section.php')) {
-			include(BJPATH . 'content/skins/' . current_skinname() . '/section.php');
+		if(file_exists(BJTEMPLATE .'/section.php')) {
+			include(BJTEMPLATE . '/section.php');
 		}
 		else {
-			include(BJPATH . 'content/skins/' . current_skinname() . '/index.php');
+			include(BJTEMPLATE . '/index.php');
 		}
 		break;
 	case 'entry' :
@@ -32,11 +32,11 @@ switch($_GET['req']) {
 		if(!$posts) {
 			load_404_instead();
 		}
-		if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/entry.php')) {
-			include(BJPATH . 'content/skins/' . current_skinname() . '/entry.php');
+		if(file_exists(BJTEMPLATE . '/entry.php')) {
+			include(BJTEMPLATE . '/entry.php');
 		}
 		else {
-			include(BJPATH . 'content/skins/' . current_skinname() . '/index.php');
+			include(BJTEMPLATE . '/index.php');
 		}
 		break;
 	case 'tag' :
@@ -46,11 +46,11 @@ switch($_GET['req']) {
 		}
 		$query_string = 'offset='.$offset.'&tag='.$tag['ID'];
 		$posts = get_posts($query_string);
-		if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/tag.php')) {
-			include(BJPATH . 'content/skins/' . current_skinname() . '/tag.php');
+		if(file_exists(BJTEMPLATE . '/tag.php')) {
+			include(BJTEMPLATE . '/tag.php');
 		}
 		else {
-			include(BJPATH . 'content/skins/' . current_skinname() . '/index.php');
+			include(BJTEMPLATE . '/index.php');
 		}
 		break;
 	default :
@@ -69,7 +69,7 @@ switch($_GET['req']) {
 			}
 			$posts = get_posts($query_string);
 		}
-		include(BJPATH . 'content/skins/' . current_skinname() . '/index.php');
+		include(BJTEMPLATE . '/index.php');
 }
 
 ?>
