@@ -13,7 +13,9 @@ $submenu['posts.php'][] = array(_r('Write'),2,'post-write.php');
 $submenu['sections.php'][] = array(_r('Manage'),2,'sections.php');
 $submenu['sections.php'][] = array(_r('Create'),2,'section-create.php');
 $submenu['comments.php'][] = array(_r('Manage'),2,'comments.php');
-$submenu['comments.php'][] = array(_r('In Moderation'),2,'comments-mod.php');
+$in_mod = mysql_num_rows($bj_db->query("SELECT * FROM `".$bj_db->comments."` WHERE `status` = 'hidden'"));
+$submenu['comments.php'][] = array(sprintf(_r('In Moderation (%1$s)'),$in_mod),2,'comments-mod.php');
+$submenu['comments.php'][] = array(_r('Blacklisted'),2,'comments-blacklist.php');
 run_filters('admin_submenu',$submenu);
 
 ?>

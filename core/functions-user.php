@@ -96,8 +96,11 @@ function we_can($str) {
 		case 'write_posts' :
 			$check = we_can_check(2);
 			break;
+		case 'edit_comments' :
+			$check = we_can_check(2);
+			break;
 		default:
-			$check = true;
+			$check = false;
 	}
 	return $check;
 }
