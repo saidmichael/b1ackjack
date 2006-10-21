@@ -2,6 +2,7 @@
 
 #Function: is_front()
 function is_front() {
+	if(is_404()) return false;
 	if($_GET['req'] == 'section' && $_GET['name'] == load_option('default_section')) {
 		return true;
 	}
@@ -15,6 +16,7 @@ function is_front() {
 
 #Function: is_entry()
 function is_entry($woo='') {
+	if(is_404()) return false;
 	if($woo == '') {
 		if($_GET['req'] == 'entry') {
 			return true;
@@ -29,6 +31,7 @@ function is_entry($woo='') {
 
 #Function: is_section()
 function is_section($name='') {
+	if(is_404()) return false;
 	global $section;
 	if($name == '') {
 		if($_GET['req'] == 'section') {
@@ -47,6 +50,7 @@ function is_section($name='') {
 
 #Function: is_tag()
 function is_tag($name='') {
+	if(is_404()) return false;
 	global $tag;
 	if($name == '') {
 		if($_GET['req'] == 'tag') {
@@ -62,6 +66,7 @@ function is_tag($name='') {
 
 #Function: is_admin()
 function is_admin() {
+	if(is_404()) return false;
 	global $admin_thisfile;
 	if($admin_thisfile != '') {
 		return true;
@@ -70,8 +75,8 @@ function is_admin() {
 
 #Function: is_404()
 function is_404() {
-	global $fourohfour;
-	if($fourohfour) {
+	global $four04;
+	if($four04) {
 		return true;
 	}
 }

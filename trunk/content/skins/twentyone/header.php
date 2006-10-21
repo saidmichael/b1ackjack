@@ -2,6 +2,7 @@
 	<head>
 		<title><?php siteinfo('sitename'); ?></title>
 		<link rel="stylesheet" href="<?php siteinfo('stylesheet'); ?>" type="text/css" />
+		<script type="text/javascript" src="<?php siteinfo('siteurl'); ?>jscripts/mootools.js" language="javascript"></script>
 		<?php run_actions('site_header'); ?>
 	</head>
 	<body class="<?php TO_body_class(); ?>">
