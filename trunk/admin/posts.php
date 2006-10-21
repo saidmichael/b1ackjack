@@ -27,8 +27,12 @@ if(we_can('edit_posts')) {
 			
 		case "ajaxdelete" :
 			if(isset($_GET['id'])) {
-				$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
-				echo _r('Post deleted').'.';
+				if(!$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1")) {
+					_e('What are you doing? You just deleted this!');
+				}
+				else {
+					_e('Post deleted.');
+				}
 			}
 			break;
 		
@@ -44,8 +48,8 @@ if(we_can('edit_posts')) {
 			if(j00sure) {
 				var delCall = new Ajax('posts.php?req=ajaxdelete&id='+id,{onComplete:confirmus});
 				delCall.request();
-				var hideThis = $('post-'+id).effect('opacity', {duration: 750, transition: fx.linear});
-				hideThis.custom(1.0,0.2);
+				var hideThis = new Fx.Opacity('post-'+id,{duration:750});
+				hideThis.custom(1, 0.2);
 			}
 		};
 		</script>

@@ -139,7 +139,7 @@ function tablealt($i) {
 #Function: get_admin_header()
 #Description: Outputs the admin header.
 function get_admin_header() {
-	global $user,$parent_file,$admin_thisfile; ?>
+	global $user,$parent_file,$admin_thisfile,$bj_db; ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
@@ -163,7 +163,7 @@ function get_admin_header() {
 			theme_advanced_resizing : true
 		});
 		window.onload = function() {
-			new Tips($S('var'), {titleAttribute: 'tooltitle'});
+			new Tips($S('var'), {transitionStart:Fx.Transitions.sineIn,transitionEnd:Fx.Transitions.sineOut});
 		};
 		</script>
 		<!-- /tinyMCE -->
