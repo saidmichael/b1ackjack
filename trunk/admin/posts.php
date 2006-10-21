@@ -90,14 +90,14 @@ if(we_can('edit_posts')) {
 				</tr>
 <?php			$posts = get_posts('limit=16&type=public');
 				foreach($posts as $post) { start_post(); ?>
-				<tr<?php tablealt($i); ?> id="post-<?php echo $post['ID']; ?>">
-					<td class="aligncenter"><?php echo $post['ID']; ?></td>
+				<tr<?php tablealt($i); ?> id="post-<?php echo_ID(); ?>">
+					<td class="aligncenter"><?php echo_ID(); ?></td>
 					<td><?php echo_title(); ?></td>
 					<td><?php post_date("M jS Y, h:i a"); ?></td>
 					<td><?php echo_tags(", ","","","admin=true"); ?></td>
-					<td class="capitalize aligncenter"><?php echo get_post_type(); ?></td>
-					<td class="editbutton"><a href="posts.php?req=edit&amp;id=<?php echo $post['ID']; ?>" class="blockit"><?php _e('Edit'); ?></a></td>
-					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo $post['ID']; ?>" class="blockit" onclick="deletePost(<?php echo $post['ID']; ?>);return false;"><?php _e('Delete'); ?></a></td>
+					<td class="capitalize aligncenter"><?php _e(get_post_type()); ?></td>
+					<td class="editbutton"><a href="posts.php?req=edit&amp;id=<?php echo_ID(); ?>" class="blockit"><?php _e('Edit'); ?></a></td>
+					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit" onclick="deletePost(<?php echo $post['ID']; ?>);return false;"><?php _e('Delete'); ?></a></td>
 				</tr>
 <?php			} ?>
 			</table>
