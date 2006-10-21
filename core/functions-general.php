@@ -73,6 +73,16 @@ function delete_option($name) {
 	$bj_db->query("DELETE FROM `".$bj_db->options."` WHERE `option_name` = '".$name."' LIMIT 1");
 }
 
+#Function: add_submenu_page(Tab Name, File Name, URL Hook, Function Hook, User Level)
+#Description: Adds a submenu page to any file. Useful for plugins.
+function add_submenu_page($tabname,$filename,$urlhook,$funchook,$ulevel) {
+	global $user,$submenu,$bj_plugpages;
+	$submenu[$filename][] = array(_r($tabname),$ulevel,$filename.'?plug='.$urlhook);
+	$bj_plugpages[$urlhook] = array(
+		'file' => $filename,
+		'hook' => $funchook);
+}
+
 #Function: basename_withpath(Path)
 #Description: Grabs the filename. Useful if you want to strip the query string.
 function basename_withpath($url) {

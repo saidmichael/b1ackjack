@@ -432,16 +432,19 @@ function return_sections() {
 	global $bj_db;
 	$sections = $bj_db->get_rows("SELECT * FROM `".$bj_db->sections."` ORDER BY `page_order` ASC","ASSOC");
 	$i = 0;
-	foreach($sections as $this_section) {
-		if(is_section($this_section['shortname'])) {
-			$sections[$i]['this'] = 1;
+	if($sections) {
+		foreach($sections as $this_section) {
+			if(is_section($this_section['shortname'])) {
+				$sections[$i]['this'] = 1;
+			}
+			else {
+				$sections[$i]['this'] = 0;
+			}
+			$i++;
 		}
-		else {
-			$sections[$i]['this'] = 0;
-		}
-		$i++;
+		return run_filters('sections_array',$sections);
 	}
-	return run_filters('sections_array',$sections);
+	return run_filters('sections_array',array());
 }
 
 #Function: echo_sections()

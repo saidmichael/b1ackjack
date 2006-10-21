@@ -111,8 +111,9 @@ function run_actions($hookname) {
 	$todo = $actions[$hookname];
 	if (!$todo)
 		return false;
-	foreach ($todo as $null => $action)
+	foreach ($todo as $null => $action) {
 		$buffer .= $action['name']($hookname);
+	}
 	return $buffer;
 }
 

@@ -6,6 +6,7 @@ $menu[] = array(_r('Comments'),2,'comments.php');
 $menu[] = array(_r('Sections'),3,'sections.php');
 $menu[] = array(_r('Look &amp; Feel'),4,'themes.php');
 $menu[] = array(_r('Options'),4,'options.php');
+run_filters('admin_menu',$menu);
 
 $submenu['posts.php'][] = array(_r('Manage'),2,'posts.php');
 $submenu['posts.php'][] = array(_r('Write'),2,'post-write.php');
@@ -13,6 +14,7 @@ $submenu['sections.php'][] = array(_r('Manage'),2,'sections.php');
 $submenu['sections.php'][] = array(_r('Create'),2,'section-create.php');
 $submenu['comments.php'][] = array(_r('Manage'),2,'comments.php');
 $submenu['comments.php'][] = array(_r('In Moderation'),2,'comments-mod.php');
+run_filters('admin_submenu',$submenu);
 
 ?>
 		<ul id="menu">

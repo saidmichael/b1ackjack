@@ -6,6 +6,18 @@
 					<?php next_page_link(_r('Older Posts &raquo;'),'<div class="alignright">','</div>'); ?>
 					</div>
 <?php
+				if(!is_entry()) { ?>
+					<div class="page-head">
+						<h2><?php
+					if(is_tag()) {
+						printf(_r('<span>Tag Archive: </span>%1$s'),wptexturize($tag['name']));
+					}
+					elseif(is_section() or is_front()) {
+						printf(_r('<span>Browsing Section: </span>%1$s'),wptexturize($section['title']));
+					} ?></h2>
+					</div>
+<?php
+				}
 				foreach($posts as $post) { start_post(); //$post should stay $post. Don't change. ?>
 
 					<div class="<?php TO_post_class(); ?>" id="post-<?php echo_ID(); ?>">

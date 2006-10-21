@@ -71,7 +71,9 @@ endif;
 #Function: load_404_instead()
 #Description: Loads the 404 template.
 function load_404_instead() {
+	global $section,$tag,$four04;
 	unset($section,$tag);
+	$four04 = true;
 	if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/404.php')) {
 		include(BJPATH . 'content/skins/' . current_skinname() . '/404.php');
 	}
