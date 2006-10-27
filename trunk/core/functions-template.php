@@ -352,7 +352,7 @@ function next_page_link($text,$before='',$after='',$args='') {
 	parse_str($args,$a);
 	$num = (isset($a['num'])) ? intval($a['num']) : load_option('entries_per_page');
 	$older = intval($_GET['offset']) + $num;
-	$posts_string = 'num=yes';
+	$posts_string = 'num=yes&type=public';
 	if(is_tag()) {
 		global $tag;
 		$posts_string .= '&tag='.$tag['ID'];
