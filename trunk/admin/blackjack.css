@@ -342,6 +342,9 @@ strong.error {
 .drafts p {
 	padding-bottom:0 !important;
 }
+.navigation {
+	margin-bottom:28px;
+}
 .capitalize {
 	text-transform:capitalize;
 }
