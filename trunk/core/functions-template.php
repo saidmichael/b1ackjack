@@ -1,75 +1,10 @@
 <?php
 
-#Function: echo_tags(Between[, Before[, After[, Extra]]])
-#Description: Outputs the tags for a post. Can be used only in a loop. 
-function echo_tags($between=', ',$before='',$after='',$extra=false) {
-	$tags = return_tags();
-	if($extra) {
-		parse_str($extra,$args);
-	}
-	if(!empty($tags[0])) {
-		foreach($tags as $tag) {
-			if($args['admin'] == "true") {
-				$start_link = "<a href=\"tags.php?req=edit&amp;id=".$tag['ID']."\">";
-			}
-			else {
-				if(defined('BJ_REWRITE')) {
-					$start_link = "<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."\">";
-				}
-				else {
-					$start_link = "<a href=\"".load_option('siteurl')."index.php?req=tag&amp;name=".$tag['shortname']."\">";
-				}
-			}
-			$text .= $before.$start_link.$tag['name']."</a>".$after.$between;
-		}
-		echo preg_replace('{'.$between.'$}', '', $text);
-	}
-}
-
-#Function: rss_tags(Between[, Before[, After[, Extra]]])
-#Description: Outputs the tags for a post, RSS-style.
-function rss_tags($between='',$before='',$after='',$extra=false) {
-	$tags = return_tags();
-	if($extra) {
-		parse_str($extra,$args);
-	}
-	if(!empty($tags[0])) {
-		$text = '';
-		foreach($tags as $tag) {
-			$text .= $before.'<dc:subject>'.$tag['name'].'</dc:subject>'.$after.$between;
-		}
-		echo preg_replace('{'.$between.'$}', '', $text);
-	}
-}
-
-#Function: return_tags(Extra)
-#Description: Returns the tags for a post. Can be used only in a loop. 
-function return_tags($extra=false) {
-	global $post,$posts,$bj_db;
-	$tags = explode(",",$post['tags']);
-	$retarr = array();
-	if($extra) {
-		parse_str($extra,$args);
-	}
-	if(!empty($tags[0])) {
-		foreach($tags as $ID) {
-			//This checks if the information about a tag was already retrieved.
-			//After all, why do extra queries?
-			if(isset($posts['tagbuffer'][$ID])) {
-				$arr = $posts['tagbuffer'][$ID];
-			}
-			else {
-				$arr = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `ID` = '".$ID."' LIMIT 1");
-				$posts['tagbuffer'][$ID] = $arr;
-			}
-			$retarr[] = $arr;
-		}
-		return $retarr;
-	}
-	else {
-		return array();
-	}
-}
+/*
+ * ************************
+ * Global Functions
+ * ************************
+ */
 
 #Function: echo_all_tags(Extra)
 #Description: Lists all tags in existance.
@@ -135,18 +70,11 @@ function return_all_tags($extra=false) {
 	return $thesetags;
 }
 
-#Function: post_author()
-#Description: Wrapper for get_post_author().
-function post_author() {
-	echo get_post_author();
-}
-
-#Function: get_post_author()
-#Description: Post author returned. Loop-only.
-function get_post_author() {
-	global $post;
-	return run_filters('post_author',$post['author']);
-}
+/*
+ * ************************
+ * Post Functions
+ * ************************
+ */
 
 #Function: get_posts(Stuff)
 #Description: Grabs posts based on the "stuff" given.
@@ -235,10 +163,82 @@ function get_posts($q) {
 	}
 }
 
-#Function: entry_edit_link([Text[, Before[, After]]])
-#Description: Will display an edit link if the user is logged in and can edit posts.
-function edit_entry_link($text='Edit',$before='',$after='') {
-	if(we_can('edit_posts')) { ?><a href="<?php siteinfo('siteurl'); ?>admin/posts.php?req=edit&amp;id=<?php echo_ID(); ?>"><?php echo $text; ?></a><?php }
+#Function: echo_tags(Between[, Before[, After[, Extra]]])
+#Description: Outputs the tags for a post. Can be used only in a loop. 
+function echo_tags($between=', ',$before='',$after='',$extra=false) {
+	$tags = return_tags();
+	if($extra) {
+		parse_str($extra,$args);
+	}
+	if(!empty($tags[0])) {
+		foreach($tags as $tag) {
+			if($args['admin'] == "true") {
+				$start_link = "<a href=\"tags.php?req=edit&amp;id=".$tag['ID']."\">";
+			}
+			else {
+				if(defined('BJ_REWRITE')) {
+					$start_link = "<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."\">";
+				}
+				else {
+					$start_link = "<a href=\"".load_option('siteurl')."index.php?req=tag&amp;name=".$tag['shortname']."\">";
+				}
+			}
+			$text .= $before.$start_link.$tag['name']."</a>".$after.$between;
+		}
+		echo preg_replace('{'.$between.'$}', '', $text);
+	}
+}
+
+#Function: rss_tags(Between[, Before[, After[, Extra]]])
+#Description: Outputs the tags for a post, RSS-style.
+function rss_tags($between='',$before='',$after='',$extra=false) {
+	$tags = return_tags();
+	if($extra) {
+		parse_str($extra,$args);
+	}
+	if(!empty($tags[0])) {
+		$text = '';
+		foreach($tags as $tag) {
+			$text .= $before.'<dc:subject>'.$tag['name'].'</dc:subject>'.$after.$between;
+		}
+		echo preg_replace('{'.$between.'$}', '', $text);
+	}
+}
+
+#Function: return_tags(Extra)
+#Description: Returns the tags for a post. Can be used only in a loop. 
+function return_tags($extra=false) {
+	global $post,$posts,$bj_db;
+	$tags = explode(",",$post['tags']);
+	$retarr = array();
+	if($extra) {
+		parse_str($extra,$args);
+	}
+	if(!empty($tags[0])) {
+		foreach($tags as $ID) {
+			//This checks if the information about a tag was already retrieved.
+			//After all, why do extra queries?
+			if(isset($posts['tagbuffer'][$ID])) {
+				$arr = $posts['tagbuffer'][$ID];
+			}
+			else {
+				$arr = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `ID` = '".$ID."' LIMIT 1");
+				$posts['tagbuffer'][$ID] = $arr;
+			}
+			$retarr[] = $arr;
+		}
+		return $retarr;
+	}
+	else {
+		return array();
+	}
+}
+
+#Function: post_stuff()
+#Description: Prepares variables and such for each post.
+function start_post() {
+	global $i;
+	$i++;
 }
 
 #Function: echo_ID()
@@ -254,29 +254,10 @@ function return_ID() {
 	return run_filters('post_id',$post['ID']);
 }
 
-#Function: get_post_date(Date Format[, Date Resource])
-#Description: Creates the date from a mysql datetime format. Can be used in the
-#			  loop or, if the resource is defined, outside of it. Your choice. :)
-function get_post_date($format='F jS, Y',$res=false) {
-	if(!$res) {
-		global $post;
-		$res = $post['posted'];
-	}
-	$time = mktime(substr($res,11,2),substr($res,14,2),substr($res,17,2),substr($res,5,2),substr($res,8,2),substr($res,0,4));
-	return date($format,$time);
-}
-
-#Function: post_date(Date Format[, Date Resource])
-#Description: Wrapper for get_post_date().
-function post_date($format='F jS, Y',$res=false) {
-	echo get_post_date($format,$res);
-}
-
-#Function: post_stuff()
-#Description: Prepares variables and such for each post.
-function start_post() {
-	global $i;
-	$i++;
+#Function: echo_title()
+#Description: Wrapper for return_title().
+function echo_title() {
+	echo return_title();
 }
 
 #Function: return_title()
@@ -285,20 +266,6 @@ function return_title() {
 	global $post;
 	$title = wptexturize($post['title']);
 	return run_filters('post_title',$title);
-}
-
-#Function: echo_content()
-#Description: Echos the content.
-function echo_content() {
-	global $post;
-	$content = wptexturize($post['content']);
-	echo run_filters('post_content',$content);
-}
-
-#Function: echo_title()
-#Description: Wrapper for return_title().
-function echo_title() {
-	echo return_title();
 }
 
 #Function: echo_permalink()
@@ -318,6 +285,57 @@ function return_permalink() {
 		return load_option('siteurl').'index.php?req=entry&amp;name='.$post['shortname'];
 	}
 		
+}
+
+#Function: post_author()
+#Description: Wrapper for get_post_author().
+function post_author() {
+	echo get_post_author();
+}
+
+#Function: get_post_author()
+#Description: Post author returned. Loop-only.
+function get_post_author() {
+	global $post;
+	return run_filters('post_author',$post['author']);
+}
+
+#Function: post_date(Date Format[, Date Resource])
+#Description: Wrapper for get_post_date().
+function post_date($format='F jS, Y',$res=false) {
+	echo get_post_date($format,$res);
+}
+
+#Function: get_post_date(Date Format[, Date Resource])
+#Description: Creates the date from a mysql datetime format. Can be used in the
+#			  loop or, if the resource is defined, outside of it. Your choice. :)
+function get_post_date($format='F jS, Y',$res=false) {
+	if(!$res) {
+		global $post;
+		$res = $post['posted'];
+	}
+	$time = mktime(substr($res,11,2),substr($res,14,2),substr($res,17,2),substr($res,5,2),substr($res,8,2),substr($res,0,4));
+	return date($format,$time);
+}
+
+#Function: entry_edit_link([Text[, Before[, After]]])
+#Description: Will display an edit link if the user is logged in and can edit posts.
+function edit_entry_link($text='Edit',$before='',$after='') {
+	if(we_can('edit_posts')) { ?><a href="<?php siteinfo('siteurl'); ?>admin/posts.php?req=edit&amp;id=<?php echo_ID(); ?>"><?php echo $text; ?></a><?php }
+}
+
+#Function: echo_content()
+#Description: Echos the content.
+function echo_content() {
+	echo return_content();
+}
+
+#Function: return_content()
+#Description: Outputs the content.
+function return_content() {
+	global $post;
+	$content = wptexturize($post['content']);
+	return run_filters('post_content',$content);
 }
 
 #Function: comments_link(No Comments[, One Comment[, Multiple Comments[, Comments Closed]]])
@@ -426,6 +444,97 @@ function prev_page_link($text,$before='',$after='',$args='') {
 	}
 }
 
+/*
+ * ************************
+ * Comments
+ * ************************
+ */
+
+#Function: comment_ID()
+#Description: Returns the ID of the comment, filters applied.
+function comment_ID() {
+	echo return_comment_ID();
+}
+function return_comment_ID() {
+	global $comment;
+	return run_filters('comment_ID',$comment['ID']);
+}
+
+#Function: comment_name()
+#Description: The author of the comment.
+function comment_name() {
+	echo return_comment_name();
+}
+function return_comment_name() {
+	global $comment;
+	return run_filters('commenter_name',$comment['author_name']);
+}
+
+#Function: comment_url()
+#Description: The commenter's URL, if it exists.
+function comment_url() {
+	echo return_comment_url();
+}
+function return_comment_url() {
+	global $comment;
+	return run_filters('commenter_url',$comment['author_url']);
+}
+
+#Function: comment_email()
+#Description: The commenter's email.
+function comment_email() {
+	echo return_comment_email();
+}
+function return_comment_email() {
+	global $comment;
+	return run_filters('commenter_email',$comment['author_email']);
+}
+
+#Function: comment_author_url()
+#Description: Outputs a link, if applicable, with the author's name.
+function comment_author_url() {
+	global $comment;
+	if(return_comment_url() != '') { ?><a href="<?php comment_url(); ?>"><?php } comment_name(); if(return_comment_url() != '') { ?></a><?php }
+}
+
+#Function: comment_date()
+#Description: When the author wrote the comment.
+function comment_date($format='F jS, Y') {
+	echo return_comment_date($format);
+}
+function return_comment_date($format='F jS, Y') {
+	global $comment;
+	return get_post_date($format,$comment['posted_on']);
+}
+
+#Function: comment_text()
+#Description: What the commenter has to say.
+function comment_text() {
+	echo return_comment_text();
+}
+function return_comment_text() {
+	global $comment;
+	return run_filters('comment_text',$comment['content']);
+}
+
+
+
+/*
+ * ************************
+ * Sections
+ * ************************
+ */
+ 
+ #Function: echo_sections()
+#Description: Returns the sections in a list.
+function echo_sections() {
+	$sections = return_sections();
+	foreach($sections as $this_section) { ?>
+<li class="section-li<?php echo ($this_section['this'] == 1) ? ' current-section' : ''; ?>"><a href="<?php echo get_section_permalink($this_section); ?>"><?php echo wptexturize($this_section['title']); ?></a></li>
+<?php
+	}
+}
+
 #Function: return_sections()
 #Description: Returns all sections in use. Also checks the current section.
 function return_sections() {
@@ -433,8 +542,8 @@ function return_sections() {
 	$sections = $bj_db->get_rows("SELECT * FROM `".$bj_db->sections."` ORDER BY `page_order` ASC","ASSOC");
 	$i = 0;
 	if($sections) {
-		foreach($sections as $this_section) {
-			if(is_section($this_section['shortname'])) {
+		foreach($sections as $section) {
+			if(is_section($section['shortname'])) {
 				$sections[$i]['this'] = 1;
 			}
 			else {
@@ -445,16 +554,6 @@ function return_sections() {
 		return run_filters('sections_array',$sections);
 	}
 	return run_filters('sections_array',array());
-}
-
-#Function: echo_sections()
-#Description: Returns the sections in a list.
-function echo_sections() {
-	$sections = return_sections();
-	foreach($sections as $this_section) { ?>
-<li class="section-li<?php echo ($this_section['this'] == 1) ? ' current-section' : ''; ?>"><a href="<?php echo get_section_permalink($this_section); ?>"><?php echo wptexturize($this_section['title']); ?></a></li>
-<?php
-	}
 }
 
 #Function: get_section_permalink(This section)
