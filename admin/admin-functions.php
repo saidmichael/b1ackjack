@@ -99,7 +99,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 				</div>
 				<div class="column width75">
 					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo bj_clean_string($post['title']); ?>" class="width100 largeinput" /></p>
-					<textarea name="content" id="textarea"><?php formatted_for_editing($post['content']); ?></textarea>
+					<textarea name="content" id="textarea"><?php echo $post['content']; ?></textarea>
 <?php
 					run_actions('end_editor_main');
 					if($post['ID'] == "0") { ?>

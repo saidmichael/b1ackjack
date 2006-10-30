@@ -269,6 +269,23 @@ body.login {
 	padding-right:0;
 }
 
+/* Comments */
+
+#commentlist {
+	margin:0;
+	padding:4px 0px 9px 20px;
+}
+
+#commentlist li {
+	margin-bottom:4px;
+	padding:4px;
+}
+
+#commentlist li.alt {
+	background:#ededed;
+}
+	
+
 /* Form Styles */
 label {
 	cursor:pointer;

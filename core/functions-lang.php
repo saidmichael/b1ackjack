@@ -9,8 +9,8 @@ if(BJ_LANG != "en") {
 			require BJPATH."content/langs/plugin/".urlencode($plugin)."_".BJ_LANG.".php";
 		}
 	}
-	if(file_exists(BJPATH."content/".current_skinname()."/langs.php")) {
-		require BJPATH."content/".current_skinname()."/langs.php";
+	if(file_exists(BJPATH."content/".current_skinname()."/langs_".BJ_LANG.".php")) {
+		require BJPATH."content/".current_skinname()."/langs_".BJ_LANG.".php";
 	}
 }
 

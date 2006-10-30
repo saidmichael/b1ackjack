@@ -13,7 +13,7 @@ function bj_edit_post($id=0) {
 		}
 		$epost['title'] = bj_clean_string($_POST['title'],array(),'mysql=true');
 		$epost['shortname'] = bj_clean_string($_POST['shortname'],array(),'mysql=true');
-		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post,'content=true');
+		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
 		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$epost['author'] = $_POST['author'];
 		$tag_string = "";
@@ -59,7 +59,7 @@ function bj_new_post() {
 		run_actions('pre_post_new');
 		$epost['title'] = bj_clean_string($_POST['title'],array(),'mysql=true');
 		$epost['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($epost['title']) : bj_clean_string($_POST['shortname'],array(),'mysql=true');
-		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post,'content=true');
+		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
 		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$epost['author'] = $_POST['author'];
 		$tag_string = "";
@@ -103,9 +103,7 @@ function bj_clean_string($string,$allowed_html=array(),$q=false) {
 	if(get_magic_quotes_gpc()) {
 		$string = stripslashes($string);
 	}
-	if(!isset($args['content'])) {
-		$string = str_replace(array('\'','"'),array('&#039;','&#034;'),$string);
-	}
+	$string = str_replace(array('\'','"'),array('&#039;','&#034;'),$string);
 	$string = bj_kses($string,$allowed_html);
 	if(isset($args['mysql'])) { # Is this for insertion in a SQL database?
 		$string = $bj_db->escape($string);
@@ -119,6 +117,15 @@ function bj_clean_string($string,$allowed_html=array(),$q=false) {
 function bj_checked($value1,$value2) {
 	if($value1 == $value2) {
 		echo " checked=\"checked\"";
+	}
+}
+
+#Function: bj_selected(Value One, Value Two)
+#Description: Checks if Value One and Value Two are equal.
+#			  If so, selected="selected" will be produced.
+function bj_selected($value1,$value2) {
+	if($value1 == $value2) {
+		echo " selected=\"selected\"";
 	}
 }
 
@@ -158,15 +165,6 @@ function bj_shortname($title) {
 	}
 
     return $title;
-}
-
-#Function: bj_selected(Value One, Value Two)
-#Description: Checks if Value One and Value Two are equal.
-#			  If so, selected="selected" will be produced.
-function bj_selected($value1,$value2) {
-	if($value1 == $value2) {
-		echo " selected=\"selected\"";
-	}
 }
 
 ?>

@@ -43,20 +43,6 @@ function bj_excerpt($content,$length){
 	return $content;
 }
 
-#Function: formatted_for_editing(Content)
-#Description: Formats it for a textarea.
-function formatted_for_editing($content){
-	$content=str_replace(
-		array(
-			"&"
-		),
-		array(
-			"&amp;"
-		),
-		$content);
-	echo $content;
-}
-
 #Function:wptexturize(Text)
 #Description: Created by Matthew Mullenweg- http://photomatt.net.
 function wptexturize($text){
