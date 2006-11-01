@@ -517,6 +517,12 @@ function return_comment_text() {
 	return run_filters('comment_text',$comment['content']);
 }
 
+#Function comment_postid()
+#Description: The post that the comment was posted in.
+function comment_postid() {
+	global $comment;
+	return $comment['post_ID'];
+}
 
 
 /*
