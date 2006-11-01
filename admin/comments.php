@@ -23,13 +23,15 @@ if(we_can('edit_comments')) {
 				switch($_GET['to']) {
 					case 'hidden' :
 						$bj_db->query("UPDATE `".$bj_db->comments."` SET `status` = 'hidden' WHERE `ID` = ".intval($_GET['id'])." LIMIT 1");
-						@header('Location: '.load_option('siteurl').'admin/comments.php');
 						break;
 					case 'spam' :
 						$bj_db->query("UPDATE `".$bj_db->comments."` SET `status` = 'spam' WHERE `ID` = ".intval($_GET['id'])." LIMIT 1");
-						@header('Location: '.load_option('siteurl').'admin/comments.php');
+						break;
+					case 'normal' :
+						$bj_db->query("UPDATE `".$bj_db->comments."` SET `status` = 'normal' WHERE `ID` = ".intval($_GET['id'])." LIMIT 1");
 						break;
 				}
+				@header('Location: '.load_option('siteurl').'admin/comments.php');
 			}
 			break;
 		default :
@@ -74,7 +76,8 @@ if(we_can('edit_comments')) {
 						<a href="comments.php?req=edit&amp;id=<?php comment_ID(); ?>"><?php _e('Edit'); ?></a> &#8212; 
 						<a href="comments.php?req=delete&amp;id=<?php comment_ID(); ?>" onclick="deleteComment(<?php comment_ID(); ?>);return false;"><?php _e('Delete'); ?></a> &#8212; 
 						<a href="comments.php?req=status&amp;to=hidden&amp;id=<?php comment_ID(); ?>"><?php _e('Hidden'); ?></a> &#8212; 
-						<a href="comments.php?req=status&amp;to=spam&amp;id=<?php comment_ID(); ?>"><?php _e('Spam'); ?></a>
+						<a href="comments.php?req=status&amp;to=spam&amp;id=<?php comment_ID(); ?>"><?php _e('Spam'); ?></a> &#8212; 
+						<a href="posts.php?req=edit&amp;id=<?php echo comment_postid(); ?>"><?php _e('Edit Post'); ?></a>
 					</div>
 				</li>
 <?php

@@ -111,6 +111,11 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php
 					} ?>
 					<div class="submit">
+<?php
+					if($post['ID'] != "0") { ?>
+						<input type="submit" name="save-del" value="<?php _e('Delete Post'); ?>" class="delete" />
+<?php
+					} ?>
 						<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
 						<input type="submit" name="save" value="<?php _e('Save Post'); ?>" style="font-weight:bold;" />
 					</div>

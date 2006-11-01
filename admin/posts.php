@@ -20,19 +20,16 @@ if(we_can('edit_posts')) {
 		case "delete" :
 			if(isset($_GET['id'])) {
 				$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
+				$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".intval($_GET['id'])."' LIMIT 1");
 				@header("Location: ".load_option('siteurl')."admin/posts.php");
-				die();
 			}
 			break;
 			
 		case "ajaxdelete" :
 			if(isset($_GET['id'])) {
-				if(!$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1")) {
-					_e('What are you doing? You just deleted this!');
-				}
-				else {
-					_e('Post deleted.');
-				}
+				$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
+				$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".intval($_GET['id'])."' LIMIT 1");
+				_e('Post deleted.');
 			}
 			break;
 		
@@ -60,7 +57,7 @@ if(we_can('edit_posts')) {
 ?>
 		<div id="wrapper">
 			<h1><?php _e('Manage Posts'); ?></h1>
-			<div id="ajaxmessage"></div>
+			<div id="ajaxmessage"><?php if($_GET['deleted'] == "true") { echo '<strong class="error">'._r('Post deleted.').'</strong>'; } ?></div>
 <?php
 			$drafts = $bj_db->get_rows("SELECT `ID`,`title` FROM `".$bj_db->posts."` WHERE `ptype` = 'draft' ORDER BY `ID` DESC","ASSOC");
 			if($drafts) { ?>

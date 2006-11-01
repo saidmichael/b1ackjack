@@ -327,6 +327,9 @@ body.login input#remember {
 	font-size:14px;
 	padding:4px;
 }
+.submit input.delete {
+	background:#e9e9e9 url(images/submit-delete.png) repeat-x center left;
+}
 
 /* Errors */
 

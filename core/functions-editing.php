@@ -11,6 +11,12 @@ function bj_edit_post($id=0) {
 		if($id == 0 || !$former) {
 			return false;
 		}
+		if(isset($_POST['save-del'])) {
+			$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
+			$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".intval($_GET['id'])."' LIMIT 1");
+			@header("Location: ".load_option('siteurl')."admin/posts.php?deleted=true");
+			die();
+		}
 		$epost['title'] = bj_clean_string($_POST['title'],array(),'mysql=true');
 		$epost['shortname'] = bj_clean_string($_POST['shortname'],array(),'mysql=true');
 		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
