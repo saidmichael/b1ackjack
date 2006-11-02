@@ -56,7 +56,7 @@ if(we_can('view_frontpage')) {
 				else { ?>
 				<ul class="altrows">
 <?php			foreach($posts as $post) {
-					$bjposts[return_title()] = "posts.php?req=edit&amp;id=".$post['ID'];
+					$bjposts[return_title()] = "posts.php?req=edit&amp;id=".return_ID();
 				}
 				fancy_altrows($bjposts); ?>
 				</ul>
@@ -67,7 +67,7 @@ if(we_can('view_frontpage')) {
 				else { ?>
 				<ul class="altrows">
 <?php			foreach($comments as $comment) {
-					$bjcomments[$comment['author_name'].": ".bj_excerpt($comment['content'],20)."&#8230;"] = "comments.php?req=edit&amp;id=".$comment['ID'];
+					$bjcomments[return_comment_name().": ".bj_excerpt(return_comment_text(),7)."&#8230;"] = "comments.php?req=edit&amp;id=".return_comment_ID();
 				}
 				fancy_altrows($bjcomments); ?>
 				</ul>
