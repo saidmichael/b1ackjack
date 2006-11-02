@@ -23,7 +23,7 @@ function bj_clean($content){
 
 #Function:bj_excerpt(Content, Length)
 #Description:Makes an excerpt out of the content.
-function bj_excerpt($content,$length){
+function bj_excerpt($content,$length=120){
 	$content = str_replace(
 		array(
 			"<p>",
@@ -34,12 +34,15 @@ function bj_excerpt($content,$length){
 		),
 		array(
 			"",
-			"",
-			"",
-			"",
+			" ",
+			" ",
+			" ",
 			""
 		),
 		$content);
+	$content = explode(' ',$content);
+	$content = array_slice($content,0,$length);
+	$content = implode(' ',$content); #A bit crude, but it works.
 	return $content;
 }
 
