@@ -51,6 +51,10 @@ if(we_can('edit_comments')) {
 			} ?>
 			</ul>
 <?php
+		}
+		else { ?>
+			<p><?php _e('No comments here. :-)'); ?></p>
+<?php
 		} ?>
 		</div>
 <?php
