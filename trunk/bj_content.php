@@ -17,9 +17,15 @@ switch($_GET['req']) {
 		if(!empty($section['tags'])) { # Are we filtering by any tags?
 			$query_string .= '&tag='.$section['tags'];
 		}
+		if($section['onepost'] != '') {
+			$query_string .= '&shortname='.$section['onepost'];
+		}
 		$posts = get_posts($query_string);
 		
-		if(file_exists(BJTEMPLATE .'/section.php')) {
+		if(file_exists(BJTEMPLATE .'/section-single.php') && $section['onepost'] != '') {
+			include(BJTEMPLATE . '/section-single.php');
+		}
+		elseif(file_exists(BJTEMPLATE .'/section.php')) {
 			include(BJTEMPLATE . '/section.php');
 		}
 		else {
