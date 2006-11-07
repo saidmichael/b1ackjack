@@ -64,6 +64,14 @@ function is_tag($name='') {
 	}
 }
 
+#Function: is_search()
+function is_search() {
+	if(is_404()) return false;
+	if($_GET['req'] == 'search' && $_GET['s'] != '') {
+		return true;
+	}
+}
+
 #Function: is_admin()
 function is_admin() {
 	if(is_404()) return false;
