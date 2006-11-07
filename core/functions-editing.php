@@ -17,8 +17,8 @@ function bj_edit_post($id=0) {
 			@header("Location: ".load_option('siteurl')."admin/posts.php?deleted=true");
 			die();
 		}
-		$epost['title'] = bj_clean_string($_POST['title'],array(),'mysql=true');
-		$epost['shortname'] = bj_clean_string($_POST['shortname'],array(),'mysql=true');
+		$epost['title'] = bj_clean_string($_POST['title']);
+		$epost['shortname'] = bj_clean_string($_POST['shortname']);
 		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
 		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$epost['author'] = $_POST['author'];
@@ -63,8 +63,8 @@ function bj_new_post() {
 	global $bj_db,$bj_html_post,$time;
 	if(we_can('write_posts')) {
 		run_actions('pre_post_new');
-		$epost['title'] = bj_clean_string($_POST['title'],array(),'mysql=true');
-		$epost['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($epost['title']) : bj_clean_string($_POST['shortname'],array(),'mysql=true');
+		$epost['title'] = bj_clean_string($_POST['title']);
+		$epost['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($epost['title']) : bj_clean_string($_POST['shortname']);
 		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
 		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$epost['author'] = $_POST['author'];
@@ -101,20 +101,15 @@ function bj_new_post() {
 #Function: bj_clean_string(String, Allowed HTML[, Args])
 #Description: Cleans anything within the string using kses,
 #			  mysql_real_escape_string, and a few others.
-function bj_clean_string($string,$allowed_html=array(),$q=false) {
+function bj_clean_string($string,$allowed_html=array()) {
 	global $bj_db;
-	if($q) {
-		parse_str($q,$args);
-	}
 	if(get_magic_quotes_gpc()) {
 		$string = stripslashes($string);
 	}
 	$string = str_replace(array('\'','"'),array('&#039;','&#034;'),$string);
 	$string = bj_kses($string,$allowed_html);
-	if(isset($args['mysql'])) { # Is this for insertion in a SQL database?
-		$string = $bj_db->escape($string);
-	}
-	return $string;
+	$string = $bj_db->escape($string);
+	return run_filters('clean_string',$string);
 }
 
 #Function: bj_checked(Value One, Value Two)

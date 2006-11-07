@@ -55,19 +55,10 @@ function return_all_tags($extra=false) {
 		$query .= " AND `parent` = '".intval($args['parent'])."'";
 	}
 	if(isset($args['orderby'])) {
-		$query .= " ORDER BY `".$args['sortby']."`";
-	}
-	if(isset($args['before'])) {
-		$before = $args['before'];
-	}
-	if(isset($args['after'])) {
-		$after = $args['after'];
+		$query .= " ORDER BY `".$args['orderby']."`";
 	}
 	$tags = $bj_db->get_rows($query,"ASSOC");
-	foreach($tags as $tag) {
-		$thesetags[] = $tag;
-	}
-	return $thesetags;
+	return $tags;
 }
 
 /*
@@ -133,6 +124,15 @@ function get_posts($q) {
 	}
 	if(isset($stuff['author'])) {
 		$query .= " AND `author` = '".$stuff['author']."'";
+	}
+	if(isset($stuff['search'])) {
+		$search = str_replace('+',' ',$stuff['search']);
+		$search = explode(' ',$search);
+		$query .= " AND (((`title` LIKE '%".$search[0]."%') OR (`content` LIKE '%".$search[0]."%'))";
+		for ( $i = 1; $i < count($search); $i++) {
+			$query .= " OR ((`title` LIKE '%".$search[$i]."%') OR (`content` LIKE '%".$search[$i]."%'))";
+		}
+		$query .= ')';
 	}
 	if(isset($stuff['sortby'])) {
 		$query .= " ORDER BY `".$stuff['sortby']."`";
@@ -381,6 +381,12 @@ function next_page_link($text,$before='',$after='',$args='') {
 			$posts_string .= '&tag='.$section['tags'];
 		}
 	}
+	elseif(is_admin() && $_GET['req'] == 'filtertag') {
+		$posts_string .= '&tag='.intval($_GET['tag']);
+	}
+	elseif(is_search()) {
+		$posts_string .= '&search='.bj_clean_string($_GET['s']);
+	}
 	if(get_posts($posts_string) - $older > 0 && !is_entry()) {
 		if(!is_admin()) {
 			if(defined('BJ_REWRITE')) {
@@ -389,6 +395,9 @@ function next_page_link($text,$before='',$after='',$args='') {
 				}
 				elseif(is_tag()) {
 					$extra_string = 'tag/'.$_GET['name'].'/';
+				}
+				elseif(is_search()) {
+					$extra_string = 'search/'.$_GET['s'].'/';
 				}
 				echo $before.'<a href="'.load_option('siteurl').$extra_string.'page/'.$older.'">'.$text.'</a>'.$after;
 			}
@@ -399,11 +408,20 @@ function next_page_link($text,$before='',$after='',$args='') {
 				elseif(is_tag()) {
 					$extra_string = 'req=tag&amp;name='.$_GET['name'];
 				}
+				elseif(is_search()) {
+					$extra_string = 'req=search&amp;s='.$_GET['s'];
+				}
 				echo $before.'<a href="'.load_option('siteurl').'index.php?'.$extra_string.'&amp;offset='.$older.'">'.$text.'</a>'.$after;
 			}
 		}
 		else {
-			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?offset='.$older.'">'.$text.'</a>'.$after;
+			if($_GET['req'] == 'filtertag' && $_GET['tag'] != '') {
+				$extra_string = 'req=filtertag&amp;tag='.$_GET['tag'].'&amp;';
+			}
+			elseif(is_search()) {
+				$extra_string = 'req=search&amp;s='.$_GET['s'].'&amp;';
+			}
+			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?'.$extra_string.'offset='.$older.'">'.$text.'</a>'.$after;
 		}
 	}
 }
@@ -430,16 +448,19 @@ function prev_page_link($text,$before='',$after='',$args='') {
 			}
 			else {
 				if(is_section()) {
-					$extra_string = 'req=section&amp;name='.$_GET['name'];
+					$extra_string = 'req=section&amp;name='.$_GET['name'].'&amp;';
 				}
 				elseif(is_tag()) {
-					$extra_string = 'req=tag&amp;name='.$_GET['name'];
+					$extra_string = 'req=tag&amp;name='.$_GET['name'].'&amp;';
 				}
-				echo $before.'<a href="'.load_option('siteurl').'index.php?'.$extra_string.'&amp;offset='.$newer.'">'.$text.'</a>'.$after;
+				echo $before.'<a href="'.load_option('siteurl').'index.php?'.$extra_string.'offset='.$newer.'">'.$text.'</a>'.$after;
 			}
 		}
 		else {
-			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?offset='.$newer.'">'.$text.'</a>'.$after;
+			if($_GET['req'] == 'filtertag' && $_GET['tag'] != '') {
+				$extra_string = 'req=filtertag&amp;tag='.$_GET['tag'].'&amp;';
+			}
+			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?'.$extra_string.'offset='.$newer.'">'.$text.'</a>'.$after;
 		}
 	}
 }

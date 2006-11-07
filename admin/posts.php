@@ -33,6 +33,8 @@ if(we_can('edit_posts')) {
 			}
 			break;
 		
+		case "search" :
+		case "filtertag" :
 		default :
 			#Attach this for ajax deleting.
 			function add_ajax_fun() { ?>
@@ -71,9 +73,35 @@ if(we_can('edit_posts')) {
 			</div>
 <?php
 			} ?>
-			<div class="navigation">
-			<?php prev_page_link(_r('&laquo; Newer'),'<div class="alignleft">','</div>','num=16'); ?>
-			<?php next_page_link(_r('Older &raquo;'),'<div class="alignright">','</div>','num=16'); ?>
+			<div class="post-options">
+				<div class="column width50 searchbox">
+					<form method="get" action="posts.php">
+						<label for="s"><?php _e('Search:'); ?></label><br />
+						<input type="hidden" name="req" value="search" />
+						<input type="text" name="s" id="s" value="" />
+						<input type="submit" class="inlinesubmit" value="<?php _e('Search'); ?>" />
+					</form>
+				</div>
+				<div class="column width50 tagfilter">
+<?php
+				$tags = return_all_tags('orderby=ID');
+				if(is_array($tags)) { ?>
+					<form method="get" action="posts.php">
+						<label for="tag"><?php _e('Filter by Tag:'); ?></label><br />
+						<input type="hidden" name="req" value="filtertag" />
+						<select name="tag" id="tag">
+<?php
+					foreach($tags as $tag) { ?>
+							<option value="<?php echo $tag['ID']; ?>"<?php bj_selected($tag['ID'],intval($_GET['tag'])); ?>><?php echo $tag['name']; ?></option>
+<?php
+					} ?>
+						</select>
+						<input type="submit" class="inlinesubmit" value="<?php _e('Show'); ?>" />
+					</form>
+<?php
+				} ?>
+				</div>
+				<div class="c"></div>
 			</div>
 			<table class="edit" cellspacing="2">
 				<tr>
@@ -85,8 +113,17 @@ if(we_can('edit_posts')) {
 					<th class="width10 table">&nbsp;</th>
 					<th class="width10 table">&nbsp;</th>
 				</tr>
-<?php			$posts = get_posts('limit=16&type=public');
-				foreach($posts as $post) { start_post(); ?>
+<?php
+				$query_string = 'limit=16&type=public';
+				if($_GET['req'] == 'filtertag') {
+					$query_string .= '&tag='.intval($_GET['tag']);
+				}
+				if(is_search()) {
+					$query_string .= '&search='.bj_clean_string($_GET['s']);
+				}
+				$posts = get_posts($query_string);
+				if($posts) {
+					foreach($posts as $post) { start_post(); ?>
 				<tr<?php tablealt($i); ?> id="post-<?php echo_ID(); ?>">
 					<td class="aligncenter"><?php echo_ID(); ?></td>
 					<td><?php echo_title(); ?></td>
@@ -96,9 +133,20 @@ if(we_can('edit_posts')) {
 					<td class="editbutton"><a href="posts.php?req=edit&amp;id=<?php echo_ID(); ?>" class="blockit"><?php _e('Edit'); ?></a></td>
 					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit" onclick="deletePost(<?php echo $post['ID']; ?>);return false;"><?php _e('Delete'); ?></a></td>
 				</tr>
-<?php			} ?>
+<?php
+					}
+				}
+				else { ?>
+				<tr>
+					<td colspan="7"><?php _e('No posts found.'); ?></td>
+				</tr>
+<?php
+				} ?>
 			</table>
-			<h3 class="gothere"><a href="post-write.php"><?php _e('Create a Post'); ?> &gt;&gt;</a></h3>
+			<div class="navigation">
+			<?php prev_page_link(_r('&laquo; Newer'),'<div class="alignleft">','</div>','num=16'); ?>
+			<?php next_page_link(_r('Older &raquo;'),'<div class="alignright">','</div>','num=16'); ?>
+			</div>
 		</div>
 <?php
 		get_admin_footer();
