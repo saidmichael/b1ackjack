@@ -144,7 +144,7 @@ function tablealt($i) {
 #Function: get_admin_header()
 #Description: Outputs the admin header.
 function get_admin_header() {
-	global $user,$parent_file,$admin_thisfile,$bj_db; ?>
+	global $user,$parent_file,$admin_thisfile,$bj_db,$menu,$submenu; ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
@@ -161,6 +161,7 @@ function get_admin_header() {
 			elements : "textarea",
 			extended_valid_elements : "a[href|target|name]",
 			debug : false,
+			remove_linebreaks : false,
 			theme_advanced_toolbar_location : "top",
 			theme_advanced_toolbar_align : "left",
 			theme_advanced_statusbar_location : "bottom",
@@ -185,8 +186,36 @@ function get_admin_header() {
 			</div>
 			<div class="c"></div>
 		</div>
+		<ul id="menu">
 <?php
-	require("menu.php");
+foreach($menu as $item) {
+	if($user->user_group >= $item[1]) { ?>
+			<li<?php echo ($parent_file == $item[2]) ? " class=\"active\"" : ""; ?>><a href="<?php echo $item[2]; ?>"><?php echo $item[0]; ?></a></li>
+<?php
+	}
+}
+?>
+		</ul>
+		<ul id="submenu">
+<?php
+if(isset($submenu[$parent_file])) {
+	foreach($submenu[$parent_file] as $subitem) {
+		if($user->user_group >= $subitem[1]) {
+			$str='';
+			if($admin_thisfile.'?plug='.$subitem[3] == basename($_SERVER['REQUEST_URI']) and $subitem[3] != '') {
+				$str = " class=\"active\"";
+			}
+			elseif($admin_thisfile == $subitem[2] and $subitem[3] == '' and $_GET['plug'] == '') {
+				$str = " class=\"active\"";
+			} ?>
+			<li<?php echo $str; ?>><a href="<?php echo $subitem[2];echo ($subitem[3] != '') ? '?plug='.$subitem[3] : ''; ?>"><?php echo $subitem[0]; ?></a></li>
+<?php
+		}
+	}
+}
+?>
+		</ul>
+<?php
 }
 
 #Function: get_admin_footer()
