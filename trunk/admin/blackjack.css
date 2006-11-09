@@ -372,14 +372,14 @@ strong.error {
 .drafts p {
 	padding-bottom:0 !important;
 }
-.post-options {
+.page-options {
 	margin-bottom:10px;
 }
-.post-options input,
-.post-options select {
+.page-options input,
+.page-options select {
 	width:175px;
 }
-.post-options input.inlinesubmit {
+.page-options input.inlinesubmit {
 	width:auto;
 }
 .navigation {
