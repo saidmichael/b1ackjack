@@ -75,12 +75,13 @@ function delete_option($name) {
 
 #Function: add_submenu_page(Tab Name, File Name, URL Hook, Function Hook, User Level)
 #Description: Adds a submenu page to any file. Useful for plugins.
-function add_submenu_page($tabname,$filename,$urlhook,$funchook,$ulevel) {
-	global $user,$submenu,$bj_plugpages;
-	$submenu[$filename][] = array(_r($tabname),$ulevel,$filename.'?plug='.$urlhook);
-	$bj_plugpages[$urlhook] = array(
+function add_submenu_page($tabname,$filename,$urlhook,$funchook,$ulevel,$submenu) {
+	global $user,$bj_plugpages;
+	$submenu[$filename][] = array(_r($tabname),$ulevel,$filename,$urlhook);
+	$submenu['plugs'][$urlhook] = array(
 		'file' => $filename,
 		'hook' => $funchook);
+	return $submenu;
 }
 
 #Function: basename_withpath(Path)
