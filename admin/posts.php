@@ -73,7 +73,7 @@ if(we_can('edit_posts')) {
 			</div>
 <?php
 			} ?>
-			<div class="post-options">
+			<div class="page-options">
 				<div class="column width50 searchbox">
 					<form method="get" action="posts.php">
 						<label for="s"><?php _e('Search:'); ?></label><br />
