@@ -470,6 +470,80 @@ function prev_page_link($text,$before='',$after='',$args='') {
  * Comments
  * ************************
  */
+ 
+ #Function: get_comments(Stuff[, Extra])
+#Description: Modeled after get_posts().
+function get_comments($q,$extra=false) {
+	global $bj_db,$post;
+	parse_str($q,$stuff);
+	$query = "SELECT * FROM ".$bj_db->comments." WHERE";
+	if(isset($stuff['id'])) {
+		$query .= " `ID` = '".intval($stuff['id'])."'";
+	} else {
+		$query .= " `ID` != '0'"; #Just a filler so each value can start with "AND".
+	}
+	if(isset($stuff['postid'])) {
+		$query .= " AND `post_ID` = '".intval($stuff['postid'])."'";
+	}
+	elseif($post) {
+		$query .= " AND `post_ID` = '".$post['ID']."'";
+	}
+	if(isset($stuff['second'])) {
+		$query .= " AND SECOND(`posted_on`) = '".$stuff['second']."'";
+	}
+	if(isset($stuff['minute'])) {
+		$query .= " AND MINUTE(`posted_on`) = '".$stuff['minute']."'";
+	}
+	if(isset($stuff['hour'])) {
+		$query .= " AND HOUR(`posted_on`) = '".$stuff['hour']."'";
+	}
+	if(isset($stuff['day'])) {
+		$query .= " AND DAYOFMONTH(`posted_on`) = '".$stuff['day']."'";
+	}
+	if(isset($stuff['month'])) {
+		$query .= " AND MONTH(`posted_on`) = '".$stuff['month']."'";
+	}
+	if(isset($stuff['year'])) {
+		$query .= " AND YEAR(`posted_on`) = '".$stuff['year']."'";
+	}
+	if(isset($stuff['status'])) {
+		$query .= " AND `status` = '".$stuff['status']."'";
+	}
+	if(isset($stuff['author'])) {
+		$query .= " AND `author_name` = '".$stuff['author']."'";
+	}
+	if(isset($stuff['search'])) {
+		$search = str_replace('+',' ',$stuff['search']);
+		$search = explode(' ',$search);
+		$query .= " AND (((`author_name` LIKE '%".$search[0]."%') OR (`author_email` LIKE '%".$search[0]."%') OR (`author_url` LIKE '%".$search[0]."%') OR (`author_IP` LIKE '%".$search[0]."%') OR (`content` LIKE '%".$search[0]."%'))";
+		for ( $i = 1; $i < count($search); $i++) {
+			$query .= " OR ((`author_name` LIKE '%".$search[$i]."%') OR (`author_email` LIKE '%".$search[$i]."%') OR (`author_url` LIKE '%".$search[$i]."%') OR (`author_IP` LIKE '%".$search[$i]."%') OR (`content` LIKE '%".$search[$i]."%'))";
+		}
+		$query .= ')';
+	}
+	if(isset($stuff['sortby'])) {
+		$query .= " ORDER BY `".$stuff['sortby']."`";
+	}
+	else {
+		$query .= " ORDER BY `posted_on`";
+	}
+	if(isset($stuff['order'])) {
+		$query .= " ".$stuff['order'];
+	}
+	else {
+		$query .= " ASC";
+	}
+	if($extra) {
+		$query .= $extra;
+	}
+	#Limit and offset.
+	if($stuff['num'] != "yes") {
+		return $bj_db->get_rows($query,"ASSOC");
+	}
+	else {
+		return mysql_num_rows($bj_db->query($query));
+	}
+}
 
 #Function: comment_ID()
 #Description: Returns the ID of the comment, filters applied.
