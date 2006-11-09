@@ -55,10 +55,20 @@ if(we_can('edit_comments')) {
 			}
 			add_action('admin_header','add_ajax_love');
 			get_admin_header();
-			$query_string = "SELECT * FROM ".$bj_db->comments." WHERE `status` = 'normal' LIMIT 0,20";
-			$comments = $bj_db->get_rows($query_string,"ASSOC"); ?>
+			$comments = get_comments('status=normal',' LIMIT 0,20'); ?>
 		<div id="wrapper">
 			<h1><?php _e('Manage Comments'); ?></h1>
+			<div class="page-options">
+				<div class="column width50">
+					<form method="get" action="comments.php">
+						<label for="s"><?php _e('Search:'); ?></label><br />
+						<input type="hidden" name="req" value="search" />
+						<input type="text" name="s" id="s" value="" />
+						<input type="submit" class="inlinesubmit" value="<?php _e('Search'); ?>" />
+					</form>
+				</div>
+				<div class="c"></div>
+			</div>
 			<div id="ajaxmessage"></div>
 <?php
 			if($comments) { ?>
