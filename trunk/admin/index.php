@@ -21,7 +21,7 @@ if(we_can('view_frontpage')) {
 					_r('Right now, there are <a href="posts.php">%1$s posts</a>, <a href="sections.php">%2$s sections</a>, <a href="comments.php">%3$s comments</a>, and <a href="tags.php">%4$s tags</a>.'),
 					get_posts('num=yes'),
 					mysql_num_rows($bj_db->query("SELECT * FROM `".$bj_db->sections."`")),
-					mysql_num_rows($bj_db->query("SELECT * FROM `".$bj_db->comments."`")),
+					get_comments('num=yes'),
 					mysql_num_rows($bj_db->query("SELECT * FROM `".$bj_db->tags."`"))
 					); ?></p>
 			</div>

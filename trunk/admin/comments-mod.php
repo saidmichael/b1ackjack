@@ -22,10 +22,9 @@ if(we_can('edit_comments')) {
 		}
 		add_action('admin_header','add_ajax_love');
 		get_admin_header();
-		$query_string = "SELECT * FROM ".$bj_db->comments." WHERE `status` = 'hidden' LIMIT 0,20";
-		$comments = $bj_db->get_rows($query_string,"ASSOC"); ?>
+		$comments = get_comments('status=hidden'); ?>
 		<div id="wrapper">
-			<h1><?php _e('Manage Comments'); ?></h1>
+			<h1><?php _e('Unmoderated Comments'); ?></h1>
 			<div id="ajaxmessage"></div>
 <?php
 		if($comments) { ?>

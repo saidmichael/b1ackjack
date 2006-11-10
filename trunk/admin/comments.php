@@ -34,6 +34,7 @@ if(we_can('edit_comments')) {
 				@header('Location: '.load_option('siteurl').'admin/comments.php');
 			}
 			break;
+		case "search" :
 		default :
 			#Attach this for ajax love.
 			function add_ajax_love() { ?>
@@ -55,7 +56,12 @@ if(we_can('edit_comments')) {
 			}
 			add_action('admin_header','add_ajax_love');
 			get_admin_header();
-			$comments = get_comments('status=normal',' LIMIT 0,20'); ?>
+			if($_GET['req'] == 'search') {
+				$comments = get_comments('status=normal&search='.bj_clean_string($_GET['s']));
+			}
+			else {
+				$comments = get_comments('status=normal',' LIMIT 0,20');
+			} ?>
 		<div id="wrapper">
 			<h1><?php _e('Manage Comments'); ?></h1>
 			<div class="page-options">
@@ -85,7 +91,7 @@ if(we_can('edit_comments')) {
 					<div class="comment-options">
 						<a href="comments.php?req=edit&amp;id=<?php comment_ID(); ?>"><?php _e('Edit'); ?></a> &#8212; 
 						<a href="comments.php?req=delete&amp;id=<?php comment_ID(); ?>" onclick="deleteComment(<?php comment_ID(); ?>);return false;"><?php _e('Delete'); ?></a> &#8212; 
-						<a href="comments.php?req=status&amp;to=hidden&amp;id=<?php comment_ID(); ?>"><?php _e('Hidden'); ?></a> &#8212; 
+						<a href="comments.php?req=status&amp;to=hidden&amp;id=<?php comment_ID(); ?>"><?php _e('Unapprove'); ?></a> &#8212; 
 						<a href="comments.php?req=status&amp;to=spam&amp;id=<?php comment_ID(); ?>"><?php _e('Spam'); ?></a> &#8212; 
 						<a href="posts.php?req=edit&amp;id=<?php echo comment_postid(); ?>"><?php _e('Edit Post'); ?></a>
 					</div>
