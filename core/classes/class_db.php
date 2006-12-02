@@ -83,8 +83,20 @@ class bj_db {
 		return $this->querycount;
 	}
 	
-	function uhoherror($error) {
-		echo $error;
+	function uhoherror($error) { ?>
+<html>
+	<head>
+		<title>Error'd!</title>
+	</head>
+	<body>
+		<h1>Error</h1>
+		<hr />
+		<p><?php echo $error; ?></p>
+		<hr />
+		<p>Powered by Blackjack</p>
+	</body>
+</html>
+<?php
 		die();
 	}
 	

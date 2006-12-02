@@ -21,7 +21,7 @@ if(we_can('edit_posts')) {
 			if(isset($_GET['id'])) {
 				$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
 				$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".intval($_GET['id'])."' LIMIT 1");
-				@header("Location: ".load_option('siteurl')."admin/posts.php");
+				@header("Location: ".load_option('siteurl')."admin/posts.php?deleted=true");
 			}
 			break;
 			
@@ -131,7 +131,7 @@ if(we_can('edit_posts')) {
 					<td><?php echo_tags(", ","","","admin=true"); ?></td>
 					<td class="capitalize aligncenter"><?php _e(get_post_type()); ?></td>
 					<td class="editbutton"><a href="posts.php?req=edit&amp;id=<?php echo_ID(); ?>" class="blockit"><?php _e('Edit'); ?></a></td>
-					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit" onclick="deletePost(<?php echo $post['ID']; ?>);return false;"><?php _e('Delete'); ?></a></td>
+					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit" onclick="deletePost(<?php echo_ID(); ?>);return false;"><?php _e('Delete'); ?></a></td>
 				</tr>
 <?php
 					}

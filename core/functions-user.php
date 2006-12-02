@@ -99,6 +99,9 @@ function we_can($str) {
 		case 'edit_comments' :
 			$check = we_can_check(2);
 			break;
+		case 'edit_sections' :
+			$check = we_can_check(3);
+			break;
 		default:
 			$check = false;
 	}

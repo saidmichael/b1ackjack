@@ -245,11 +245,11 @@ body.login {
 	width:20%;
 }
 .width25 {
-	width:25%;
+	width:24%;
 	padding-right:7px;
 }
 .width30 {
-	width:30%;
+	width:29%;
 }
 .width33 {
 	width:32%;
@@ -261,6 +261,9 @@ body.login {
 }
 .width75 {
 	width:74%;
+}
+.width90 {
+	width:89%;
 }
 .width100 {
 	width:99%;

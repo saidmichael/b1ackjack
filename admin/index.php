@@ -13,7 +13,7 @@ if(we_can('view_frontpage')) {
 <?php			 fancy_altrows(
 					array(_r('Write a Post')=>"post-write.php",
 						  _r('Create a Section')=>"section-create.php",
-						  _r('Change the Website&#8217;s Theme')=>"themes.php"
+						  _r('Change the Website&#8217;s Skin')=>"skins.php"
 					)); ?>
 				</ul>
 				<h2><?php _e('Statistics'); ?></h2>
@@ -33,11 +33,20 @@ if(we_can('view_frontpage')) {
 <?php
 				}
 				else {
-					if($version == "good") { ?>
+					switch($version) {
+						case 'good' : ?>
 				<p><?php _e('Your current version of Blackjack is <strong>up-to-date</strong>. When a new version comes out, you will get a notification in this spot.'); ?></p>
-<?php				} else { ?>
-				<p><?php _e('<strong class="error">Warning!</strong> Your version of Blackjack is currently <strong>out of date</strong>. Please update your version of Blackjack at the <a href="http://ceeps.blogs.tbomonline.com/blackjack/"><strong>Blackjack Minisite</strong></a>.'); ?></p>
-<?php				}
+<?php
+						break;
+						case 'security' : ?>
+				<p><?php _e('<strong class="error"><big>Security alert!</big></strong> Your version of Blackjack has been replaced by a newer version that fixes a major security hole. It is recommended you <a href="http://ceeps.blogs.tbomonline.com/section/blackjack/"><strong>upgrade immediately</strong></a>.'); ?></p>
+<?php
+						break;
+						case 'bad' : ?>
+				<p><?php _e('<strong class="error">Warning!</strong> Your version of Blackjack is currently <strong>out of date</strong>. Please update your version of Blackjack at the <a href="http://ceeps.blogs.tbomonline.com/section/blackjack/"><strong>Blackjack Minisite</strong></a>.'); ?></p>
+<?php				
+						break;
+					}
 				} ?>
 				<h2><?php _e('Blackjack News'); ?></h2>
 				<ul class="altrows">
