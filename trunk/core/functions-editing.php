@@ -12,28 +12,28 @@ function bj_edit_post($id=0) {
 			return false;
 		}
 		if(isset($_POST['save-del'])) {
-			$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
-			$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".intval($_GET['id'])."' LIMIT 1");
+			$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".$id."' LIMIT 1");
+			$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".$id."' LIMIT 1");
 			@header("Location: ".load_option('siteurl')."admin/posts.php?deleted=true");
 			die();
 		}
 		$epost['title'] = bj_clean_string($_POST['title']);
-		$epost['shortname'] = bj_clean_string($_POST['shortname']);
+		$epost['shortname'] = (bj_clean_string($_POST['shortname']) == '') ? $id : bj_clean_string($_POST['shortname']);
 		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
 		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$epost['author'] = $_POST['author'];
-		$tag_string = "";
+		$tag_string = array();
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
-				$tag_string .= $tag.',';
+				$tag_string[] = $tag.'';
 			}
 		}
-		$epost['tags'] = preg_replace('{,$}','',$tag_string);
+		$epost['tags'] = serialize($tag_string);
 		#Change date handling.
 		if($_POST['editstamp'] == "yes") {
 			$epost['posted'] = intval($_POST['stamp_year']).'-'.intval($_POST['stamp_month']).'-'.intval($_POST['stamp_date']).' '.intval($_POST['stamp_hour']).':'.intval($_POST['stamp_min']).':'.intval($_POST['stamp_sec']);
 		}
-		run_filters('post_edit',$epost);
+		$epost = run_filters('post_edit',$epost);
 		#Now let's build our update query.
 		$query = "UPDATE `".$bj_db->posts."` SET `ID` = '".$id."'";
 		foreach($epost as $key=>$value) {
@@ -60,7 +60,7 @@ function bj_edit_post($id=0) {
 #Function: bj_new_post()
 #Description: Creates a post and handles where the user goes.
 function bj_new_post() {
-	global $bj_db,$bj_html_post,$time;
+	global $bj_db,$bj_html_post;
 	if(we_can('write_posts')) {
 		run_actions('pre_post_new');
 		$epost['title'] = bj_clean_string($_POST['title']);
@@ -68,14 +68,14 @@ function bj_new_post() {
 		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
 		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$epost['author'] = $_POST['author'];
-		$tag_string = "";
+		$tag_string = array();
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
-				$tag_string .= $tag.',';
+				$tag_string[] = $tag.'';
 			}
 		}
-		$epost['tags'] = preg_replace('{,$}','',$tag_string);
-		run_filters('post_new',$epost);
+		$epost['tags'] = serialize($tag_string);
+		$epost = run_filters('post_new',$epost);
 		#Now let's build our insert query.
 		$keys = ''; $values = '';
 		$query = "INSERT INTO `".$bj_db->posts."`";
@@ -84,7 +84,7 @@ function bj_new_post() {
 			$values .= ", '".$value."'";
 		}
 		$query .= "(`ID`,`posted`".$keys.")";
-		$query .= " VALUES ('','".date('Y-m-d H:i:s',$time)."'".$values.")";
+		$query .= " VALUES ('','".date('Y-m-d H:i:s',time())."'".$values.")";
 		$bj_db->query($query);
 	
 		if(isset($_POST['save'])) {
@@ -98,6 +98,95 @@ function bj_new_post() {
 	}
 }
 
+#Function: bj_new_section()
+#Description: Creates a section.
+function bj_new_section() {
+	global $bj_db;
+	if(we_can('edit_sections')) {
+		run_actions('pre_new_section');
+		$section['title'] = bj_clean_string($_POST['title']);
+		$section['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($section['title']) : bj_clean_string($_POST['shortname']);
+		$section['hidden'] = bj_clean_string($_POST['hidden']);
+		$section['page_order'] = (empty($_POST['page_order'])) ? 0 : intval($_POST['page_order']);
+		$tag_string = array();
+		if(is_array($_POST['tags'])) {
+			foreach($_POST['tags'] as $tag=>$on) {
+				$tag_string[] = $tag.'';
+			}
+		}
+		$section['tags'] = serialize($tag_string);
+		$section = run_filters('section_new',$section);
+		#Query query.
+		$keys = ''; $values = '';
+		$query = "INSERT INTO `".$bj_db->sections."`";
+		foreach($section as $key=>$value) {
+			$keys .= ", `".$key."`";
+			$values .= ", '".$value."'";
+		}
+		$query .= "(`ID`,`last_updated`".$keys.")";
+		$query .= " VALUES ('','".date('Y-m-d H:i:s',time())."'".$values.")";
+		$bj_db->query($query);
+		if(isset($_POST['save'])) {
+			@header("Location: ".load_option('siteurl')."admin/sections.php");
+		}
+		elseif(isset($_POST['save-cont'])) {
+			$saved = $bj_db->get_item("SELECT `ID` FROM `".$bj_db->sections."` WHERE `title` = '".$section['title']."' LIMIT 1");
+			@header("Location: ".load_option('siteurl')."admin/sections.php?req=edit&id=".$saved['ID']);
+		}
+		die();
+	}
+}
+
+#Function: bj_edit_section(ID)
+#Description: Edit a section. Go from there.
+function bj_edit_section($id = 0) {
+	global $bj_db;
+	if(we_can('edit_sections')) {
+		run_actions('pre_edit_section');
+		$id = intval($id);
+		$former = $bj_db->get_item("SELECT * FROM `".$bj_db->sections."` WHERE `ID` = '".$id."' LIMIT 1");
+		if($id == 0 || !$former) {
+			return false;
+		}
+		if(isset($_POST['save-del'])) {
+			$bj_db->query("DELETE FROM `".$bj_db->sections."` WHERE `ID` = '".$id."' LIMIT 1");
+			@header("Location: ".load_option('siteurl')."admin/sections.php?deleted=true");
+			die();
+		}
+		$section['title'] = bj_clean_string($_POST['title']);
+		$section['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($section['title']) : bj_clean_string($_POST['shortname']);
+		$section['hidden'] = bj_clean_string($_POST['hidden']);
+		$section['last_updated'] = date('Y-m-d H:i:s',time());
+		$section['page_order'] = (empty($_POST['page_order'])) ? 0 : intval($_POST['page_order']);
+		$tag_string = array();
+		if(is_array($_POST['tags'])) {
+			foreach($_POST['tags'] as $tag=>$on) {
+				$tag_string[] = $tag.'';
+			}
+		}
+		$section['tags'] = serialize($tag_string);
+		$section = run_filters('section_edit',$section);
+		#Query query.
+		$query = "UPDATE `".$bj_db->sections."` SET `ID` = '".$id."'";
+		foreach($section as $key=>$value) {
+			if(isset($former[$key])) {
+				if($former[$key] != $value) {
+					$query .= ", `".$key."` = '".$value."'";
+				}
+			}
+		}
+		$query .= " WHERE `ID` = ".$id." LIMIT 1";
+		$bj_db->query($query);
+		if(isset($_POST['save'])) {
+			@header("Location: ".load_option('siteurl')."admin/sections.php");
+		}
+		elseif(isset($_POST['save-cont'])) {
+			@header("Location: ".load_option('siteurl')."admin/sections.php?req=edit&id=".$id);
+		}
+		die();
+	}
+}
+
 #Function: bj_clean_string(String, Allowed HTML[, Args])
 #Description: Cleans anything within the string using kses,
 #			  mysql_real_escape_string, and a few others.
@@ -106,7 +195,20 @@ function bj_clean_string($string,$allowed_html=array()) {
 	if(get_magic_quotes_gpc()) {
 		$string = stripslashes($string);
 	}
-	$string = str_replace(array('\'','"'),array('&#039;','&#034;'),$string);
+	$content = str_replace(
+		array(
+			"<",
+			">",
+			"\"",
+			"'",
+			"&"),
+		array(
+			"&#60;",
+			"&#62;",
+			"&#34;",
+			"&#39;",
+			"&#38;"),
+		$content);
 	$string = bj_kses($string,$allowed_html);
 	$string = $bj_db->escape($string);
 	return run_filters('clean_string',$string);

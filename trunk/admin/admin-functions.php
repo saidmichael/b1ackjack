@@ -46,7 +46,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 						$return_tags = return_tags();
 						$ti = 0;
 						foreach($ourtags as $tag) { ?>
-						<li<?php tablealt($ti); ?>><label for="category-<?php echo $tag['ID']; ?>"><input type="checkbox" id="category-<?php echo $tag['ID']; ?>" name="tags[<?php echo $tag['ID']; ?>]"<?php
+						<li<?php tablealt($ti); ?>><label for="tag-<?php echo $tag['ID']; ?>"><input type="checkbox" id="tag-<?php echo $tag['ID']; ?>" name="tags[<?php echo $tag['ID']; ?>]"<?php
 							if(is_array($return_tags)) { foreach($return_tags as $chtag) {
 								bj_checked($tag['ID'],$chtag['ID']);
 							} } ?> /> <?php echo $tag['name']; ?></label></li>
@@ -98,7 +98,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 					run_actions('end_editor_sidebar'); ?>
 				</div>
 				<div class="column width75">
-					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo bj_clean_string($post['title']); ?>" class="width100 largeinput" /></p>
+					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo $post['title']; ?>" class="width100 largeinput" /></p>
 					<textarea name="content" id="textarea"><?php echo $post['content']; ?></textarea>
 <?php
 					run_actions('end_editor_main');
@@ -124,6 +124,94 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php
 }
 
+#Function: section_editor(Section)
+#Description: Editor form for sections. It works like the
+#			  post form where it defaults with an empty post.
+function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','handler'=>'','tags'=>'','hidden'=>'','page_order'=>'','last_updated'=>'')) { ?>
+			<form name="edit-<?php echo $section['ID']; ?>" action="" method="post">
+				<div class="column width75">
+					<p>
+						<label for="title"><?php _e('Title'); ?></label><br />
+						<input type="text" name="title" id="title" value="<?php echo $section['title']; ?>" class="width90 largeinput" />
+					</p>
+				</div>
+				<div class="column width25">
+					<p>
+						<label for="page_order"><?php _e('Menu Order'); ?></label><br />
+						<input type="text" name="page_order" id="page_order" value="<?php echo $section['page_order']; ?>" class="width90" />
+					</p>
+				</div>
+				<div class="c"></div>
+				<div class="column width25">
+					<h2><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h2>
+					<p><input type="text" name="shortname" id="shortname" value="<?php echo $section['shortname']; ?>" class="width90" /></p>
+				</div>
+				<div class="column width25">
+					<h2><?php _e('Show These Tags'); ?></h2>
+					<ul class="altrows taglist">
+					<?php
+						$ourtags = return_all_tags();
+						$sectiontags = (is_array(@unserialize($section['tags']))) ? unserialize($section['tags']) : array();
+						$ti = 0;
+						foreach($ourtags as $tag) { ?>
+						<li<?php tablealt($ti); ?>><label for="tag-<?php echo $tag['ID']; ?>"><input type="checkbox" id="tag-<?php echo $tag['ID']; ?>" name="tags[<?php echo $tag['ID']; ?>]"<?php
+							foreach($sectiontags as $chtag) {
+								bj_checked($tag['ID'],$chtag);
+							} ?> /> <?php echo $tag['name']; ?></label></li>
+<?php					$ti++; }
+						unset($ti); ?>
+					</ul>
+				</div>
+				<div class="column width25">
+					<h2><label for="hidden"><?php _e('Hidden?'); ?></label></h2>
+					<p>
+						<select name="hidden" id="hidden" class="width90">
+							<option value="yes"<?php bj_selected($section['hidden'],'yes'); ?>><?php _e('Yes'); ?></option>
+							<option value="no"<?php bj_selected($section['hidden'],'no'); ?>><?php _e('No'); ?></option>
+						</select>
+					</p>
+				</div>
+				<div class="column width25">
+					<h2><label for="handler"><var title="<?php _e('A section handler is a special PHP file within the current theme that can be used to parse PHP or deviate from the default section template. Useful for advanced skinners.'); ?>"><?php _e('Section Handler'); ?></var></label></h2>
+					<p>
+<?php
+						$skin_files = FileFolderList(BJTEMPLATE); ?>
+						<select name="handler" id="handler" class="width90">
+							<option value=""<?php bj_selected($section['handler'],''); ?>><?php _e('Default Handler'); ?></option>
+<?php
+						foreach($skin_files['files'] as $num=>$file) {
+							$data = parse_file_info($file,array('Template Name'));
+							if($data['Template Name'] != '') { ?>
+							<option value="<?php echo basename($file); ?>"<?php bj_selected($section['handler'],basename($file)); ?>><?php echo $data['Template Name']; ?></option>
+<?php
+							}
+						} ?>
+						</select>
+					</p>
+				</div>
+				<div class="c"></div>
+<?php
+					if($section['ID'] == "0") { ?>
+				<input type="hidden" name="new-section-send" value="yes" />
+<?php
+					} else { ?>
+				<input type="hidden" name="edit-section-send" value="yes" />
+				<input type="hidden" name="edit-section-id" value="<?php echo $section['ID']; ?>" />
+<?php
+					} ?>
+				<div class="submit">
+<?php
+					if($section['ID'] != "0") { ?>
+					<input type="submit" name="save-del" value="<?php _e('Delete Section'); ?>" class="delete" />
+<?php
+					} ?>
+					<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
+					<input type="submit" name="save" value="<?php _e('Save'); ?>" style="font-weight:bold;" />
+				</div>
+			</form>
+<?php
+}
+
 #Function: run_bj_forms()
 #Description: Carries out the actions for already-existing forms.
 function run_bj_forms() {
@@ -132,6 +220,12 @@ function run_bj_forms() {
 	}
 	elseif(isset($_POST['edit-post-send'])) {
 		bj_edit_post($_POST['edit-post-id']);
+	}
+	elseif(isset($_POST['new-section-send'])) {
+		bj_new_section();
+	}
+	elseif(isset($_POST['edit-section-send'])) {
+		bj_edit_section($_POST['edit-section-id']);
 	}
 }
 
@@ -150,10 +244,10 @@ function get_admin_header() {
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title><?php _e('Blackjack Admin Panel'); ?></title>
-		<link rel="stylesheet" href="blackjack.css" type="text/css" />
+		<link rel="stylesheet" href="blackjack.css" type="text/css" media="screen" />
+		<script language="javascript" type="text/javascript" src="../jscripts/mootools.js"></script>
 		<!-- tinyMCE -->
 		<script language="javascript" type="text/javascript" src="../jscripts/tiny_mce/tiny_mce.js"></script>
-		<script language="javascript" type="text/javascript" src="../jscripts/mootools.js"></script>
 		<script language="javascript" type="text/javascript">
 		tinyMCE.init({
 			theme : "advanced",

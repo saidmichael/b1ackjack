@@ -14,16 +14,20 @@ switch($_GET['req']) {
 			load_404_instead();
 		}
 		$query_string = 'offset='.$offset;
-		if(!empty($section['tags'])) { # Are we filtering by any tags?
-			$query_string .= '&tag='.$section['tags'];
+		$tags = unserialize($section['tags']);
+		$tag_str = '';
+		if(isset($tags[0])) { # Are we filtering by any tags?
+			foreach($tags as $tag) {
+				$tag_str .= $tag.', ';
+			}
+			$query_string .= '&tag='.preg_replace('{, $}','',$tag_str);
 		}
-		if($section['onepost'] != '') {
-			$query_string .= '&shortname='.$section['onepost'];
-		}
+		unset($tags);
+		unset($tag_str);
 		$posts = get_posts($query_string);
 		
-		if(file_exists(BJTEMPLATE .'/section-single.php') && $section['onepost'] != '') {
-			include(BJTEMPLATE . '/section-single.php');
+		if(file_exists(BJTEMPLATE .'/'.$section['handler']) and $section['handler'] != '') {
+			include(BJTEMPLATE .'/'.$section['handler']);
 		}
 		elseif(file_exists(BJTEMPLATE .'/section.php')) {
 			include(BJTEMPLATE . '/section.php');
@@ -52,7 +56,10 @@ switch($_GET['req']) {
 		}
 		$query_string = 'offset='.$offset.'&tag='.$tag['ID'];
 		$posts = get_posts($query_string);
-		if(file_exists(BJTEMPLATE . '/tag.php')) {
+		if(file_exists(BJTEMPLATE . '/tag-'.$tag['ID'].'.php')) {
+			include(BJTEMPLATE . '/tag'.$tag['ID'].'.php');
+		}
+		elseif(file_exists(BJTEMPLATE . '/tag.php')) {
 			include(BJTEMPLATE . '/tag.php');
 		}
 		else {
@@ -64,18 +71,23 @@ switch($_GET['req']) {
 		if(!$section) {
 			load_404_instead();
 		}
-		if($section['onepost'] != '') {
-			$query_string = 'shortname='.$section['onepost'].'&limit=1';
-			$posts = get_posts($query_string);
+		$query_string = 'offset='.$offset;
+		$tags = unserialize($section['tags']);
+		$tag_str = '';
+		# Are we filtering by any tags?
+		foreach($tags as $tag) {
+			$tag_str .= $tag.', ';
+		}
+		$query_string .= '&tag='.preg_replace('{, $}','',$tag_str);
+		unset($tags);
+		unset($tag_str);
+		$posts = get_posts($query_string);
+		if(file_exists(BJTEMPLATE .'/'.$section['handler']) and $section['handler'] != '') {
+			include(BJTEMPLATE .'/'.$section['handler']);
 		}
 		else {
-			$query_string = 'offset='.$offset;
-			if(!empty($section['tags'])) { # Are we filtering by any tags?
-				$query_string .= '&tag='.$section['tags'];
-			}
-			$posts = get_posts($query_string);
+			include(BJTEMPLATE . '/index.php');
 		}
-		include(BJTEMPLATE . '/index.php');
 }
 
 ?>

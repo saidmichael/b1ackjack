@@ -1,11 +1,11 @@
 <?php
 
 $menu[] = array(_r('Front Page'),1,'index.php');
-$menu[] = array(_r('Posts'),2,'posts.php');
-$menu[] = array(_r('Comments'),2,'comments.php');
 $menu[] = array(_r('Sections'),3,'sections.php');
 $menu[] = array(_r('Tags'),3,'tags.php');
-$menu[] = array(_r('Look &amp; Feel'),4,'themes.php');
+$menu[] = array(_r('Posts'),2,'posts.php');
+$menu[] = array(_r('Comments'),2,'comments.php');
+$menu[] = array(_r('Look &amp; Feel'),4,'skins.php');
 $menu[] = array(_r('Options'),4,'options.php');
 $menu = run_filters('admin_menu',$menu);
 

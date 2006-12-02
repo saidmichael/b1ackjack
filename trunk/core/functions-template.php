@@ -104,20 +104,25 @@ function get_posts($q) {
 		$query .= " AND `shortname` = '".$stuff['shortname']."'";
 	}
 	if(isset($stuff['tag'])) {
-		$query .= " AND (";
-		$tags = explode(",",$stuff['tag']);
-		foreach($tags as $num=>$tag) {
-			if($num != 0) {
-				$query .= " OR ";
-			}
-			if(substr($tag,0,1) == "-") {
-				$query .= "`tags` NOT REGEXP '".substr($tag,1)."'";
-			}
-			else {
-				$query .= "`tags` REGEXP '".$tag."'";
-			}
+		if($stuff['tag'] == '') {
+			$query .= "AND `tags` = 'a:0:{}'";
 		}
-		$query .= ")";
+		else {
+			$query .= " AND (";
+			$tags = explode(",",$stuff['tag']);
+			foreach($tags as $num=>$tag) {
+				if($num != 0) {
+					$query .= " OR ";
+				}
+				if(substr($tag,0,1) == "-") {
+					$query .= "`tags` NOT REGEXP '\"".substr($tag,1)."\"'";
+				}
+				else {
+					$query .= "`tags` REGEXP '\"".$tag."\"'";
+				}
+			}
+			$query .= ")";
+		}
 	}
 	if(isset($stuff['type'])) {
 		$query .= " AND `ptype` = '".$stuff['type']."'";
@@ -209,7 +214,7 @@ function rss_tags($between='',$before='',$after='',$extra=false) {
 #Description: Returns the tags for a post. Can be used only in a loop. 
 function return_tags($extra=false) {
 	global $post,$posts,$bj_db;
-	$tags = explode(",",$post['tags']);
+	$tags = unserialize($post['tags']);
 	$retarr = array();
 	if($extra) {
 		parse_str($extra,$args);
@@ -239,6 +244,7 @@ function return_tags($extra=false) {
 function start_post() {
 	global $i;
 	$i++;
+	run_actions('start_post');
 }
 
 #Function: echo_ID()
@@ -630,10 +636,10 @@ function comment_postid() {
 #Description: Returns the sections in a list.
 function echo_sections() {
 	$sections = return_sections();
-	foreach($sections as $this_section) { ?>
+	foreach($sections as $this_section) { if($this_section['hidden'] != 'yes') { ?>
 <li class="section-li<?php echo ($this_section['this'] == 1) ? ' current-section' : ''; ?>"><a href="<?php echo get_section_permalink($this_section); ?>"><?php echo wptexturize($this_section['title']); ?></a></li>
 <?php
-	}
+	} }
 }
 
 #Function: return_sections()

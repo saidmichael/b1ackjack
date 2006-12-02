@@ -1,5 +1,38 @@
 <?php
 
+#Function: FileFolderList(Path[, Depth[, Current[, Level]]])
+#Description: Returns a list of files and folders in an associative array.
+function FileFolderList($path, $depth = 0, $current = '', $level=0) {
+	if ($level==0 && !@file_exists($path))
+		return false;
+	if (is_dir($path)) {
+		$handle = @opendir($path);
+		if ($depth == 0 || $level < $depth)
+			while($filename = @readdir($handle))
+				if ($filename != '.' && $filename != '..')
+					$current = @FileFolderList($path.'/'.$filename, $depth-1, $current, $level+1);
+		@closedir($handle);
+		$current['folders'][] = $path.'/'.$filename;
+	} else
+		if (is_file($path))
+			$current['files'][] = $path;
+	return $current;
+}
+
+#Function: parse_file_info(File Path[, Names])
+#Description: Parses a file's text, searching for certain descriptions in
+#			  this format: Name: Value.
+function parse_file_info($file,$names=array()) {
+	$data = array();
+	$filetext = file_get_contents($file);
+	foreach ($names as $name) {
+		$new_name = array();
+		preg_match("{".$name.":(.*)}i", $filetext, $new_name);
+		$data[$name] = trim($new_name[1]);
+	}
+	return $data;
+}
+
 #Function: load_option(Option Name)
 #Description: Loads an option's value.
 function load_option($name) {

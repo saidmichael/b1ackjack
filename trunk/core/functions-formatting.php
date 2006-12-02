@@ -1,26 +1,5 @@
 <?php
 
-#Function: bj_clean(Content)
-#Description: Cleans the content....duh.
-function bj_clean($content){
-	$content = stripslashes($content);
-	$content = str_replace(
-		array(
-			"<",
-			">",
-			"\"",
-			"'",
-			"&"),
-		array(
-			"&#60;",
-			"&#62;",
-			"&#34;",
-			"&#39;",
-			"&#38;"),
-		$content);
-	return $content;
-}
-
 #Function:bj_excerpt(Content, Length)
 #Description:Makes an excerpt out of the content.
 function bj_excerpt($content,$length=120){

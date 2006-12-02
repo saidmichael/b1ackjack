@@ -1,53 +1,33 @@
 <?php
 #Borrowed from AJ-Fork
 
-function FileFolderList($path, $depth = 0, $current = '', $level=0) {
-	if ($level==0 && !@file_exists($path))
-		return false;
-	if (is_dir($path)) {
-		$handle = @opendir($path);
-		if ($depth == 0 || $level < $depth)
-			while($filename = @readdir($handle))
-				if ($filename != '.' && $filename != '..')
-					$current = @FileFolderList($path.'/'.$filename, $depth, $current, $level+1);
-		@closedir($handle);
-		$current['folder'][] = $path.'/'.$filename;
-	} else
-		if (is_file($path))
-			$current['file'][] = $path;
-	return $current;
-}
-
 function available_plugins() {
 	$ffl = FileFolderList(BJPATH . 'content/plugins',1);
-	$plugins = $ffl['file'];
+	$plugins = $ffl['files'];
 	if (!empty($plugins))
 		foreach ($plugins as $null => $pluginfile) {
 			if (stristr($pluginfile, ".htaccess")) { continue; }
 			
-			$plugin_data = read_file_contents($pluginfile);
-			preg_match("{Plugin Name:(.*)}i", $plugin_data, $plugin['name']);
-			preg_match("{Plugin URI:(.*)}i", $plugin_data, $plugin['uri']);
-			preg_match("{Description:(.*)}i", $plugin_data, $plugin['description']);
-			preg_match("{Author:(.*)}i", $plugin_data, $plugin['author']);
-			preg_match("{Author URI:(.*)}i", $plugin_data, $plugin['author_uri']);
-			preg_match("{Version:(.*)}i", $plugin_data, $plugin['version']);
-			preg_match("{Application:(.*)}i", $plugin_data, $plugin['application']);
-
-			$application = trim($plugin['application'][1]);
-				
-			// Skip plugins designed for other systems
-			if ($application && $application == 'Blackjack')
-				continue;
+			$plugin_data = file_get_contents($pluginfile);
+			$names = array(
+				'Plugin Name',
+				'Plugin URI',
+				'Description',
+				'Author',
+				'Author URI',
+				'Version',
+				'Application'
+			);
+			$data = parse_file_info($plugin_data,$names);
 
 			$available_plugins[] = array(
-				'name'			=> trim($plugin['name'][1]),
-				'uri'			=> trim($plugin['uri'][1]),
-				'description'	=> trim($plugin['description'][1]),
-				'author'		=> trim($plugin['author'][1]),
-				'author_uri'	=> trim($plugin['author_uri'][1]),
-				'version'		=> trim($plugin['version'][1]),
-				'application'	=> trim($plugin['application'][1]),
+				'name'			=> $data['Plugin Name'],
+				'uri'			=> $data['Plugin URI'],
+				'description'	=> $data['Description'],
+				'author'		=> $data['Author'],
+				'author_uri'	=> $data['Author URI'],
+				'version'		=> $data['Version'],
+				'application'	=> $data['Application'],
 				'file'			=> basename($pluginfile),
 			);
 		}
