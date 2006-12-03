@@ -2,10 +2,8 @@
 $parent_file = "sections.php";
 require("admin-head.php");
 get_admin_header(); ?>
-		<div id="wrapper">
-			<h1><?php _e('Create a Section'); ?></h1>
+			<h2><?php _e('Create a Section'); ?></h2>
 <?php section_editor(); ?>
-		</div>
 <?php
 get_admin_footer();
 ?>

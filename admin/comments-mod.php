@@ -23,8 +23,7 @@ if(we_can('edit_comments')) {
 		add_action('admin_header','add_ajax_love');
 		get_admin_header();
 		$comments = get_comments('status=hidden'); ?>
-		<div id="wrapper">
-			<h1><?php _e('Unmoderated Comments'); ?></h1>
+			<h2><?php _e('Unmoderated Comments'); ?></h2>
 			<div id="ajaxmessage"></div>
 <?php
 		if($comments) { ?>
@@ -54,9 +53,7 @@ if(we_can('edit_comments')) {
 		else { ?>
 			<p><?php _e('No comments here. :-)'); ?></p>
 <?php
-		} ?>
-		</div>
-<?php
+		}
 		get_admin_footer();
 }
 else {

@@ -6,10 +6,8 @@ if(we_can('edit_sections')) {
 		case "edit" :
 			$section = $bj_db->get_item("SELECT * FROM `".$bj_db->sections."` WHERE `ID` = ".intval($_GET['id'])." LIMIT 1");
 			get_admin_header(); ?>
-		<div id="wrapper">
-			<h1><?php printf(_r('Editing %1$s'),$section['title']); ?></h1>
+			<h2><?php printf(_r('Editing %1$s'),$section['title']); ?></h2>
 <?php section_editor($section); ?>
-		</div>
 <?php
 			get_admin_footer();
 			break;
@@ -34,7 +32,7 @@ if(we_can('edit_sections')) {
 			document.getElementById("ajaxmessage").innerHTML="<strong class=\"error\">" + text +"</strong>";
 		};
 		deleteSection = function(id){
-			var j00sure = confirm("<?php _e('Are you sure you wish to delete this section?'); ?>");
+			var j00sure = confirm("");
 			if(j00sure) {
 				var delCall = new Ajax('sections.php?req=ajaxdelete&id='+id,{onComplete:confirmus});
 				delCall.request();
@@ -48,8 +46,7 @@ if(we_can('edit_sections')) {
 			add_action('admin_header','add_ajax_fun');
 			get_admin_header();
 			$sections = return_sections(); ?>
-		<div id="wrapper">
-			<h1><?php _e('Edit Sections'); ?></h1>
+			<h2><?php _e('Edit Sections'); ?></h2>
 			<div id="ajaxmessage"><?php if($_GET['deleted'] == "true") { echo '<strong class="error">'._r('Section deleted.').'</strong>'; } ?></div>
 			<table class="edit" cellspacing="2">
 				<tr>
@@ -81,13 +78,12 @@ if(we_can('edit_sections')) {
 					} ?></td>
 					<td class="capitalize aligncenter"><?php _e($section['hidden']); ?></td>
 					<td class="editbutton"><a href="sections.php?req=edit&amp;id=<?php echo $section['ID']; ?>" class="blockit"><?php _e('Edit'); ?></a></td>
-					<td class="editbutton"><a href="sections.php?req=delete&amp;id=<?php echo $section['ID']; ?>" class="blockit" onclick="deleteSection(<?php echo $section['ID']; ?>);return false;"><?php _e('Delete'); ?></a></td>
+					<td class="editbutton"><a href="sections.php?req=delete&amp;id=<?php echo $section['ID']; ?>" class="blockit" onclick="ajaxDelete('sections.php?req=ajaxdelete&amp;id=<?php echo $section['ID']; ?>,'section-<?php echo $section['ID']; ?>','<?php _e('Are you sure you wish to delete this section?'); ?>');return false;"><?php _e('Delete'); ?></a></td>
 				</tr>
 <?php
 				$i++;
 			} ?>
 			</table>
-		</div>
 <?php
 			get_admin_footer();
 	}
