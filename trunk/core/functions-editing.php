@@ -17,26 +17,26 @@ function bj_edit_post($id=0) {
 			@header("Location: ".load_option('siteurl')."admin/posts.php?deleted=true");
 			die();
 		}
-		$epost['title'] = bj_clean_string($_POST['title']);
-		$epost['shortname'] = (bj_clean_string($_POST['shortname']) == '') ? $id : bj_clean_string($_POST['shortname']);
-		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
-		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
-		$epost['author'] = $_POST['author'];
+		$post['title'] = bj_clean_string($_POST['title']);
+		$post['shortname'] = (bj_clean_string($_POST['shortname']) == '') ? $id : bj_clean_string($_POST['shortname']);
+		$post['content'] = bj_clean_string($_POST['content'],$bj_html_post);
+		$post['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
+		$post['author'] = $_POST['author'];
 		$tag_string = array();
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
 				$tag_string[] = $tag.'';
 			}
 		}
-		$epost['tags'] = serialize($tag_string);
+		$post['tags'] = serialize($tag_string);
 		#Change date handling.
 		if($_POST['editstamp'] == "yes") {
-			$epost['posted'] = intval($_POST['stamp_year']).'-'.intval($_POST['stamp_month']).'-'.intval($_POST['stamp_date']).' '.intval($_POST['stamp_hour']).':'.intval($_POST['stamp_min']).':'.intval($_POST['stamp_sec']);
+			$post['posted'] = intval($_POST['stamp_year']).'-'.intval($_POST['stamp_month']).'-'.intval($_POST['stamp_date']).' '.intval($_POST['stamp_hour']).':'.intval($_POST['stamp_min']).':'.intval($_POST['stamp_sec']);
 		}
-		$epost = run_filters('post_edit',$epost);
+		$post = run_filters('post_edit',$post);
 		#Now let's build our update query.
 		$query = "UPDATE `".$bj_db->posts."` SET `ID` = '".$id."'";
-		foreach($epost as $key=>$value) {
+		foreach($post as $key=>$value) {
 			if(isset($former[$key])) {
 				if($former[$key] != $value) {
 					$query .= ", `".$key."` = '".$value."'";
@@ -63,23 +63,23 @@ function bj_new_post() {
 	global $bj_db,$bj_html_post;
 	if(we_can('write_posts')) {
 		run_actions('pre_post_new');
-		$epost['title'] = bj_clean_string($_POST['title']);
-		$epost['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($epost['title']) : bj_clean_string($_POST['shortname']);
-		$epost['content'] = bj_clean_string($_POST['content'],$bj_html_post);
-		$epost['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
-		$epost['author'] = $_POST['author'];
+		$post['title'] = bj_clean_string($_POST['title']);
+		$post['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($epost['title']) : bj_clean_string($_POST['shortname']);
+		$post['content'] = bj_clean_string($_POST['content'],$bj_html_post);
+		$post['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
+		$post['author'] = $_POST['author'];
 		$tag_string = array();
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
 				$tag_string[] = $tag.'';
 			}
 		}
-		$epost['tags'] = serialize($tag_string);
-		$epost = run_filters('post_new',$epost);
+		$post['tags'] = serialize($tag_string);
+		$post = run_filters('post_new',$epost);
 		#Now let's build our insert query.
 		$keys = ''; $values = '';
 		$query = "INSERT INTO `".$bj_db->posts."`";
-		foreach($epost as $key=>$value) {
+		foreach($post as $key=>$value) {
 			$keys .= ", `".$key."`";
 			$values .= ", '".$value."'";
 		}

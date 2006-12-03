@@ -13,7 +13,7 @@ switch($_GET['req']) {
 	break;
 	case "logout" :
 		validate_session();
-		setcookie("bj_auth",'',$time-7200,'/');
+		setcookie("bj_auth",'',time()-7200,'/');
 		@header("Location: ".load_option('siteurl')."admin/login.php");
 		die();
 	break;
@@ -23,12 +23,12 @@ switch($_GET['req']) {
 			$user = $bj_db->get_item("SELECT * FROM `".$bj_db->users."` WHERE `login` = '".bj_clean_string($_POST['login'],array(),true)."' AND `password` = '".md5($_POST['password'])."' LIMIT 1");
 			if(isset($user['login'])) {
 				if($_POST['remember'] != "") {
-					setcookie("bj_auth",md5($time.md5($user['password'])),$time+31536000,'/');
+					setcookie("bj_auth",md5(time().md5($user['password'])),time()+31536000,'/');
 				}
 				else {
-					setcookie("bj_auth",md5($time.md5($user['password'])),$time+7200,'/');
+					setcookie("bj_auth",md5(time().md5($user['password'])),time()+7200,'/');
 				}
-				$bj_db->query("UPDATE `".$bj_db->users."` SET `login_key` = '".md5($time.md5($user['password']))."' WHERE `ID` = ".$user['ID']." LIMIT 1 ;");
+				$bj_db->query("UPDATE `".$bj_db->users."` SET `login_key` = '".md5(time().md5($user['password']))."' WHERE `ID` = ".$user['ID']." LIMIT 1 ;");
 				@header("Location: ".load_option('siteurl')."admin/".$_POST['redirect']);
 				die();
 			}
@@ -47,7 +47,7 @@ switch($_GET['req']) {
 	<body class="login">
 		<div class="loginbox">
 			<div class="innerlogin">
-				<a class="aligncenter" id="logo" href="http://ceeps.blogs.tbomonline.com/section/blackjack/"></a>
+				<a class="aligncenter" id="logo" href="http://ceeps.blogs.tbomonline.com/section/blackjack/"><h1 class="blank"><?php _e('Blackjack'); ?></h1></a>
 				<?php
 				if(is_array($errors)) { ?>
 					<div class="loginerror littlespacing"><?php

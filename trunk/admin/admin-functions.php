@@ -39,7 +39,7 @@ function fancy_altrows($rows) {
 function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','content'=>'','content'=>'','author'=>'','posted'=>'','ptype'=>'','parent'=>'','comment_count'=>'','tags'=>'')) { ?>
 			<form name="edit-<?php echo $post['ID']; ?>" action="" method="post">
 				<div class="column width25">
-					<h2><?php _e('Tags'); ?></h2>
+					<h3><?php _e('Tags'); ?></h3>
 					<ul class="altrows taglist">
 					<?php
 						$ourtags = return_all_tags();
@@ -53,12 +53,12 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 <?php					$ti++; }
 						unset($ti); ?>
 					</ul>
-					<h2><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h2>
+					<h3><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h3>
 					<p><input type="text" name="shortname" id="shortname" value="<?php echo $post['shortname']; ?>" class="width100" /></p>
-					<h2><?php _e('Post Type'); ?></h2>
+					<h3><?php _e('Post Type'); ?></h3>
 					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php bj_checked(get_post_type(),'public'); ?> /> <?php _e('Public'); ?></label><br />
 					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php bj_checked(get_post_type(),'draft'); ?> /> <?php _e('Draft'); ?></label></p>
-					<h2><?php _e('Post Author'); ?></h2>
+					<h3><?php _e('Post Author'); ?></h3>
 					<p><select name="author" class="width100">
 <?php
 					$authors = get_users('gop=>=&group=2');
@@ -70,7 +70,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 					</select></p>
 <?php
 					if($post['posted'] != "") { ?>
-					<h2><?php _e('Edit Timestamp'); ?></h2>
+					<h3><?php _e('Edit Timestamp'); ?></h3>
 					<p><?php printf(_r('Timestamp is %1$s on %2$s.'),get_post_date('F jS, Y'),get_post_date('H:i:s')); ?></p>
 					<p><input type="checkbox" id="editstamp" name="editstamp" value="yes"> <label for="editstamp"><?php _e('Edit timestamp?'); ?></label><br />
 					<select name="stamp_month">
@@ -141,13 +141,13 @@ function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','
 						<input type="text" name="page_order" id="page_order" value="<?php echo $section['page_order']; ?>" class="width90" />
 					</p>
 				</div>
-				<div class="c"></div>
+				<div class="clear"></div>
 				<div class="column width25">
-					<h2><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h2>
+					<h3><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h3>
 					<p><input type="text" name="shortname" id="shortname" value="<?php echo $section['shortname']; ?>" class="width90" /></p>
 				</div>
 				<div class="column width25">
-					<h2><?php _e('Show These Tags'); ?></h2>
+					<h3><?php _e('Show These Tags'); ?></h3>
 					<ul class="altrows taglist">
 					<?php
 						$ourtags = return_all_tags();
@@ -163,7 +163,7 @@ function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','
 					</ul>
 				</div>
 				<div class="column width25">
-					<h2><label for="hidden"><?php _e('Hidden?'); ?></label></h2>
+					<h3><label for="hidden"><?php _e('Hidden?'); ?></label></h3>
 					<p>
 						<select name="hidden" id="hidden" class="width90">
 							<option value="yes"<?php bj_selected($section['hidden'],'yes'); ?>><?php _e('Yes'); ?></option>
@@ -172,7 +172,7 @@ function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','
 					</p>
 				</div>
 				<div class="column width25">
-					<h2><label for="handler"><var title="<?php _e('A section handler is a special PHP file within the current theme that can be used to parse PHP or deviate from the default section template. Useful for advanced skinners.'); ?>"><?php _e('Section Handler'); ?></var></label></h2>
+					<h3><label for="handler"><var title="<?php _e('A section handler is a special PHP file within the current theme that can be used to parse PHP or deviate from the default section template. Useful for advanced skinners.'); ?>"><?php _e('Section Handler'); ?></var></label></h3>
 					<p>
 <?php
 						$skin_files = FileFolderList(BJTEMPLATE); ?>
@@ -189,7 +189,7 @@ function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','
 						</select>
 					</p>
 				</div>
-				<div class="c"></div>
+				<div class="clear"></div>
 <?php
 					if($section['ID'] == "0") { ?>
 				<input type="hidden" name="new-section-send" value="yes" />
@@ -246,39 +246,21 @@ function get_admin_header() {
 		<title><?php _e('Blackjack Admin Panel'); ?></title>
 		<link rel="stylesheet" href="blackjack.css" type="text/css" media="screen" />
 		<script language="javascript" type="text/javascript" src="../jscripts/mootools.js"></script>
-		<!-- tinyMCE -->
 		<script language="javascript" type="text/javascript" src="../jscripts/tiny_mce/tiny_mce.js"></script>
-		<script language="javascript" type="text/javascript">
-		tinyMCE.init({
-			theme : "advanced",
-			mode : "exact",
-			elements : "textarea",
-			extended_valid_elements : "a[href|target|name]",
-			debug : false,
-			remove_linebreaks : false,
-			theme_advanced_toolbar_location : "top",
-			theme_advanced_toolbar_align : "left",
-			theme_advanced_statusbar_location : "bottom",
-			theme_advanced_resize_horizontal : false,
-			theme_advanced_resizing : true
-		});
-		window.onload = function() {
-			new Tips($S('var'), {transitionStart:Fx.Transitions.sineIn,transitionEnd:Fx.Transitions.sineOut});
-		};
-		</script>
-		<!-- /tinyMCE -->
+		<script language="javascript" type="text/javascript" src="../jscripts/blackjack.js"></script>
 <?php run_actions('admin_header'); ?>
 	</head>
 	<body>
 		<div id="top">
 			<div class="alignleft userinfo">
-				<strong><?php echo load_option('sitename'); ?></strong> - <?php printf(_r('Logged in as <a href="profile.php">%1$s</a>'),$user->display_name); ?>
+				<h1><a href="<?php siteinfo('siteurl'); ?>"><?php siteinfo('sitename'); ?></a></h1>
+				<p><?php printf(_r('Logged in as %1$s'),$user->display_name); ?></p>
 			</div>
-			<div class="alignright lightpart">
+			<p class="alignright lightpart">
 				<a href="profile.php" class="profile"><?php _e('Profile'); ?></a>
 				<a href="login.php?req=logout" class="logout"><?php _e('Logout'); ?></a>
-			</div>
-			<div class="c"></div>
+			</p>
+			<div class="clear"></div>
 		</div>
 		<ul id="menu">
 <?php
@@ -290,6 +272,7 @@ foreach($menu as $item) {
 }
 ?>
 		</ul>
+		<p class="blank"><?php _e('Submenu:'); ?></p>
 		<ul id="submenu">
 <?php
 if(isset($submenu[$parent_file])) {
@@ -309,6 +292,8 @@ if(isset($submenu[$parent_file])) {
 }
 ?>
 		</ul>
+		<hr />
+		<div id="wrapper">
 <?php
 }
 
@@ -316,7 +301,9 @@ if(isset($submenu[$parent_file])) {
 #Description: Outputs the admin footer.
 function get_admin_footer() {
 	global $bj_db,$bj_version; ?>
+		</div>
 <?php run_actions('admin_footer'); ?>
+		<hr />
 		<div id="footer">
 			<p><?php printf(_r('Blackjack %1$s - %2$s Queries'),$bj_version,$bj_db->querycount()); ?></p>
 		</div>

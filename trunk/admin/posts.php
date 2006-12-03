@@ -8,10 +8,8 @@ if(we_can('edit_posts')) {
 				get_admin_header();
 				$posts = get_posts('id='.intval($_GET['id']).'&limit=1');
 				foreach($posts as $post) { start_post(); ?>
-		<div id="wrapper">
-			<h1><?php printf(_r('Editing %1$s'),return_title()); ?></h1>
+			<h2><?php printf(_r('Editing %1$s'),return_title()); ?></h2>
 <?php do_editorform($post); ?>
-		</div>
 <?php			}
 				get_admin_footer();
 			}
@@ -36,35 +34,15 @@ if(we_can('edit_posts')) {
 		case "search" :
 		case "filtertag" :
 		default :
-			#Attach this for ajax deleting.
-			function add_ajax_fun() { ?>
-		<script language="javascript" type="text/javascript">
-		confirmus = function(text,xml,thing){
-			document.getElementById("ajaxmessage").innerHTML="<strong class=\"error\">" + text +"</strong>";
-		};
-		deletePost = function(id){
-			var j00sure = confirm("<?php _e('Are you sure you wish to delete this post?'); ?>");
-			if(j00sure) {
-				var delCall = new Ajax('posts.php?req=ajaxdelete&id='+id,{onComplete:confirmus});
-				delCall.request();
-				var hideThis = new Fx.Opacity('post-'+id,{duration:750});
-				hideThis.custom(1, 0.2);
-			}
-		};
-		</script>
-<?php
-			}
-			add_action('admin_header','add_ajax_fun');
 			get_admin_header();
 ?>
-		<div id="wrapper">
-			<h1><?php _e('Manage Posts'); ?></h1>
+			<h2><?php _e('Manage Posts'); ?></h2>
 			<div id="ajaxmessage"><?php if($_GET['deleted'] == "true") { echo '<strong class="error">'._r('Post deleted.').'</strong>'; } ?></div>
 <?php
 			$drafts = $bj_db->get_rows("SELECT `ID`,`title` FROM `".$bj_db->posts."` WHERE `ptype` = 'draft' ORDER BY `ID` DESC","ASSOC");
 			if($drafts) { ?>
 			<div class="drafts">
-				<h2><?php _e('Drafts'); ?></h2>
+				<h3><?php _e('Drafts'); ?></h3>
 <?php
 				foreach($drafts as $draft) {
 					$draft_string .= "<a href=\"posts.php?req=edit&amp;id=".$draft['ID']."\">".$draft['title']."</a>, ";
@@ -101,7 +79,7 @@ if(we_can('edit_posts')) {
 <?php
 				} ?>
 				</div>
-				<div class="c"></div>
+				<div class="clear"></div>
 			</div>
 			<table class="edit" cellspacing="2">
 				<tr>
@@ -131,7 +109,7 @@ if(we_can('edit_posts')) {
 					<td><?php echo_tags(", ","","","admin=true"); ?></td>
 					<td class="capitalize aligncenter"><?php _e(get_post_type()); ?></td>
 					<td class="editbutton"><a href="posts.php?req=edit&amp;id=<?php echo_ID(); ?>" class="blockit"><?php _e('Edit'); ?></a></td>
-					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit" onclick="deletePost(<?php echo_ID(); ?>);return false;"><?php _e('Delete'); ?></a></td>
+					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit" onclick="ajaxDelete('posts.php?req=ajaxdelete&amp;id=<?php echo_ID(); ?>','post-<?php echo_ID(); ?>','<?php _e('Are you sure you wish to delete this post? Commented made to this post will be deleted as well.'); ?>');return false;"><?php _e('Delete'); ?></a></td>
 				</tr>
 <?php
 					}
@@ -147,7 +125,6 @@ if(we_can('edit_posts')) {
 			<?php prev_page_link(_r('&laquo; Newer'),'<div class="alignleft">','</div>','num=16'); ?>
 			<?php next_page_link(_r('Older &raquo;'),'<div class="alignright">','</div>','num=16'); ?>
 			</div>
-		</div>
 <?php
 		get_admin_footer();
 	}
