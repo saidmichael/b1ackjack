@@ -124,6 +124,9 @@ function get_posts($q) {
 			$query .= ")";
 		}
 	}
+	if(isset($stuff['section'])) {
+		$query .= " AND `section` = '".$stuff['section']."'";
+	}
 	if(isset($stuff['type'])) {
 		$query .= " AND `ptype` = '".$stuff['type']."'";
 	}
@@ -381,14 +384,15 @@ function next_page_link($text,$before='',$after='',$args='') {
 		global $tag;
 		$posts_string .= '&tag='.$tag['ID'];
 	}
-	elseif(is_section()) {
+	elseif(is_section() or is_front()) {
 		global $section;
-		if(!empty($section['tags'])) {
-			$posts_string .= '&tag='.$section['tags'];
-		}
+		$posts_string .= '&section='.$section['ID'];
 	}
 	elseif(is_admin() && $_GET['req'] == 'filtertag') {
 		$posts_string .= '&tag='.intval($_GET['tag']);
+	}
+	elseif(is_admin() && $_GET['req'] == 'filtersection') {
+		$posts_string .= '&section='.intval($_GET['section']);
 	}
 	elseif(is_search()) {
 		$posts_string .= '&search='.bj_clean_string($_GET['s']);
@@ -422,10 +426,13 @@ function next_page_link($text,$before='',$after='',$args='') {
 		}
 		else {
 			if($_GET['req'] == 'filtertag' && $_GET['tag'] != '') {
-				$extra_string = 'req=filtertag&amp;tag='.$_GET['tag'].'&amp;';
+				$extra_string = 'req=filtertag&amp;tag='.bj_clean_string($_GET['tag']).'&amp;';
+			}
+			elseif($_GET['req'] == 'filtersection' && $_GET['section'] != '') {
+				$extra_string = 'req=filtersection&amp;section='.bj_clean_string($_GET['section']).'&amp;';
 			}
 			elseif(is_search()) {
-				$extra_string = 'req=search&amp;s='.$_GET['s'].'&amp;';
+				$extra_string = 'req=search&amp;s='.bj_clean_string($_GET['s']).'&amp;';
 			}
 			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?'.$extra_string.'offset='.$older.'">'.$text.'</a>'.$after;
 		}
@@ -445,19 +452,19 @@ function prev_page_link($text,$before='',$after='',$args='') {
 		if(!is_admin()) {
 			if(defined('BJ_REWRITE')) {
 				if(is_section()) {
-					$extra_string = 'section/'.$_GET['name'].'/';
+					$extra_string = 'section/'.bj_clean_string($_GET['name']).'/';
 				}
 				elseif(is_tag()) {
-					$extra_string = 'tag/'.$_GET['name'].'/';
+					$extra_string = 'tag/'.bj_clean_string($_GET['name']).'/';
 				}
 				echo $before.'<a href="'.load_option('siteurl').$extra_string.'page/'.$newer.'">'.$text.'</a>'.$after;
 			}
 			else {
 				if(is_section()) {
-					$extra_string = 'req=section&amp;name='.$_GET['name'].'&amp;';
+					$extra_string = 'req=section&amp;name='.bj_clean_string($_GET['name']).'&amp;';
 				}
 				elseif(is_tag()) {
-					$extra_string = 'req=tag&amp;name='.$_GET['name'].'&amp;';
+					$extra_string = 'req=tag&amp;name='.bj_clean_string($_GET['name']).'&amp;';
 				}
 				echo $before.'<a href="'.load_option('siteurl').'index.php?'.$extra_string.'offset='.$newer.'">'.$text.'</a>'.$after;
 			}
@@ -465,6 +472,12 @@ function prev_page_link($text,$before='',$after='',$args='') {
 		else {
 			if($_GET['req'] == 'filtertag' && $_GET['tag'] != '') {
 				$extra_string = 'req=filtertag&amp;tag='.$_GET['tag'].'&amp;';
+			}
+			elseif($_GET['req'] == 'filtersection' && $_GET['section'] != '') {
+				$extra_string = 'req=filtersection&amp;section='.bj_clean_string($_GET['section']).'&amp;';
+			}
+			elseif(is_search()) {
+				$extra_string = 'req=search&amp;s='.bj_clean_string($_GET['s']).'&amp;';
 			}
 			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?'.$extra_string.'offset='.$newer.'">'.$text.'</a>'.$after;
 		}
@@ -637,7 +650,7 @@ function comment_postid() {
 function echo_sections() {
 	$sections = return_sections();
 	foreach($sections as $this_section) { if($this_section['hidden'] != 'yes') { ?>
-<li class="section-li<?php echo ($this_section['this'] == 1) ? ' current-section' : ''; ?>"><a href="<?php echo get_section_permalink($this_section); ?>"><?php echo wptexturize($this_section['title']); ?></a></li>
+<li class="section-li<?php echo ($this_section['this'] == 1) ? ' current-section' : ''; ?>"><a href="<?php echo get_section_permalink($this_section); ?>"><?php echo $this_section['title']; ?></a></li>
 <?php
 	} }
 }
@@ -650,6 +663,7 @@ function return_sections() {
 	$i = 0;
 	if($sections) {
 		foreach($sections as $section) {
+			$sections[$i]['title'] = wptexturize($section['title']);
 			if(is_section($section['shortname'])) {
 				$sections[$i]['this'] = 1;
 			}

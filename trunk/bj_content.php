@@ -13,17 +13,7 @@ switch($_GET['req']) {
 		if(!$section) {
 			load_404_instead();
 		}
-		$query_string = 'offset='.$offset;
-		$tags = unserialize($section['tags']);
-		$tag_str = '';
-		if(isset($tags[0])) { # Are we filtering by any tags?
-			foreach($tags as $tag) {
-				$tag_str .= $tag.', ';
-			}
-			$query_string .= '&tag='.preg_replace('{, $}','',$tag_str);
-		}
-		unset($tags);
-		unset($tag_str);
+		$query_string = 'section='.$section['ID'].'&offset='.$offset;
 		$posts = get_posts($query_string);
 		
 		if(file_exists(BJTEMPLATE .'/'.$section['handler']) and $section['handler'] != '') {
@@ -71,16 +61,7 @@ switch($_GET['req']) {
 		if(!$section) {
 			load_404_instead();
 		}
-		$query_string = 'offset='.$offset;
-		$tags = unserialize($section['tags']);
-		$tag_str = '';
-		# Are we filtering by any tags?
-		foreach($tags as $tag) {
-			$tag_str .= $tag.', ';
-		}
-		$query_string .= '&tag='.preg_replace('{, $}','',$tag_str);
-		unset($tags);
-		unset($tag_str);
+		$query_string = 'section='.$section['ID'].'&offset='.$offset;
 		$posts = get_posts($query_string);
 		if(file_exists(BJTEMPLATE .'/'.$section['handler']) and $section['handler'] != '') {
 			include(BJTEMPLATE .'/'.$section['handler']);

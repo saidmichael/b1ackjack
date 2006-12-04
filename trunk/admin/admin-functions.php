@@ -36,11 +36,24 @@ function fancy_altrows($rows) {
 #Function: do_editorform(Post)
 #Destiption: Processes the editor form. The post field defaults to
 #			 an array with just the keys for a new post. 
-function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','content'=>'','content'=>'','author'=>'','posted'=>'','ptype'=>'','parent'=>'','comment_count'=>'','tags'=>'')) { ?>
+function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','content'=>'','content'=>'','author'=>'','posted'=>'','ptype'=>'','section'=>'','comment_count'=>'','tags'=>'')) {
+	ob_start(); ?>
 			<form name="edit-<?php echo $post['ID']; ?>" action="" method="post">
 				<div class="column width25">
+					<h3><label for="section"><?php _e('Section'); ?></label></h3>
+					<p>
+						<select name="section" id="section" class="width100">
+					<?php
+						$sections = return_sections();
+						foreach($sections as $section) { ?>
+							<option value="<?php echo $section['ID']; ?>"<?php bj_selected($section['ID'],$post['section']); ?>><?php echo $section['title']; ?></option>
+<?php
+						} ?>
+						</select>
+					</p>
 					<h3><?php _e('Tags'); ?></h3>
 					<ul class="altrows taglist">
+
 					<?php
 						$ourtags = return_all_tags();
 						$return_tags = return_tags();
@@ -122,12 +135,16 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 				</div>
 			</form>
 <?php
+	$content = run_filters('post_editor',ob_get_contents());
+	ob_end_clean();
+	echo $content;
 }
 
 #Function: section_editor(Section)
 #Description: Editor form for sections. It works like the
 #			  post form where it defaults with an empty post.
-function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','handler'=>'','tags'=>'','hidden'=>'','page_order'=>'','last_updated'=>'')) { ?>
+function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','handler'=>'','tags'=>'','hidden'=>'','page_order'=>'','last_updated'=>'')) {
+	ob_start(); ?>
 			<form name="edit-<?php echo $section['ID']; ?>" action="" method="post">
 				<div class="column width75">
 					<p>
@@ -142,27 +159,11 @@ function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','
 					</p>
 				</div>
 				<div class="clear"></div>
-				<div class="column width25">
+				<div class="column width33">
 					<h3><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h3>
 					<p><input type="text" name="shortname" id="shortname" value="<?php echo $section['shortname']; ?>" class="width90" /></p>
 				</div>
-				<div class="column width25">
-					<h3><?php _e('Show These Tags'); ?></h3>
-					<ul class="altrows taglist">
-					<?php
-						$ourtags = return_all_tags();
-						$sectiontags = (is_array(@unserialize($section['tags']))) ? unserialize($section['tags']) : array();
-						$ti = 0;
-						foreach($ourtags as $tag) { ?>
-						<li<?php tablealt($ti); ?>><label for="tag-<?php echo $tag['ID']; ?>"><input type="checkbox" id="tag-<?php echo $tag['ID']; ?>" name="tags[<?php echo $tag['ID']; ?>]"<?php
-							foreach($sectiontags as $chtag) {
-								bj_checked($tag['ID'],$chtag);
-							} ?> /> <?php echo $tag['name']; ?></label></li>
-<?php					$ti++; }
-						unset($ti); ?>
-					</ul>
-				</div>
-				<div class="column width25">
+				<div class="column width33">
 					<h3><label for="hidden"><?php _e('Hidden?'); ?></label></h3>
 					<p>
 						<select name="hidden" id="hidden" class="width90">
@@ -171,7 +172,7 @@ function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','
 						</select>
 					</p>
 				</div>
-				<div class="column width25">
+				<div class="column width33">
 					<h3><label for="handler"><var title="<?php _e('A section handler is a special PHP file within the current theme that can be used to parse PHP or deviate from the default section template. Useful for advanced skinners.'); ?>"><?php _e('Section Handler'); ?></var></label></h3>
 					<p>
 <?php
@@ -210,6 +211,9 @@ function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','
 				</div>
 			</form>
 <?php
+	$content = run_filters('section_editor',ob_get_contents());
+	ob_end_clean();
+	echo $content;
 }
 
 #Function: run_bj_forms()

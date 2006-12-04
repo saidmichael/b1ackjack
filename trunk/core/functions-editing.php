@@ -21,7 +21,7 @@ function bj_edit_post($id=0) {
 		$post['shortname'] = (bj_clean_string($_POST['shortname']) == '') ? $id : bj_clean_string($_POST['shortname']);
 		$post['content'] = bj_clean_string($_POST['content'],$bj_html_post);
 		$post['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
-		$post['author'] = $_POST['author'];
+		$post['author'] = bj_clean_string($_POST['author']);
 		$tag_string = array();
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
@@ -29,6 +29,7 @@ function bj_edit_post($id=0) {
 			}
 		}
 		$post['tags'] = serialize($tag_string);
+		$post['section'] = bj_clean_string($_POST['section']);
 		#Change date handling.
 		if($_POST['editstamp'] == "yes") {
 			$post['posted'] = intval($_POST['stamp_year']).'-'.intval($_POST['stamp_month']).'-'.intval($_POST['stamp_date']).' '.intval($_POST['stamp_hour']).':'.intval($_POST['stamp_min']).':'.intval($_POST['stamp_sec']);
@@ -63,11 +64,12 @@ function bj_new_post() {
 	global $bj_db,$bj_html_post;
 	if(we_can('write_posts')) {
 		run_actions('pre_post_new');
+		$post = array();
 		$post['title'] = bj_clean_string($_POST['title']);
-		$post['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($epost['title']) : bj_clean_string($_POST['shortname']);
+		$post['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($post['title']) : bj_clean_string($_POST['shortname']);
 		$post['content'] = bj_clean_string($_POST['content'],$bj_html_post);
 		$post['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
-		$post['author'] = $_POST['author'];
+		$post['author'] = bj_clean_string($_POST['author']);
 		$tag_string = array();
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
@@ -75,7 +77,8 @@ function bj_new_post() {
 			}
 		}
 		$post['tags'] = serialize($tag_string);
-		$post = run_filters('post_new',$epost);
+		$post['section'] = bj_clean_string($_POST['section']);
+		$post = run_filters('post_new',$post);
 		#Now let's build our insert query.
 		$keys = ''; $values = '';
 		$query = "INSERT INTO `".$bj_db->posts."`";
@@ -108,13 +111,7 @@ function bj_new_section() {
 		$section['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($section['title']) : bj_clean_string($_POST['shortname']);
 		$section['hidden'] = bj_clean_string($_POST['hidden']);
 		$section['page_order'] = (empty($_POST['page_order'])) ? 0 : intval($_POST['page_order']);
-		$tag_string = array();
-		if(is_array($_POST['tags'])) {
-			foreach($_POST['tags'] as $tag=>$on) {
-				$tag_string[] = $tag.'';
-			}
-		}
-		$section['tags'] = serialize($tag_string);
+		$section['handler'] = bj_clean_string($_POST['handler']);
 		$section = run_filters('section_new',$section);
 		#Query query.
 		$keys = ''; $values = '';
@@ -158,13 +155,7 @@ function bj_edit_section($id = 0) {
 		$section['hidden'] = bj_clean_string($_POST['hidden']);
 		$section['last_updated'] = date('Y-m-d H:i:s',time());
 		$section['page_order'] = (empty($_POST['page_order'])) ? 0 : intval($_POST['page_order']);
-		$tag_string = array();
-		if(is_array($_POST['tags'])) {
-			foreach($_POST['tags'] as $tag=>$on) {
-				$tag_string[] = $tag.'';
-			}
-		}
-		$section['tags'] = serialize($tag_string);
+		$section['handler'] = bj_clean_string($_POST['handler']);
 		$section = run_filters('section_edit',$section);
 		#Query query.
 		$query = "UPDATE `".$bj_db->sections."` SET `ID` = '".$id."'";
