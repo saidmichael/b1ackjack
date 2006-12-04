@@ -33,6 +33,7 @@ if(we_can('edit_posts')) {
 		
 		case "search" :
 		case "filtertag" :
+		case "filtersection" :
 		default :
 			get_admin_header();
 ?>
@@ -52,7 +53,7 @@ if(we_can('edit_posts')) {
 <?php
 			} ?>
 			<div class="page-options">
-				<div class="column width50 searchbox">
+				<div class="column width33 searchbox">
 					<form method="get" action="posts.php">
 						<label for="s"><?php _e('Search:'); ?></label><br />
 						<input type="hidden" name="req" value="search" />
@@ -60,7 +61,7 @@ if(we_can('edit_posts')) {
 						<input type="submit" class="inlinesubmit" value="<?php _e('Search'); ?>" />
 					</form>
 				</div>
-				<div class="column width50 tagfilter">
+				<div class="column width33 tagfilter">
 <?php
 				$tags = return_all_tags('orderby=ID');
 				if(is_array($tags)) { ?>
@@ -71,6 +72,25 @@ if(we_can('edit_posts')) {
 <?php
 					foreach($tags as $tag) { ?>
 							<option value="<?php echo $tag['ID']; ?>"<?php bj_selected($tag['ID'],intval($_GET['tag'])); ?>><?php echo $tag['name']; ?></option>
+<?php
+					} ?>
+						</select>
+						<input type="submit" class="inlinesubmit" value="<?php _e('Show'); ?>" />
+					</form>
+<?php
+				} ?>
+				</div>
+				<div class="column width33 sectionfilter">
+<?php
+				$sections = return_sections();
+				if(is_array($sections)) { ?>
+					<form method="get" action="posts.php">
+						<label for="section"><?php _e('Filter by Section:'); ?></label><br />
+						<input type="hidden" name="req" value="filtersection" />
+						<select name="section" id="section">
+<?php
+					foreach($sections as $section) { ?>
+							<option value="<?php echo $section['ID']; ?>"<?php bj_selected($section['ID'],intval($_GET['section'])); ?>><?php echo $section['title']; ?></option>
 <?php
 					} ?>
 						</select>
@@ -96,6 +116,9 @@ if(we_can('edit_posts')) {
 				if($_GET['req'] == 'filtertag') {
 					$query_string .= '&tag='.intval($_GET['tag']);
 				}
+				elseif($_GET['req'] == 'filtersection') {
+					$query_string .= '&section='.intval($_GET['section']);
+				}
 				if(is_search()) {
 					$query_string .= '&search='.bj_clean_string($_GET['s']);
 				}
@@ -109,7 +132,7 @@ if(we_can('edit_posts')) {
 					<td><?php echo_tags(", ","","","admin=true"); ?></td>
 					<td class="capitalize aligncenter"><?php _e(get_post_type()); ?></td>
 					<td class="editbutton"><a href="posts.php?req=edit&amp;id=<?php echo_ID(); ?>" class="blockit"><?php _e('Edit'); ?></a></td>
-					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit" onclick="ajaxDelete('posts.php?req=ajaxdelete&amp;id=<?php echo_ID(); ?>','post-<?php echo_ID(); ?>','<?php _e('Are you sure you wish to delete this post? Commented made to this post will be deleted as well.'); ?>');return false;"><?php _e('Delete'); ?></a></td>
+					<td class="editbutton"><a href="posts.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit" onclick="ajaxDelete('posts.php?req=ajaxdelete&amp;id=<?php echo_ID(); ?>','post-<?php echo_ID(); ?>','<?php _e('Are you sure you wish to delete this post? Comments made to this post will be deleted as well.'); ?>');return false;"><?php _e('Delete'); ?></a></td>
 				</tr>
 <?php
 					}

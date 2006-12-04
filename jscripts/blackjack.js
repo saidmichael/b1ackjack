@@ -25,7 +25,7 @@ ajaxDelete = function(url,id,text) {
 		delCall.request();
 		var hideThis = new Fx.Opacity(id,{duration:750});
 		hideThis.custom(1, 0.2);
-	}	
+	}
 };	
 
 //Ajax deleter.
