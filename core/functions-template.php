@@ -344,6 +344,7 @@ function echo_content() {
 function return_content() {
 	global $post;
 	$content = wptexturize($post['content']);
+	$content = wpautop($content);
 	return run_filters('post_content',$content);
 }
 

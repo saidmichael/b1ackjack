@@ -67,7 +67,7 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 						unset($ti); ?>
 					</ul>
 					<h3><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h3>
-					<p><input type="text" name="shortname" id="shortname" value="<?php echo $post['shortname']; ?>" class="width100" /></p>
+					<p><input type="text" name="shortname" id="shortname" value="<?php echo $post['shortname']; ?>" class="width90" /></p>
 					<h3><?php _e('Post Type'); ?></h3>
 					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php bj_checked(get_post_type(),'public'); ?> /> <?php _e('Public'); ?></label><br />
 					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php bj_checked(get_post_type(),'draft'); ?> /> <?php _e('Draft'); ?></label></p>
@@ -111,8 +111,29 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 					run_actions('end_editor_sidebar'); ?>
 				</div>
 				<div class="column width75">
-					<p><label for="title"><?php _e('Title'); ?></label><input type="text" name="title" id="title" value="<?php echo $post['title']; ?>" class="width100 largeinput" /></p>
-					<textarea name="content" id="textarea"><?php echo $post['content']; ?></textarea>
+					<p><label for="title"><?php _e('Title'); ?></label><br class="blank" /><input type="text" name="title" id="title" value="<?php echo $post['title']; ?>" class="width100 largeinput" /></p>
+					<div id="editor">
+						<div id="editbar">
+							<div class="alignleft buttons">
+								<a href="#" onclick="simpleTag('textarea','strong','<?php _e('Bold Text Here'); ?>',false);return false;" class="strong"><span><?php _e('Strong'); ?></span></a>
+								<a href="#" onclick="simpleTag('textarea','em','<?php _e('Italic Text Here'); ?>',false);return false;" class="em" /><span><?php _e('Em'); ?></span></a>
+								<a href="#" onclick="linkTag('textarea','<?php _e('Link Text Here'); ?>','<?php _e('Link URL Here'); ?>');return false;" class="link" /><span><?php _e('Link'); ?></span></a>
+								<a href="#" onclick="imgTag('textarea','<?php _e('Image\'s Alternate Text'); ?>','<?php _e('Imager URL Here'); ?>');return false;" class="img" /><span><?php _e('Img'); ?></span></a>
+								<a href="#" onclick="simpleTag('textarea','blockquote','<?php _e('Quoted Text Here'); ?>',true);return false;" class="bq" /><span><?php _e('BQ'); ?></span></a>
+								<a href="#" onclick="listTag('textarea','ul','<?php _e('List Item'); ?>');return false;" class="ul" /><span><?php _e('Ol'); ?></span></a>
+								<a href="#" onclick="listTag('textarea','ol','<?php _e('List Item'); ?>');return false;" class="ol" /><span><?php _e('Ul'); ?></span></a>
+								<div class="clear"></div>
+							</div>
+							<div class="alignright updown">
+								<a href="#" onclick="moreheight('textarea',50);return false;" class="more" /><span><?php _e('More'); ?></span></a>
+								<a href="#" onclick="lessheight('textarea',50);return false;" class="less" /><span><?php _e('Less'); ?></span></a>
+								<div class="clear"></div>
+							</div>
+							<div class="clear"></div>
+						</div>
+						<div id="nonJSedit"></div>
+						<textarea name="content" id="textarea"><?php echo formatted_for_editing($post['content']); ?></textarea>
+					</div>
 <?php
 					run_actions('end_editor_main');
 					if($post['ID'] == "0") { ?>
@@ -138,6 +159,14 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 	$content = run_filters('post_editor',ob_get_contents());
 	ob_end_clean();
 	echo $content;
+}
+
+#Function: tag_editor(Tag)
+#Description: Edit for tags. Is meant to display for either
+#			  the main page, where the tag is added, or the
+#			  edit page.
+function tag_editor($tag = array('ID'=>'0','name'=>'','shortname'=>'','posts_num'=>'')) {
+	
 }
 
 #Function: section_editor(Section)

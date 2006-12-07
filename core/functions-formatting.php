@@ -25,7 +25,13 @@ function bj_excerpt($content,$length=120){
 	return $content;
 }
 
-#Function:wptexturize(Text)
+#Function: Formatted_for_editing(Content)
+#Description: Changes text for the editor. Useful for stuff like special characters.
+function formatted_for_editing($content) {
+	return str_replace('&','&amp;',$content);
+}
+
+#Function: wptexturize(Text)
 #Description: Created by Matthew Mullenweg- http://photomatt.net.
 function wptexturize($text){
 	$text = str_replace(
@@ -87,6 +93,49 @@ function wptexturize($text){
 		$output .= $curl;
 	}
 	return $output;
+}
+
+#Wpaotop
+#By Wordpress too.
+function clean_pre($text) {
+	$text = str_replace('<br />', '', $text);
+	$text = str_replace('<p>', "\n", $text);
+	$text = str_replace('</p>', '', $text);
+	return $text;
+}
+
+function wpautop($pee, $br = 1) {
+	$pee = $pee . "\n"; // just to make things a little easier, pad the end
+	$pee = preg_replace('|<br />\s*<br />|', "\n\n", $pee);
+	// Space things out a little
+	$allblocks = '(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|math|style|script|object|input|param|p|h[1-6])';
+	$pee = preg_replace('!(<' . $allblocks . '[^>]*>)!', "\n$1", $pee);
+	$pee = preg_replace('!(</' . $allblocks . '>)!', "$1\n\n", $pee);
+	$pee = str_replace(array("\r\n", "\r"), "\n", $pee); // cross-platform newlines
+	$pee = preg_replace("/\n\n+/", "\n\n", $pee); // take care of duplicates
+	$pee = preg_replace('/\n?(.+?)(?:\n\s*\n|\z)/s', "<p>$1</p>\n", $pee); // make paragraphs, including one at the end
+	$pee = preg_replace('|<p>\s*?</p>|', '', $pee); // under certain strange conditions it could create a P of entirely whitespace
+	$pee = preg_replace( '|<p>(<div[^>]*>\s*)|', "$1<p>", $pee );
+	$pee = preg_replace('!<p>([^<]+)\s*?(</(?:div|address|form)[^>]*>)!', "<p>$1</p>$2", $pee);
+	$pee = preg_replace( '|<p>|', "$1<p>", $pee );
+	$pee = preg_replace('!<p>\s*(</?' . $allblocks . '[^>]*>)\s*</p>!', "$1", $pee); // don't pee all over a tag
+	$pee = preg_replace("|<p>(<li.+?)</p>|", "$1", $pee); // problem with nested lists
+	$pee = preg_replace('|<p><blockquote([^>]*)>|i', "<blockquote$1><p>", $pee);
+	$pee = str_replace('</blockquote></p>', '</p></blockquote>', $pee);
+	$pee = preg_replace('!<p>\s*(</?' . $allblocks . '[^>]*>)!', "$1", $pee);
+	$pee = preg_replace('!(</?' . $allblocks . '[^>]*>)\s*</p>!', "$1", $pee);
+	if ($br) {
+		$pee = preg_replace('/<(script|style).*?<\/\\1>/se', 'str_replace("\n", "<WPPreserveNewline />", "\\0")', $pee);
+		$pee = preg_replace('|(?<!<br />)\s*\n|', "<br />\n", $pee); // optionally make line breaks
+		$pee = str_replace('<WPPreserveNewline />', "\n", $pee);
+	}
+	$pee = preg_replace('!(</?' . $allblocks . '[^>]*>)\s*<br />!', "$1", $pee);
+	$pee = preg_replace('!<br />(\s*</?(?:p|li|div|dl|dd|dt|th|pre|td|ul|ol)[^>]*>)!', '$1', $pee);
+	if ( strstr( $pee, '<pre' ) )
+		$pee = preg_replace('!(<pre.*?>)(.*?)</pre>!ise', " stripslashes('$1') .  stripslashes(clean_pre('$2'))  . '</pre>' ", $pee);
+	$pee = preg_replace( "|\n</p>$|", '</p>', $pee );
+/**/
+	return $pee;
 }
 
 ?>
