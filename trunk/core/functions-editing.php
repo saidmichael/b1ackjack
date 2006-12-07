@@ -8,6 +8,7 @@ function bj_edit_post($id=0) {
 		run_actions('pre_post_edit');
 		$id = intval($id);
 		$former = $bj_db->get_item("SELECT * FROM `".$bj_db->posts."` WHERE `ID` = '".$id."' LIMIT 1");
+		#Does this post exist? If not, do nothing.
 		if($id == 0 || !$former) {
 			return false;
 		}
@@ -26,6 +27,20 @@ function bj_edit_post($id=0) {
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
 				$tag_string[] = $tag.'';
+				#If the post is public and the tag was added in this edit.
+				if(!in_array($tag.'',unserialize($former['tags']),true) and $post['ptype'] == 'public') {
+					$bj_db->query("UPDATE `".$bj_db->tags."` SET `posts_num` = posts_num + 1 WHERE `ID` = ".$tag);
+				}
+				#If the post was switched to a draft again and the tag was in the original post, decrease the amount.
+				elseif(in_array($tag.'',unserialize($former['tags']),true) and ($post['ptype'] == 'draft') and ($former['ptype'] == 'public')) {
+					$bj_db->query("UPDATE `".$bj_db->tags."` SET `posts_num` = posts_num - 1 WHERE `ID` = ".$tag);
+				}
+			}
+		}
+		#Was a tag removed?
+		foreach(unserialize($former['tags']) as $tag) {
+			if(!in_array($tag,$tag_string,true)) {
+				$bj_db->query("UPDATE `".$bj_db->tags."` SET `posts_num` = posts_num - 1 WHERE `ID` = ".$tag);
 			}
 		}
 		$post['tags'] = serialize($tag_string);
@@ -74,6 +89,9 @@ function bj_new_post() {
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
 				$tag_string[] = $tag.'';
+				if($post['ptype'] == 'public') {
+					$bj_db->query("UPDATE `".$bj_db->tags."` SET `posts_num` = posts_num + 1 WHERE `ID` = ".$tag);
+				}
 			}
 		}
 		$post['tags'] = serialize($tag_string);
@@ -94,7 +112,7 @@ function bj_new_post() {
 			@header("Location: ".load_option('siteurl')."admin/posts.php");
 		}
 		elseif(isset($_POST['save-cont'])) {
-			$saved = $bj_db->get_item("SELECT `ID` FROM `".$bj_db->posts."` WHERE `title` = '".$epost['title']."' LIMIT 1");
+			$saved = $bj_db->get_item("SELECT `ID` FROM `".$bj_db->posts."` WHERE `title` = '".$post['title']."' LIMIT 1");
 			@header("Location: ".load_option('siteurl')."admin/posts.php?req=edit&id=".$saved['ID']);
 		}
 		die();
