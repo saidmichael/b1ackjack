@@ -81,7 +81,7 @@ CREATE TABLE `bj_posts` (
 -- Dumping data for table `bj_posts`
 -- 
 
-INSERT INTO `bj_posts` VALUES (39, 'Super-duper FunTest', 'super-duper-funtest', '<p>Yes. An amazing test.</p><p>It all began with a super-super-fun test, that one Sunny Day&trade;... </p>', 'Mark', '2006-10-18 16:55:32', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"1";}', '');
+INSERT INTO `bj_posts` VALUES (39, 'Super-duper FunTest', 'super-duper-funtest', 'Yes. An amazing test.\r\n\r\nIt all began with a super-super-fun test, that one Sunny Day&trade;...', 'Mark', '2006-10-18 16:55:32', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"1";}', '');
 INSERT INTO `bj_posts` VALUES (27, 'Beepboopbop!', 'beepboopbop', '<p>Strange. I keep writing pointless posts.</p><p>&quot;Do you think it&#39;s strange?&quot; <a href="http://tbomonline.com">Test</a>. </p>', 'Mark', '2006-10-02 14:10:33', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"2";}', '');
 INSERT INTO `bj_posts` VALUES (28, '"YOUR FAT"', 'your-fat', '<p>Yes.</p><p>He actually said &quot;YOUR FAT&quot;.</p><p>It&#39;s kind of sad, really: Normally, you&#39;d expect that they&#39;d make more sense about something like that. But <em>nooooo</em>. They said &quot;YOUR FAT&quot;.</p><p>It&#39;s a shame. </p>', 'Mark', '2006-10-02 18:11:36', 'public', 2, 0, 1, 'a:2:{i:0;s:1:"1";i:1;s:1:"2";}', '');
 INSERT INTO `bj_posts` VALUES (31, 'Guuuuah', 'guuuuah', '<p>Kapow!</p><p>Action.e </p>', 'Mark', '2006-10-08 13:37:39', 'public', 2, 0, 1, 'a:1:{i:0;s:1:"1";}', '');
@@ -92,11 +92,11 @@ INSERT INTO `bj_posts` VALUES (35, 'Eight', 'eight', '<p>Yes. Fun. </p>', 'Mark'
 INSERT INTO `bj_posts` VALUES (36, 'Nine', 'nine', '<p>Ten.</p><p>Wahooo! </p>', 'Mark', '2006-10-08 13:38:50', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"1";}', '');
 INSERT INTO `bj_posts` VALUES (37, '???', 'questionmark', '<p>Yoyo. </p>', 'Mark', '2006-10-08 13:39:06', 'public', 2, 0, 1, 'a:1:{i:0;s:1:"2";}', '');
 INSERT INTO `bj_posts` VALUES (38, 'kapow', 'kapow', '<p>Very blank. </p>', 'Mark', '2006-10-08 13:39:13', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"2";}', '');
-INSERT INTO `bj_posts` VALUES (42, 'Blah blah title', 'blah-blah-title', '', 'Mark', '2006-10-23 19:47:13', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"2";}', '');
-INSERT INTO `bj_posts` VALUES (43, 'Thirteen', 'thirteen', '<p>Thirteeeeeen posts.</p><p>Woo. </p>', 'Mark', '2006-10-23 20:24:31', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"2";}', '');
-INSERT INTO `bj_posts` VALUES (44, '42', '42', '<p>42 was a while back.</p><ol><li>List list.</li><li>Cool list.</li><li>List...<br /><br />With a shift-enter in it.</li></ol><p>Stop the list there. </p>', 'Mark', '2006-10-23 20:25:16', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"1";}', '');
-INSERT INTO `bj_posts` VALUES (46, 'WOOOOOOO', 'wooooooo', '<p>Here we go. </p>', 'Mark', '2006-10-23 20:26:40', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"1";}', '');
-INSERT INTO `bj_posts` VALUES (48, 'Kikabow!', 'kikabow', '<p>Let&#39;s add a draft entry for the heck of it. </p>', 'Mark', '2006-10-23 20:29:46', 'public', 2, 0, 1, 'a:2:{i:0;s:1:"1";i:1;s:1:"2";}', '');
+INSERT INTO `bj_posts` VALUES (42, 'Blah blah title', 'blah-blah-title', 'Wtf? No content?', 'Mark', '2006-10-23 19:47:13', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"2";}', '');
+INSERT INTO `bj_posts` VALUES (43, 'Thirteen', 'thirteen', 'Thirteeeeeen posts.\r\n\r\nWoo.', 'Mark', '2006-10-23 20:24:31', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"2";}', '');
+INSERT INTO `bj_posts` VALUES (44, '42', '42', '42 was a while back.\r\n<ol>\r\n<li>List list.</li>\r\n<li>Cool list.</li>\r\n<li>List...<br /><br />With a shift-enter in it.</li>\r\n</ol>\r\nStop the list there.', 'Mark', '2006-10-23 20:25:16', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"1";}', '');
+INSERT INTO `bj_posts` VALUES (46, 'WOOOOOOO', 'wooooooo', 'Here we go.', 'Mark', '2006-10-23 20:26:40', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"1";}', '');
+INSERT INTO `bj_posts` VALUES (48, 'Kikabow!', 'kikabow', 'Let''s add a draft entry for the heck of it.', 'Mark', '2006-10-23 20:29:46', 'public', 2, 0, 1, 'a:2:{i:0;s:1:"1";i:1;s:1:"2";}', '');
 INSERT INTO `bj_posts` VALUES (49, 'Ahaha', 'ahaha', 'It''s working. It just may be working.\r\n\r\nI can''t wait.', 'Mark', '2006-11-08 16:33:49', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"2";}', '');
 INSERT INTO `bj_posts` VALUES (51, 'I just deleted a post.', 'i-just-deleted-a-post', 'Shame on me. :(\r\n\r\nIt was because I was making a global ajax deleter.', 'Mark', '2006-12-02 19:15:08', 'public', 2, 0, 1, 'a:0:{}', '');
 INSERT INTO `bj_posts` VALUES (55, 'test post', 'test-post', 'I''m seeing if it''ll add to tags.', 'Mark', '2006-12-06 17:20:40', 'public', 1, 0, 1, 'a:1:{i:0;s:1:"1";}', '');
@@ -159,11 +159,11 @@ CREATE TABLE `bj_users` (
   `login` varchar(60) NOT NULL default '',
   `display_name` varchar(200) NOT NULL default '',
   `password` varchar(70) NOT NULL default '',
+  `pass_salt` varchar(5) NOT NULL default '',
   `email` varchar(100) NOT NULL default '',
   `website` varchar(100) NOT NULL default '',
   `registered_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `activation_key` varchar(60) NOT NULL default '',
-  `login_key` varchar(60) NOT NULL default '',
   `user_group` int(11) NOT NULL default '0',
   PRIMARY KEY  (`ID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
@@ -172,4 +172,4 @@ CREATE TABLE `bj_users` (
 -- Dumping data for table `bj_users`
 -- 
 
-INSERT INTO `bj_users` VALUES (1, 'Epsilon', 'Mark', 'c2aadac2ca30ca8aadfbe331ae180d28', 'Kraahkanite@gmail.com', 'http://epsilon.blogs.tbomonline.com', '2006-08-15 11:53:14', '', 'c3e0aba57a86ac5b33b4a19b8e1f17ea', 4);
+INSERT INTO `bj_users` VALUES (1, 'Epsilon', 'Mark', '2d6b66cdf8b0db59cdf3a54064fcfd83', 'jB1D.', 'Kraahkanite@gmail.com', 'http://epsilon.blogs.tbomonline.com', '2006-08-15 11:53:14', '', 4);

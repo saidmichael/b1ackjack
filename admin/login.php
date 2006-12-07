@@ -20,15 +20,19 @@ switch($_GET['req']) {
 	default :
 		validate_session(true);
 		if(isset($_POST['sent'])) {
-			$user = $bj_db->get_item("SELECT * FROM `".$bj_db->users."` WHERE `login` = '".bj_clean_string($_POST['login'],array(),true)."' AND `password` = '".md5($_POST['password'])."' LIMIT 1");
-			if(isset($user['login'])) {
+			$user = $bj_db->get_item("SELECT * FROM `".$bj_db->users."` WHERE `login` = '".bj_clean_string($_POST['login'])."' LIMIT 1");
+			if(
+				isset($user['login']) #User exists...
+				and ($user['password'] == md5( md5($user['pass_salt']) . md5($_POST['password']) )) #Password matches...
+			) { #We're good to go.
 				if($_POST['remember'] != "") {
-					setcookie("bj_auth",md5(time().md5($user['password'])),time()+31536000,'/');
+					setcookie($bj_db->prefix."pass",md5( md5($user['pass_salt']) . md5($_POST['password']) ),time()+31536000,'/');
+					setcookie($bj_db->prefix."id",$user['ID'],time()+31536000,'/');
 				}
 				else {
-					setcookie("bj_auth",md5(time().md5($user['password'])),time()+7200,'/');
+					setcookie($bj_db->prefix."pass",md5( md5($user['pass_salt']) . md5($user['password']) ),time()+7200,'/');
+					setcookie($bj_db->prefix."id",$user['ID'],time()+7200,'/');
 				}
-				$bj_db->query("UPDATE `".$bj_db->users."` SET `login_key` = '".md5(time().md5($user['password']))."' WHERE `ID` = ".$user['ID']." LIMIT 1 ;");
 				@header("Location: ".load_option('siteurl')."admin/".$_POST['redirect']);
 				die();
 			}
