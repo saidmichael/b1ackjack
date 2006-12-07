@@ -4,8 +4,8 @@
 #Description: Returns the information of a user based on their cookie.
 function get_user_info() {
 	global $bj_db;
-	if(isset($_COOKIE['bj_auth'])) {
-		$user = $bj_db->get_rows("SELECT * FROM `".$bj_db->users."` WHERE `login_key` = '".bj_clean_string($_COOKIE['bj_auth'],array(),'mysql=true')."' LIMIT 1","OBJECT");
+	if(isset($_COOKIE[$bj_db->prefix.'pass']) and isset($_COOKIE[$bj_db->prefix.'id'])) {
+		$user = $bj_db->get_rows("SELECT * FROM `".$bj_db->users."` WHERE `ID` = ".intval($_COOKIE[$bj_db->prefix.'id'])." AND `password` = '".bj_clean_string($_COOKIE[$bj_db->prefix.'pass'])."' LIMIT 1","OBJECT");
 		return $user;
 	}
 }
@@ -110,6 +110,18 @@ function we_can($str) {
 function we_can_check($int) {
 	global $user;
 	return ($user->user_group >= $int) ? true : false;
+}
+
+#Function: makeSalt([Size])
+#Description: Makes a random password salt for the user. Copyright http://jaia-interactive.com,
+#			  who created this function.
+function makeSalt($size = 5) {
+	srand((double)microtime() * 1000000);
+	$salt = '';
+	for($i = 0; $i < $size; $i++) {
+		$salt .= chr(rand(40, 126));
+	}
+	return $salt;
 }
 
 ?>
