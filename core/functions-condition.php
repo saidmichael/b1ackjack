@@ -48,6 +48,22 @@ function is_section($name='') {
 	}
 }
 
+#Function: entry_in_section(sID)
+function entry_in_section($id) {
+	global $entry,$entries;
+	if($entry and ($entry['section'] == $id)) {
+		return true;
+	}
+	elseif(!$entry and $entries and $_GET['req'] == 'entry') {
+		foreach($entries as $entry) {
+			if($entry['section'] == $id) {
+				return true;
+			}
+		}
+	}
+	return false;
+}	
+
 #Function: is_tag()
 function is_tag($name='') {
 	if(is_404()) return false;

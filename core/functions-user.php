@@ -32,13 +32,13 @@ function get_users($extra=false) {
 	if(isset($args['name'])) {
 		$query .= " AND `display_name` = '".$args['name']."'";
 	}
+	if(isset($args['f_name'])) {
+		$query .= " AND `friendly_name` = '".$args['f_name']."'";
+	}
 	if(isset($args['email'])) {
 		$query .= " AND `email` = '".$args['email']."'";
 	}
-	if(isset($args['rte'])) {
-		$query .= " AND `rte` = '".$args['rte']."'";
-	}
-	$equ = (isset($args['gop'])) ? $args['gop'] : '=';
+	$equ = (isset($args['equ'])) ? $args['equ'] : '=';
 	if(isset($args['group'])) {
 		$query .= " AND `user_group` ".$equ." '".intval($args['group'])."'";
 	}
@@ -46,7 +46,7 @@ function get_users($extra=false) {
 		$query .= " ORDER BY `".$args['sortby']."`";
 	}
 	else {
-		$query .= " ORDER BY `ID`";
+		$query .= " ORDER BY `display_name`";
 	}
 	if(isset($stuff['order'])) {
 		$query .= " ".$stuff['order'];
@@ -87,13 +87,10 @@ function we_can($str) {
 		case 'view_frontpage' :
 			$check = we_can_check(1);
 			break;
-		case 'create_posts' :
+		case 'edit_entries' :
 			$check = we_can_check(2);
 			break;
-		case 'edit_posts' :
-			$check = we_can_check(2);
-			break;
-		case 'write_posts' :
+		case 'write_entries' :
 			$check = we_can_check(2);
 			break;
 		case 'edit_comments' :
@@ -101,6 +98,9 @@ function we_can($str) {
 			break;
 		case 'edit_sections' :
 			$check = we_can_check(3);
+			break;
+		case 'edit_tags' :
+			$check = we_can_check(2);
 			break;
 		default:
 			$check = false;

@@ -44,7 +44,7 @@ $bj_db->prefix = $table_prefix;
 $bj_db->tags = $bj_db->prefix.'tags';
 $bj_db->comments = $bj_db->prefix.'comments';
 $bj_db->options = $bj_db->prefix.'options';
-$bj_db->posts = $bj_db->prefix.'posts';
+$bj_db->entries = $bj_db->prefix.'entries';
 $bj_db->sections = $bj_db->prefix.'sections';
 $bj_db->users = $bj_db->prefix.'users';
 

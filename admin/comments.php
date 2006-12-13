@@ -1,12 +1,23 @@
 <?php
-$parent_file = "comments.php";
+$parent_file = "entries.php";
 require("admin-head.php");
 if(we_can('edit_comments')) {
 	switch($_GET['req']) {
 		case "edit" :
-			
+			$id = (isset($_GET['id'])) ? intval($_GET['id']) : 0;
+			$comments = get_comments('id='.$id);
+			if($comments) {
+				foreach($comments as $comment) {
+					get_admin_header(); ?>
+			<h2><?php printf(_r('Comment by %1$s'),return_comment_name()); ?></h2>
+<?php
+					comment_editor($comment);
+					get_admin_footer();
+				}
+			}
 			break;
 		case "delete" :
+			$id = (isset($_GET['id'])) ? intval($_GET['id']) : 0;
 			$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `ID` = '".$id."' LIMIT 1");
 			@header('Location: '.load_option('siteurl').'admin/comments.php');
 			break;
@@ -15,7 +26,7 @@ if(we_can('edit_comments')) {
 			$comment = $bj_db->get_item("SELECT * FROM `".$bj_db->comments."` WHERE `ID` = '".$id."' LIMIT 1");
 			if($comment) {
 				$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `ID` = '".$id."' LIMIT 1");
-				printf(_r('The comment by %1$s was deleted.'),return_comment_name());
+				echo '<strong class="error">'.sprintf(_r('The comment by %1$s was deleted.'),return_comment_name()).'</strong>';
 			}
 			break;
 		case "status" :
@@ -73,7 +84,7 @@ if(we_can('edit_comments')) {
 						<a href="comments.php?req=delete&amp;id=<?php comment_ID(); ?>" onclick="ajaxDelete('comments.php?req=ajaxdelete&amp;id=<?php comment_id(); ?>,'comment-<?php comment_ID(); ?>','<?php _e('Are you sure you wish to delete this comment?'); ?>');return false;"><?php _e('Delete'); ?></a> &#8212; 
 						<a href="comments.php?req=status&amp;to=hidden&amp;id=<?php comment_ID(); ?>"><?php _e('Unapprove'); ?></a> &#8212; 
 						<a href="comments.php?req=status&amp;to=spam&amp;id=<?php comment_ID(); ?>"><?php _e('Spam'); ?></a> &#8212; 
-						<a href="posts.php?req=edit&amp;id=<?php echo comment_postid(); ?>"><?php _e('Edit Post'); ?></a>
+						<a href="entries.php?req=edit&amp;id=<?php echo comment_postid(); ?>"><?php _e('Edit Post'); ?></a>
 					</div>
 				</li>
 <?php
