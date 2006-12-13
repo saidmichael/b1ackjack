@@ -21,7 +21,7 @@ if(we_can('edit_sections')) {
 		case "ajaxdelete" :
 			if(isset($_GET['id'])) {
 				$bj_db->query("DELETE FROM `".$bj_db->sections."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
-				_e('Section deleted.');
+				echo '<strong class="error">'._r('Section deleted.').'</strong>';
 			}
 			break;
 		default :
@@ -30,14 +30,14 @@ if(we_can('edit_sections')) {
 			<h2><?php _e('Edit Sections'); ?></h2>
 			<div id="ajaxmessage"><?php if($_GET['deleted'] == "true") { echo '<strong class="error">'._r('Section deleted.').'</strong>'; } ?></div>
 			<table class="edit" cellspacing="2">
-				<tr>
-					<th class="width5 table"><?php _e('ID'); ?></th>
-					<th class="width25 table"><?php _e('Title'); ?></th>
-					<th class="width20 table"><?php _e('Last Updated'); ?></th>
-					<th class="width10 table"><?php _e('Hidden?'); ?></th>
-					<th class="width10 table">&nbsp;</th>
-					<th class="width10 table">&nbsp;</th>
-					<th class="width10 table">&nbsp;</th>
+				<tr id="headings">
+					<th class="width5"><?php _e('ID'); ?></th>
+					<th class="width25"><?php _e('Title'); ?></th>
+					<th class="width20"><?php _e('Last Updated'); ?></th>
+					<th class="width10"><?php _e('Hidden?'); ?></th>
+					<th class="width10">&nbsp;</th>
+					<th class="width10">&nbsp;</th>
+					<th class="width10">&nbsp;</th>
 				</tr>
 <?php
 			$i = 0;
@@ -46,9 +46,9 @@ if(we_can('edit_sections')) {
 				<tr<?php tablealt($i); ?> id="section-<?php echo $section['ID']; ?>">
 					<td class="aligncenter"><?php echo $section['ID']; ?></td>
 					<td><?php echo $section['title']; ?></td>
-					<td><?php post_date("M jS Y, h:i a",$section['last_updated']); ?></td>
+					<td><?php entry_date("M jS Y, h:i a",$section['last_updated']); ?></td>
 					<td class="capitalize aligncenter"><?php _e($section['hidden']); ?></td>
-					<td class="editbutton"><a href="posts.php?req=filtersection&amp;section=<?php echo $section['ID']; ?>" class="blockit"><?php _e('View Posts'); ?></a></td>
+					<td class="editbutton"><a href="entries.php?req=filtersection&amp;section=<?php echo $section['ID']; ?>" class="blockit"><?php _e('View Entries'); ?></a></td>
 					<td class="editbutton"><a href="sections.php?req=edit&amp;id=<?php echo $section['ID']; ?>" class="blockit"><?php _e('Edit'); ?></a></td>
 					<td class="editbutton"><a href="sections.php?req=delete&amp;id=<?php echo $section['ID']; ?>" class="blockit" onclick="ajaxDelete('sections.php?req=ajaxdelete&amp;id=<?php echo $section['ID']; ?>','section-<?php echo $section['ID']; ?>','<?php _e('Are you sure you wish to delete this section?'); ?>');return false;"><?php _e('Delete'); ?></a></td>
 				</tr>

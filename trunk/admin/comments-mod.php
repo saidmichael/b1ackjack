@@ -1,26 +1,7 @@
 <?php
-$parent_file = "comments.php";
+$parent_file = "entries.php";
 require("admin-head.php");
 if(we_can('edit_comments')) {
-		#Attach this for ajax love.
-		function add_ajax_love() { ?>
-		<script language="javascript" type="text/javascript">
-		confirmus = function(text,xml,thing){
-			document.getElementById("ajaxmessage").innerHTML="<strong class=\"error\">" + text +"</strong>";
-		};
-		deleteComment = function(id){
-			var j00sure = confirm("<?php _e('Are you sure you wish to delete this comment?'); ?>");
-			if(j00sure) {
-				var delCall = new Ajax('comments.php?req=ajaxdelete&id='+id,{onComplete:confirmus});
-				delCall.request();
-				var hideThis = new Fx.Opacity('comment-'+id,{duration:750});
-				hideThis.custom(1, 0.2);
-			}
-		};
-		</script>
-<?php
-		}
-		add_action('admin_header','add_ajax_love');
 		get_admin_header();
 		$comments = get_comments('status=hidden'); ?>
 			<h2><?php _e('Unmoderated Comments'); ?></h2>
@@ -39,7 +20,7 @@ if(we_can('edit_comments')) {
 					</div>
 					<div class="comment-options">
 						<a href="comments.php?req=edit&amp;id=<?php comment_ID(); ?>"><?php _e('Edit'); ?></a> &#8212; 
-						<a href="comments.php?req=delete&amp;id=<?php comment_ID(); ?>" onclick="deleteComment(<?php comment_ID(); ?>);return false;"><?php _e('Delete'); ?></a> &#8212; 
+						<a href="comments.php?req=delete&amp;id=<?php comment_ID(); ?>" onclick="ajaxDelete('comments.php?req=ajaxdelete&amp;id=<?php comment_ID(); ?>','comment-<?php comment_ID(); ?>','<?php _e('Are you sure you wish to delete this comment?'); ?>');return false;"><?php _e('Delete'); ?></a> &#8212; 
 						<a href="comments.php?req=status&amp;to=normal&amp;id=<?php comment_ID(); ?>"><?php _e('Approve'); ?></a> &#8212; 
 						<a href="comments.php?req=status&amp;to=spam&amp;id=<?php comment_ID(); ?>"><?php _e('Spam'); ?></a>
 					</div>

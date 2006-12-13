@@ -2,20 +2,20 @@
 
 #Function: bj_edit_post(Post ID)
 #Description: Edits a post and handles where the user goes.
-function bj_edit_post($id=0) {
+function bj_edit_entry($id=0) {
 	global $bj_db,$bj_html_post;
-	if(we_can('edit_posts')) {
-		run_actions('pre_post_edit');
+	if(we_can('edit_entries')) {
+		run_actions('pre_entry_edit');
 		$id = intval($id);
-		$former = $bj_db->get_item("SELECT * FROM `".$bj_db->posts."` WHERE `ID` = '".$id."' LIMIT 1");
+		$former = $bj_db->get_item("SELECT * FROM `".$bj_db->entries."` WHERE `ID` = '".$id."' LIMIT 1");
 		#Does this post exist? If not, do nothing.
 		if($id == 0 || !$former) {
 			return false;
 		}
 		if(isset($_POST['save-del'])) {
-			$bj_db->query("DELETE FROM `".$bj_db->posts."` WHERE `ID` = '".$id."' LIMIT 1");
+			$bj_db->query("DELETE FROM `".$bj_db->entries."` WHERE `ID` = '".$id."' LIMIT 1");
 			$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".$id."' LIMIT 1");
-			@header("Location: ".load_option('siteurl')."admin/posts.php?deleted=true");
+			@header("Location: ".load_option('siteurl')."admin/entries.php?deleted=true");
 			die();
 		}
 		$post['title'] = bj_clean_string($_POST['title']);
@@ -31,15 +31,11 @@ function bj_edit_post($id=0) {
 				if(!in_array($tag.'',unserialize($former['tags']),true) and $post['ptype'] == 'public') {
 					$bj_db->query("UPDATE `".$bj_db->tags."` SET `posts_num` = posts_num + 1 WHERE `ID` = ".$tag);
 				}
-				#If the post was switched to a draft again and the tag was in the original post, decrease the amount.
-				elseif(in_array($tag.'',unserialize($former['tags']),true) and ($post['ptype'] == 'draft') and ($former['ptype'] == 'public')) {
-					$bj_db->query("UPDATE `".$bj_db->tags."` SET `posts_num` = posts_num - 1 WHERE `ID` = ".$tag);
-				}
 			}
 		}
 		#Was a tag removed?
 		foreach(unserialize($former['tags']) as $tag) {
-			if(!in_array($tag,$tag_string,true)) {
+			if(!in_array($tag,$tag_string,true) and $post['ptype'] == 'public') {
 				$bj_db->query("UPDATE `".$bj_db->tags."` SET `posts_num` = posts_num - 1 WHERE `ID` = ".$tag);
 			}
 		}
@@ -49,9 +45,9 @@ function bj_edit_post($id=0) {
 		if($_POST['editstamp'] == "yes") {
 			$post['posted'] = intval($_POST['stamp_year']).'-'.intval($_POST['stamp_month']).'-'.intval($_POST['stamp_date']).' '.intval($_POST['stamp_hour']).':'.intval($_POST['stamp_min']).':'.intval($_POST['stamp_sec']);
 		}
-		$post = run_filters('post_edit',$post);
+		$post = run_filters('entry_edit',$post);
 		#Now let's build our update query.
-		$query = "UPDATE `".$bj_db->posts."` SET `ID` = '".$id."'";
+		$query = "UPDATE `".$bj_db->entries."` SET `ID` = '".$id."'";
 		foreach($post as $key=>$value) {
 			if(isset($former[$key])) {
 				if($former[$key] != $value) {
@@ -63,22 +59,22 @@ function bj_edit_post($id=0) {
 		$bj_db->query($query);
 	
 		if(isset($_POST['save'])) {
-			@header("Location: ".load_option('siteurl')."admin/posts.php");
+			@header("Location: ".load_option('siteurl')."admin/entries.php");
 		}
 		elseif(isset($_POST['save-cont'])) {
-			@header("Location: ".load_option('siteurl')."admin/posts.php?req=edit&id=".$id);
+			@header("Location: ".load_option('siteurl')."admin/entries.php?req=edit&id=".$id);
 		}
 	
 		die();
 	}
 }
 
-#Function: bj_new_post()
+#Function: bj_new_entry()
 #Description: Creates a post and handles where the user goes.
-function bj_new_post() {
+function bj_new_entry() {
 	global $bj_db,$bj_html_post;
-	if(we_can('write_posts')) {
-		run_actions('pre_post_new');
+	if(we_can('write_entries')) {
+		run_actions('pre_entry_new');
 		$post = array();
 		$post['title'] = bj_clean_string($_POST['title']);
 		$post['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($post['title']) : bj_clean_string($_POST['shortname']);
@@ -96,10 +92,10 @@ function bj_new_post() {
 		}
 		$post['tags'] = serialize($tag_string);
 		$post['section'] = bj_clean_string($_POST['section']);
-		$post = run_filters('post_new',$post);
+		$post = run_filters('entry_new',$post);
 		#Now let's build our insert query.
 		$keys = ''; $values = '';
-		$query = "INSERT INTO `".$bj_db->posts."`";
+		$query = "INSERT INTO `".$bj_db->entries."`";
 		foreach($post as $key=>$value) {
 			$keys .= ", `".$key."`";
 			$values .= ", '".$value."'";
@@ -109,11 +105,11 @@ function bj_new_post() {
 		$bj_db->query($query);
 	
 		if(isset($_POST['save'])) {
-			@header("Location: ".load_option('siteurl')."admin/posts.php");
+			@header("Location: ".load_option('siteurl')."admin/entries.php");
 		}
 		elseif(isset($_POST['save-cont'])) {
-			$saved = $bj_db->get_item("SELECT `ID` FROM `".$bj_db->posts."` WHERE `title` = '".$post['title']."' LIMIT 1");
-			@header("Location: ".load_option('siteurl')."admin/posts.php?req=edit&id=".$saved['ID']);
+			$saved = $bj_db->get_item("SELECT `ID` FROM `".$bj_db->entries."` WHERE `title` = '".$post['title']."' LIMIT 1");
+			@header("Location: ".load_option('siteurl')."admin/entries.php?req=edit&id=".$saved['ID']);
 		}
 		die();
 	}
@@ -160,7 +156,7 @@ function bj_edit_section($id = 0) {
 		run_actions('pre_edit_section');
 		$id = intval($id);
 		$former = $bj_db->get_item("SELECT * FROM `".$bj_db->sections."` WHERE `ID` = '".$id."' LIMIT 1");
-		if($id == 0 || !$former) {
+		if($id == 0 or !$former) {
 			return false;
 		}
 		if(isset($_POST['save-del'])) {
@@ -178,10 +174,8 @@ function bj_edit_section($id = 0) {
 		#Query query.
 		$query = "UPDATE `".$bj_db->sections."` SET `ID` = '".$id."'";
 		foreach($section as $key=>$value) {
-			if(isset($former[$key])) {
-				if($former[$key] != $value) {
-					$query .= ", `".$key."` = '".$value."'";
-				}
+			if(isset($former[$key]) and $former[$key] != $value) {
+				$query .= ", `".$key."` = '".$value."'";
 			}
 		}
 		$query .= " WHERE `ID` = ".$id." LIMIT 1";
@@ -192,6 +186,67 @@ function bj_edit_section($id = 0) {
 		elseif(isset($_POST['save-cont'])) {
 			@header("Location: ".load_option('siteurl')."admin/sections.php?req=edit&id=".$id);
 		}
+		die();
+	}
+}
+
+#Function: bj_new_tag(Inline)
+#Description: Inserts a new tag. Can either be ajax'd or a regular header redirect.
+function bj_new_tag($inline=false) {
+	global $bj_db;
+	if(we_can('edit_tags') and $_POST['name']) {
+		run_actions('pre_new_tag');
+		#Prevent the system from calling bj_new_tag() twice.
+		if(!$inline and $_GET['req'] == 'ajaxadd') {
+			return false;
+		}
+		$tag['name'] = bj_clean_string($_POST['name']);
+		$tag['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($tag['name']) : bj_clean_string($_POST['shortname']);
+		$tag['posts_num'] = 0;
+		$tag = run_filters('tag_new',$tag);
+		$keys = ''; $values = '';
+		$query = "INSERT INTO `".$bj_db->tags."`";
+		foreach($tag as $key=>$value) {
+			$keys .= ", `".$key."`";
+			$values .= ", '".$value."'";
+		}
+		$query .= "(`ID`".$keys.")";
+		$query .= " VALUES (''".$values.")";
+		$bj_db->query($query);
+		if($inline) {
+			return $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `name` = '".$tag['name']."' LIMIT 1");
+		}
+		else {
+			@header("Location: ".load_option('siteurl')."admin/tags.php");
+			die();
+		}
+	}
+}
+
+#Function: bj_edit_tag(ID)
+#Description: Edit our tag. Return our user.
+function bj_edit_tag($id = 0) {
+	global $bj_db;
+	if(we_can('edit_tags')) {
+		run_actions('pre_edit_tag');
+		$id = intval($id);
+		$former = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `ID` = '".$id."' LIMIT 1");
+		if($id == 0 or !$former) {
+			return false;
+		}
+		$tag['name'] = bj_clean_string($_POST['name']);
+		$tag['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($tag['name']) : bj_clean_string($_POST['shortname']);
+		$tag['posts_num'] = 0;
+		$tag = run_filters('tag_edit',$tag);
+		$query = "UPDATE `".$bj_db->tags."` SET `ID` = '".$id."'";
+		foreach($tag as $key=>$value) {
+			if(isset($former[$key]) and $former[$key] != $value) {
+				$query .= ", `".$key."` = '".$value."'";
+			}
+		}
+		$query .= " WHERE `ID` = ".$id." LIMIT 1";
+		$bj_db->query($query);
+		@header("Location: ".load_option('siteurl')."admin/tags.php");
 		die();
 	}
 }

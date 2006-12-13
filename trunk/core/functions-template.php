@@ -10,32 +10,15 @@
 #Description: Lists all tags in existance.
 function echo_all_tags($extra=false) {
 	global $bj_db;
-	if($extra) { parse_str($extra,$args); }
-	$query = "SELECT * FROM `".$bj_db->tags."` WHERE `ID` != '0'";
-	if(isset($args['depth'])) {
-		if($args['depth'] == "flat") {
-			$query .= " AND `parent` = '0'";
-		}
-	}
-	if(isset($args['parent'])) {
-		$query .= " AND `parent` = '".intval($args['parent'])."'";
-	}
-	if(isset($args['orderby'])) {
-		$query .= " ORDER BY `".$args['sortby']."`";
-	}
-	if(isset($args['before'])) {
-		$before = $args['before'];
-	}
-	if(isset($args['after'])) {
-		$after = $args['after'];
-	}
-	$tags = $bj_db->get_rows($query,"ASSOC");
-	foreach($tags as $tag) {
-		if(defined('BJ_REWRITE')) {
-			echo"<li class=\"list_tag\">".$before."<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."\">".$tag['name']."</a>".$after."</li>";
-		}
-		else {
-			echo"<li class=\"list_tag\">".$before."<a href=\"".load_option('siteurl')."index.php?req=tag&amp;name=".$tag['shortname']."\">".$tag['name']."</a>".$after."</li>";
+	$tags = return_all_tags($extra);
+	if($tags) {
+		foreach($tags as $tag) {
+			if(defined('BJ_REWRITE')) {
+				echo"<li class=\"list_tag\">".$before."<a href=\"".load_option('siteurl')."tag/".$tag['shortname']."\">".$tag['name']."</a>".$after."</li>";
+			}
+			else {
+				echo"<li class=\"list_tag\">".$before."<a href=\"".load_option('siteurl')."index.php?req=tag&amp;name=".$tag['shortname']."\">".$tag['name']."</a>".$after."</li>";
+			}
 		}
 	}
 }
@@ -45,17 +28,30 @@ function echo_all_tags($extra=false) {
 function return_all_tags($extra=false) {
 	global $bj_db;
 	if($extra) { parse_str($extra,$args); }
-	$query = "SELECT * FROM `".$bj_db->tags."` WHERE `ID` != '0'";
-	if(isset($args['depth'])) {
-		if($args['depth'] == "flat") {
-			$query .= " AND `parent` = '0'";
-		}
+	$query = "SELECT * FROM `".$bj_db->tags."`";
+	if(isset($args['id'])) {
+		$query .= " WHERE `ID` = '".intval($args['id'])."'";
 	}
-	if(isset($args['parent'])) {
-		$query .= " AND `parent` = '".intval($args['parent'])."'";
+	else {
+		 $query .= " WHERE `ID` != '0'";
 	}
 	if(isset($args['orderby'])) {
 		$query .= " ORDER BY `".$args['orderby']."`";
+	}
+	else {
+		$query .= " ORDER BY `name`";
+	}
+	if(isset($args['order'])) {
+		$query .= " ".$args['order'];
+	}
+	else {
+		$query .= " ASC";
+	}
+	if(isset($args['offset'])) {
+		$query .= " OFFSET ".intval($args['offset']);
+	}
+	if(isset($args['limit'])) {
+		$query .= " LIMIT ".intval($args['limit']);
 	}
 	$tags = $bj_db->get_rows($query,"ASSOC");
 	return $tags;
@@ -67,16 +63,16 @@ function return_all_tags($extra=false) {
  * ************************
  */
 
-#Function: get_posts(Stuff)
-#Description: Grabs posts based on the "stuff" given.
-function get_posts($q) {
+#Function: get_entries(Stuff)
+#Description: Grabs entries based on the "stuff" given.
+function get_entries($q) {
 	global $bj_db,$i,$newer,$older;
 	parse_str($q,$stuff);
 	$num_off = (isset($_GET['offset'])) ? intval($_GET['offset']) : 0; //So the offset will update itself automatically.
 	$i = 0;
 	$newer = $num_off-(isset($stuff['limit'])) ? $stuff['limit'] : load_option('entries_per_page');
 	$older = $num_off+(isset($stuff['limit'])) ? $stuff['limit'] : load_option('entries_per_page');
-	$query = "SELECT * FROM ".$bj_db->posts." WHERE";
+	$query = "SELECT * FROM ".$bj_db->entries." WHERE";
 	if(isset($stuff['id'])) {
 		$query .= " `ID` = '".intval($stuff['id'])."'";
 	} else {
@@ -216,9 +212,19 @@ function rss_tags($between='',$before='',$after='',$extra=false) {
 #Function: return_tags(Extra)
 #Description: Returns the tags for a post. Can be used only in a loop. 
 function return_tags($extra=false) {
-	global $post,$posts,$bj_db;
-	$tags = unserialize($post['tags']);
+	global $entry,$entries,$bj_db;
+	static $done = 0;
+	static $alltags = array();
+	if($done == 0) {
+		$thesetags = return_all_tags();
+		foreach($thesetags as $tag) {
+			$alltags[$tag['ID']] = $tag;
+		}
+		$done = 1;
+	}
+	$tags = unserialize($entry['tags']);
 	$retarr = array();
+	
 	if($extra) {
 		parse_str($extra,$args);
 	}
@@ -226,14 +232,9 @@ function return_tags($extra=false) {
 		foreach($tags as $ID) {
 			//This checks if the information about a tag was already retrieved.
 			//After all, why do extra queries?
-			if(isset($posts['tagbuffer'][$ID])) {
-				$arr = $posts['tagbuffer'][$ID];
+			if(isset($alltags[$ID])) {
+				$retarr[] = $alltags[$ID];
 			}
-			else {
-				$arr = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `ID` = '".$ID."' LIMIT 1");
-				$posts['tagbuffer'][$ID] = $arr;
-			}
-			$retarr[] = $arr;
 		}
 		return $retarr;
 	}
@@ -244,10 +245,10 @@ function return_tags($extra=false) {
 
 #Function: post_stuff()
 #Description: Prepares variables and such for each post.
-function start_post() {
+function start_entry() {
 	global $i;
 	$i++;
-	run_actions('start_post');
+	run_actions('start_entry');
 }
 
 #Function: echo_ID()
@@ -259,8 +260,8 @@ function echo_ID() {
 #Function: return_ID()
 #Description: Outputs the ID. Loop-only.
 function return_ID() {
-	global $post;
-	return run_filters('post_id',$post['ID']);
+	global $entry;
+	return run_filters('entry_id',$entry['ID']);
 }
 
 #Function: echo_title()
@@ -272,9 +273,9 @@ function echo_title() {
 #Function: return_title()
 #Description: Returns the title. Can only be used in the loop.
 function return_title() {
-	global $post;
-	$title = wptexturize($post['title']);
-	return run_filters('post_title',$title);
+	global $entry;
+	$title = wptexturize($entry['title']);
+	return run_filters('entry_title',$title);
 }
 
 #Function: echo_permalink()
@@ -286,51 +287,51 @@ function echo_permalink() {
 #Function: return_permalink()
 #Description: Outputs the permalink.
 function return_permalink() {
-	global $post;
+	global $entry;
 	if(defined('BJ_REWRITE')) {
-		return load_option('siteurl').'entry/'.$post['shortname'];
+		return load_option('siteurl').'entry/'.$entry['shortname'];
 	}
 	else {
-		return load_option('siteurl').'index.php?req=entry&amp;name='.$post['shortname'];
+		return load_option('siteurl').'index.php?req=entry&amp;name='.$entry['shortname'];
 	}
 		
 }
 
-#Function: post_author()
-#Description: Wrapper for get_post_author().
-function post_author() {
-	echo get_post_author();
+#Function: entry_author()
+#Description: Wrapper for get_entry_author().
+function entry_author() {
+	echo get_entry_author();
 }
 
-#Function: get_post_author()
-#Description: Post author returned. Loop-only.
-function get_post_author() {
-	global $post;
-	return run_filters('post_author',$post['author']);
+#Function: get_entry_author()
+#Description: Entry author returned. Loop-only.
+function get_entry_author() {
+	global $entry;
+	return run_filters('entry_author',$entry['author']);
 }
 
-#Function: post_date(Date Format[, Date Resource])
-#Description: Wrapper for get_post_date().
-function post_date($format='F jS, Y',$res=false) {
-	echo get_post_date($format,$res);
+#Function: entry_date(Date Format[, Date Resource])
+#Description: Wrapper for get_entry_date().
+function entry_date($format='F jS, Y',$res=false) {
+	echo get_entry_date($format,$res);
 }
 
-#Function: get_post_date(Date Format[, Date Resource])
+#Function: get_entry_date(Date Format[, Date Resource])
 #Description: Creates the date from a mysql datetime format. Can be used in the
 #			  loop or, if the resource is defined, outside of it. Your choice. :)
-function get_post_date($format='F jS, Y',$res=false) {
+function get_entry_date($format='F jS, Y',$res=false) {
 	if(!$res) {
-		global $post;
-		$res = $post['posted'];
+		global $entry;
+		$res = $entry['posted'];
 	}
 	$time = mktime(substr($res,11,2),substr($res,14,2),substr($res,17,2),substr($res,5,2),substr($res,8,2),substr($res,0,4));
 	return date($format,$time);
 }
 
-#Function: entry_edit_link([Text[, Before[, After]]])
+#Function: edit_entry_link([Text[, Before[, After]]])
 #Description: Will display an edit link if the user is logged in and can edit posts.
 function edit_entry_link($text='Edit',$before='',$after='') {
-	if(we_can('edit_posts')) { ?><a href="<?php siteinfo('siteurl'); ?>admin/posts.php?req=edit&amp;id=<?php echo_ID(); ?>"><?php echo $text; ?></a><?php }
+	if(we_can('edit_entries')) { ?><a href="<?php siteinfo('siteurl'); ?>admin/entries.php?req=edit&amp;id=<?php echo_ID(); ?>"><?php echo $text; ?></a><?php }
 }
 
 #Function: echo_content()
@@ -338,45 +339,57 @@ function edit_entry_link($text='Edit',$before='',$after='') {
 function echo_content() {
 	echo return_content();
 }
-
-#Function: return_content()
-#Description: Outputs the content.
 function return_content() {
-	global $post;
-	$content = wptexturize($post['content']);
+	global $entry;
+	$content = str_replace(run_filters('snippet_separator','__More__'),'',$entry['content']);
+	$content = wptexturize($content);
 	$content = wpautop($content);
-	return run_filters('post_content',$content);
+	return run_filters('entry_content',$content);
+}
+
+#Function: echo_snippet()
+#Description: Returns the snippet of the entry.
+function echo_snippet() {
+	echo return_snippet();
+}
+function return_snippet() {
+	global $entry;
+	$content = explode(run_filters('snippet_separator','__More__'),$entry['content']);
+	$content = $content[0];
+	$content = wptexturize($content);
+	$content = wpautop($content);
+	return run_filters('entry_snippet',$content);
 }
 
 #Function: comments_link(No Comments[, One Comment[, Multiple Comments[, Comments Closed]]])
 #Description: Comments link. Loop-only, kids!
 function comments_link($none='0 Comments',$one='1 Comment',$multi='% Comments',$closed='Closed') {
-	global $post;
-	if($post['comments_open'] == 0) {
+	global $entry;
+	if($entry['comments_open'] == 0) {
 		$comments_text = $closed;
 	}
 	else {
-		switch($post['comment_count']) {
+		switch($entry['comment_count']) {
 			case 0 : $comments_text = $none; break;
 			case 1 : $comments_text = $one; break;
-			default : $comments_text = str_replace('%',$post['comment_count'],$multi);
+			default : $comments_text = str_replace('%',$entry['comment_count'],$multi);
 		}
 	}
 ?>
 <a href="<?php echo_permalink(); ?>#comments"><?php echo $comments_text; ?></a><?php
 }
 
-#Function: get_post_type()
-#Description: The post type.
-function get_post_type() {
-	global $post;
-	return $post['ptype'];
+#Function: get_entry_type()
+#Description: The entry type.
+function get_entry_type() {
+	global $entry;
+	return $entry['ptype'];
 }
 
 #Function: next_post_link(Text[, Before[, After]])
 #Description: Next post link.
 function next_page_link($text,$before='',$after='',$args='') {
-	global $posts,$query_string;
+	global $entries,$query_string;
 	parse_str($args,$a);
 	$num = (isset($a['num'])) ? intval($a['num']) : load_option('entries_per_page');
 	$older = intval($_GET['offset']) + $num;
@@ -398,7 +411,7 @@ function next_page_link($text,$before='',$after='',$args='') {
 	elseif(is_search()) {
 		$posts_string .= '&search='.bj_clean_string($_GET['s']);
 	}
-	if(get_posts($posts_string) - $older > 0 && !is_entry()) {
+	if(get_entries($posts_string) - $older > 0 && !is_entry()) {
 		if(!is_admin()) {
 			if(defined('BJ_REWRITE')) {
 				if(is_section()) {
@@ -435,7 +448,7 @@ function next_page_link($text,$before='',$after='',$args='') {
 			elseif(is_search()) {
 				$extra_string = 'req=search&amp;s='.bj_clean_string($_GET['s']).'&amp;';
 			}
-			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?'.$extra_string.'offset='.$older.'">'.$text.'</a>'.$after;
+			echo $before.'<a href="'.load_option('siteurl').'admin/entries.php?'.$extra_string.'offset='.$older.'">'.$text.'</a>'.$after;
 		}
 	}
 }
@@ -480,7 +493,7 @@ function prev_page_link($text,$before='',$after='',$args='') {
 			elseif(is_search()) {
 				$extra_string = 'req=search&amp;s='.bj_clean_string($_GET['s']).'&amp;';
 			}
-			echo $before.'<a href="'.load_option('siteurl').'admin/posts.php?'.$extra_string.'offset='.$newer.'">'.$text.'</a>'.$after;
+			echo $before.'<a href="'.load_option('siteurl').'admin/entries.php?'.$extra_string.'offset='.$newer.'">'.$text.'</a>'.$after;
 		}
 	}
 }
@@ -494,7 +507,7 @@ function prev_page_link($text,$before='',$after='',$args='') {
  #Function: get_comments(Stuff[, Extra])
 #Description: Modeled after get_posts().
 function get_comments($q,$extra=false) {
-	global $bj_db,$post;
+	global $bj_db,$entry;
 	parse_str($q,$stuff);
 	$query = "SELECT * FROM ".$bj_db->comments." WHERE";
 	if(isset($stuff['id'])) {
@@ -504,9 +517,6 @@ function get_comments($q,$extra=false) {
 	}
 	if(isset($stuff['postid'])) {
 		$query .= " AND `post_ID` = '".intval($stuff['postid'])."'";
-	}
-	elseif($post) {
-		$query .= " AND `post_ID` = '".$post['ID']."'";
 	}
 	if(isset($stuff['second'])) {
 		$query .= " AND SECOND(`posted_on`) = '".$stuff['second']."'";
@@ -551,7 +561,7 @@ function get_comments($q,$extra=false) {
 		$query .= " ".$stuff['order'];
 	}
 	else {
-		$query .= " ASC";
+		$query .= " DESC";
 	}
 	if($extra) {
 		$query .= $extra;
@@ -619,7 +629,7 @@ function comment_date($format='F jS, Y') {
 }
 function return_comment_date($format='F jS, Y') {
 	global $comment;
-	return get_post_date($format,$comment['posted_on']);
+	return get_entry_date($format,$comment['posted_on']);
 }
 
 #Function: comment_text()
@@ -629,7 +639,8 @@ function comment_text() {
 }
 function return_comment_text() {
 	global $comment;
-	return run_filters('comment_text',$comment['content']);
+	$text = wptexturize($comment['content']);
+	return run_filters('comment_text',$text);
 }
 
 #Function comment_postid()

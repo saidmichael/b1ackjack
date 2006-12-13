@@ -10,5 +10,6 @@ RewriteRule ^tag/(.*)/page/([0-9]+)$ /blackjack/index.php?req=tag&name=$1&offset
 RewriteRule ^tag/(.*)$ /blackjack/index.php?req=tag&name=$1 [L,QSA]
 RewriteRule ^entry/(.*)/rss$ /blackjack/rss.php?req=entry&name=$1 [L,QSA]
 RewriteRule ^entry/(.*)$ /blackjack/index.php?req=entry&name=$1 [L,QSA]
+RewriteRule ^author/(.*)$ /blackjack/index.php?req=author&name=$1 [L,QSA]
 RewriteRule ^rss$ /blackjack/rss.php [L,QSA]
 </ifmodule>

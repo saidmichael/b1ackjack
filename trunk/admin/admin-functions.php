@@ -33,130 +33,150 @@ function fancy_altrows($rows) {
 	}
 }
 
-#Function: do_editorform(Post)
+#Function: do_editorform(Entry)
 #Destiption: Processes the editor form. The post field defaults to
 #			 an array with just the keys for a new post. 
-function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','content'=>'','content'=>'','author'=>'','posted'=>'','ptype'=>'','section'=>'','comment_count'=>'','tags'=>'')) {
+function do_editorform($entry = array('ID'=>'0','title'=>'','shortname'=>'','content'=>'','content'=>'','author'=>'','posted'=>'','ptype'=>'','section'=>'','comment_count'=>'','tags'=>'')) {
 	ob_start(); ?>
-			<form name="edit-<?php echo $post['ID']; ?>" action="" method="post">
+			<form name="edit-<?php echo $entry['ID']; ?>" action="" method="post">
 				<div class="column width25">
-					<h3><label for="section"><?php _e('Section'); ?></label></h3>
-					<p>
-						<select name="section" id="section" class="width100">
+					<div class="c-ontent">
+						<div class="tblock">
+							<h3><label for="section"><?php _e('Section'); ?></label></h3>
+							<p>
+								<select name="section" id="section" class="width100">
 					<?php
 						$sections = return_sections();
 						foreach($sections as $section) { ?>
-							<option value="<?php echo $section['ID']; ?>"<?php bj_selected($section['ID'],$post['section']); ?>><?php echo $section['title']; ?></option>
+									<option value="<?php echo $section['ID']; ?>"<?php bj_selected($section['ID'],$entry['section']); ?>><?php echo $section['title']; ?></option>
 <?php
 						} ?>
-						</select>
-					</p>
-					<h3><?php _e('Tags'); ?></h3>
-					<ul class="altrows taglist">
-
+								</select>
+							</p>
+						</div>
+						<div class="tblock">
+							<h3><?php _e('Tags'); ?></h3>
+							<ul class="altrows taglist">
+								<li id="headings"></li>
 					<?php
 						$ourtags = return_all_tags();
 						$return_tags = return_tags();
 						$ti = 0;
 						foreach($ourtags as $tag) { ?>
-						<li<?php tablealt($ti); ?>><label for="tag-<?php echo $tag['ID']; ?>"><input type="checkbox" id="tag-<?php echo $tag['ID']; ?>" name="tags[<?php echo $tag['ID']; ?>]"<?php
+								<li<?php tablealt($ti); ?>><label for="tag-<?php echo $tag['ID']; ?>"><input type="checkbox" id="tag-<?php echo $tag['ID']; ?>" name="tags[<?php echo $tag['ID']; ?>]"<?php
 							if(is_array($return_tags)) { foreach($return_tags as $chtag) {
 								bj_checked($tag['ID'],$chtag['ID']);
 							} } ?> /> <?php echo $tag['name']; ?></label></li>
 <?php					$ti++; }
 						unset($ti); ?>
-					</ul>
-					<h3><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h3>
-					<p><input type="text" name="shortname" id="shortname" value="<?php echo $post['shortname']; ?>" class="width90" /></p>
-					<h3><?php _e('Post Type'); ?></h3>
-					<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php bj_checked(get_post_type(),'public'); ?> /> <?php _e('Public'); ?></label><br />
-					<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php bj_checked(get_post_type(),'draft'); ?> /> <?php _e('Draft'); ?></label></p>
-					<h3><?php _e('Post Author'); ?></h3>
-					<p><select name="author" class="width100">
+							</ul>
+						</div>
+						<div class="tblock">
+							<h3><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label></h3>
+							<p><input type="text" name="shortname" id="shortname" value="<?php echo $entry['shortname']; ?>" class="text100" /></p>
+						</div>
+						<div class="tblock">
+							<h3><?php _e('Post Type'); ?></h3>
+							<p><label for="public_post"><input type="radio" name="ptype" value="public" id="public_post"<?php bj_checked(get_entry_type(),'public'); ?> /> <?php _e('Public'); ?></label><br />
+							<label for="draft_post"><input type="radio" name="ptype" value="draft" id="draft_post"<?php bj_checked(get_entry_type(),'draft'); ?> /> <?php _e('Draft'); ?></label></p>
+						</div>
+						<div class="tblock">
+							<h3><?php _e('Post Author'); ?></h3>
+							<p>
+								<select name="author" class="width100">
 <?php
-					$authors = get_users('gop=>=&group=2');
-					foreach($authors as $author) { start_post(); ?>
-						<option value="<?php echo $author['display_name']; ?>"<?php bj_selected(get_post_author(),$author['display_name']); ?>><?php echo $author['display_name']; ?></option>
+					$authors = get_users('equ=>=&group=2');
+					foreach($authors as $author) { start_entry(); ?>
+									<option value="<?php echo $author['display_name']; ?>"<?php bj_selected(get_entry_author(),$author['display_name']); ?>><?php echo $author['display_name']; ?></option>
 <?php
 					}
 					unset($i); ?>
-					</select></p>
+								</select>
+							</p>
+						</div>
 <?php
-					if($post['posted'] != "") { ?>
-					<h3><?php _e('Edit Timestamp'); ?></h3>
-					<p><?php printf(_r('Timestamp is %1$s on %2$s.'),get_post_date('F jS, Y'),get_post_date('H:i:s')); ?></p>
-					<p><input type="checkbox" id="editstamp" name="editstamp" value="yes"> <label for="editstamp"><?php _e('Edit timestamp?'); ?></label><br />
-					<select name="stamp_month">
-						<option value="01"<?php bj_selected(get_post_date('m'),'01'); ?>><?php _e('January'); ?></option>
-						<option value="02"<?php bj_selected(get_post_date('m'),'02'); ?>><?php _e('February'); ?></option>
-						<option value="03"<?php bj_selected(get_post_date('m'),'03'); ?>><?php _e('March'); ?></option>
-						<option value="04"<?php bj_selected(get_post_date('m'),'04'); ?>><?php _e('April'); ?></option>
-						<option value="05"<?php bj_selected(get_post_date('m'),'05'); ?>><?php _e('May'); ?></option>
-						<option value="06"<?php bj_selected(get_post_date('m'),'06'); ?>><?php _e('June'); ?></option>
-						<option value="07"<?php bj_selected(get_post_date('m'),'07'); ?>><?php _e('July'); ?></option>
-						<option value="08"<?php bj_selected(get_post_date('m'),'08'); ?>><?php _e('August'); ?></option>
-						<option value="09"<?php bj_selected(get_post_date('m'),'09'); ?>><?php _e('September'); ?></option>
-						<option value="10"<?php bj_selected(get_post_date('m'),'10'); ?>><?php _e('October'); ?></option>
-						<option value="11"<?php bj_selected(get_post_date('m'),'11'); ?>><?php _e('November'); ?></option>
-						<option value="12"<?php bj_selected(get_post_date('m'),'12'); ?>><?php _e('December'); ?></option>
-					</select> 
-					<input type="text" name="stamp_date" maxlength="2" size="2" value="<?php post_date('d'); ?>" class="aligncenter" /> 
-					<input type="text" name="stamp_year" maxlength="4" size="4" value="<?php post_date('Y'); ?>" class="aligncenter" /> <?php _e('on'); ?> 
-					<input type="text" name="stamp_hour" maxlength="2" size="2" value="<?php post_date('H'); ?>" class="aligncenter" /> :
-					<input type="text" name="stamp_min" maxlength="2" size="2" value="<?php post_date('i'); ?>" class="aligncenter" /> :
-					<input type="text" name="stamp_sec" maxlength="2" size="2" value="<?php post_date('s'); ?>" class="aligncenter" />
-						</p>
+					if($entry['posted'] != "") { ?>
+						<div class="tblock">
+							<h3><?php _e('Edit Timestamp'); ?></h3>
+							<p><?php printf(_r('Timestamp is %1$s on %2$s.'),get_entry_date('F jS, Y'),get_entry_date('H:i:s')); ?></p>
+							<p><input type="checkbox" id="editstamp" name="editstamp" value="yes" /> <label for="editstamp"><?php _e('Edit timestamp?'); ?></label><br />
+							<select name="stamp_month">
+								<option value="01"<?php bj_selected(get_entry_date('m'),'01'); ?>><?php _e('January'); ?></option>
+								<option value="02"<?php bj_selected(get_entry_date('m'),'02'); ?>><?php _e('February'); ?></option>
+								<option value="03"<?php bj_selected(get_entry_date('m'),'03'); ?>><?php _e('March'); ?></option>
+								<option value="04"<?php bj_selected(get_entry_date('m'),'04'); ?>><?php _e('April'); ?></option>
+								<option value="05"<?php bj_selected(get_entry_date('m'),'05'); ?>><?php _e('May'); ?></option>
+								<option value="06"<?php bj_selected(get_entry_date('m'),'06'); ?>><?php _e('June'); ?></option>
+								<option value="07"<?php bj_selected(get_entry_date('m'),'07'); ?>><?php _e('July'); ?></option>
+								<option value="08"<?php bj_selected(get_entry_date('m'),'08'); ?>><?php _e('August'); ?></option>
+								<option value="09"<?php bj_selected(get_entry_date('m'),'09'); ?>><?php _e('September'); ?></option>
+								<option value="10"<?php bj_selected(get_entry_date('m'),'10'); ?>><?php _e('October'); ?></option>
+								<option value="11"<?php bj_selected(get_entry_date('m'),'11'); ?>><?php _e('November'); ?></option>
+								<option value="12"<?php bj_selected(get_entry_date('m'),'12'); ?>><?php _e('December'); ?></option>
+							</select> 
+							<input type="text" name="stamp_date" maxlength="2" size="2" value="<?php entry_date('d'); ?>" class="aligncenter" /> 
+							<input type="text" name="stamp_year" maxlength="4" size="4" value="<?php entry_date('Y'); ?>" class="aligncenter" /> <?php _e('on'); ?> 
+							<input type="text" name="stamp_hour" maxlength="2" size="2" value="<?php entry_date('H'); ?>" class="aligncenter" /> :
+							<input type="text" name="stamp_min" maxlength="2" size="2" value="<?php entry_date('i'); ?>" class="aligncenter" /> :
+							<input type="text" name="stamp_sec" maxlength="2" size="2" value="<?php entry_date('s'); ?>" class="aligncenter" />
+							</p>
+						</div>
 <?php
 					}
 					run_actions('end_editor_sidebar'); ?>
+					</div>
 				</div>
 				<div class="column width75">
-					<p><label for="title"><?php _e('Title'); ?></label><br class="blank" /><input type="text" name="title" id="title" value="<?php echo $post['title']; ?>" class="width100 largeinput" /></p>
-					<div id="editor">
-						<div id="editbar">
-							<div class="alignleft buttons">
-								<a href="#" onclick="simpleTag('textarea','strong','<?php _e('Bold Text Here'); ?>',false);return false;" class="strong"><span><?php _e('Strong'); ?></span></a>
-								<a href="#" onclick="simpleTag('textarea','em','<?php _e('Italic Text Here'); ?>',false);return false;" class="em" /><span><?php _e('Em'); ?></span></a>
-								<a href="#" onclick="linkTag('textarea','<?php _e('Link Text Here'); ?>','<?php _e('Link URL Here'); ?>');return false;" class="link" /><span><?php _e('Link'); ?></span></a>
-								<a href="#" onclick="imgTag('textarea','<?php _e('Image\'s Alternate Text'); ?>','<?php _e('Imager URL Here'); ?>');return false;" class="img" /><span><?php _e('Img'); ?></span></a>
-								<a href="#" onclick="simpleTag('textarea','blockquote','<?php _e('Quoted Text Here'); ?>',true);return false;" class="bq" /><span><?php _e('BQ'); ?></span></a>
-								<a href="#" onclick="listTag('textarea','ul','<?php _e('List Item'); ?>');return false;" class="ul" /><span><?php _e('Ol'); ?></span></a>
-								<a href="#" onclick="listTag('textarea','ol','<?php _e('List Item'); ?>');return false;" class="ol" /><span><?php _e('Ul'); ?></span></a>
-								<div class="clear"></div>
-							</div>
-							<div class="alignright updown">
-								<a href="#" onclick="moreheight('textarea',50);return false;" class="more" /><span><?php _e('More'); ?></span></a>
-								<a href="#" onclick="lessheight('textarea',50);return false;" class="less" /><span><?php _e('Less'); ?></span></a>
-								<div class="clear"></div>
-							</div>
-							<div class="clear"></div>
+					<div class="c-ontent">
+						<div class="tblock">
+							<p><label for="title"><?php _e('Title'); ?></label><br class="blank" /><input type="text" name="title" id="title" value="<?php echo $entry['title']; ?>" class="width100 largeinput" /></p>
 						</div>
-						<div id="nonJSedit"></div>
-						<textarea name="content" id="textarea"><?php echo formatted_for_editing($post['content']); ?></textarea>
-					</div>
+						<div class="tblock" id="editor">
+							<div id="editbar">
+								<div class="alignleft buttons">
+									<a href="#" onclick="simpleTag('textarea','strong','<?php _e('Bold Text Here'); ?>',false);return false;" class="strong"><span><?php _e('Strong'); ?></span></a>
+									<a href="#" onclick="simpleTag('textarea','em','<?php _e('Italic Text Here'); ?>',false);return false;" class="em" /><span><?php _e('Em'); ?></span></a>
+									<a href="#" onclick="linkTag('textarea','<?php _e('Link Text Here'); ?>','<?php _e('Link URL Here'); ?>');return false;" class="link" /><span><?php _e('Link'); ?></span></a>
+									<a href="#" onclick="imgTag('textarea','<?php _e('Image\\\'s Alternate Text'); ?>','<?php _e('Imager URL Here'); ?>');return false;" class="img" /><span><?php _e('Img'); ?></span></a>
+									<a href="#" onclick="simpleTag('textarea','blockquote','<?php _e('Quoted or Indented Text Here'); ?>',true);return false;" class="bq" /><span><?php _e('BQ'); ?></span></a>
+									<a href="#" onclick="listTag('textarea','ul','<?php _e('List Item'); ?>');return false;" class="ul" /><span><?php _e('Ol'); ?></span></a>
+									<a href="#" onclick="listTag('textarea','ol','<?php _e('List Item'); ?>');return false;" class="ol" /><span><?php _e('Ul'); ?></span></a>
+									<div class="clear"></div>
+								</div>
+								<div class="alignright updown">
+									<a href="#" onclick="moreheight('textarea',60);return false;" class="more" /><span><?php _e('More'); ?></span></a>
+									<a href="#" onclick="lessheight('textarea',60);return false;" class="less" /><span><?php _e('Less'); ?></span></a>
+									<div class="clear"></div>
+								</div>
+								<div class="clear"></div>
+							</div>
+							<div id="nonJSedit"></div>
+							<textarea name="content" id="textarea"><?php echo formatted_for_editing($entry['content']); ?></textarea>
+						</div>
 <?php
 					run_actions('end_editor_main');
-					if($post['ID'] == "0") { ?>
-					<input type="hidden" name="new-post-send" value="yes" />
+					if($entry['ID'] == "0") { ?>
+						<input type="hidden" name="new-entry-send" value="yes" />
 <?php
 					} else { ?>
-					<input type="hidden" name="edit-post-send" value="yes" />
-					<input type="hidden" name="edit-post-id" value="<?php echo $post['ID']; ?>" />
+						<input type="hidden" name="edit-entry-send" value="yes" />
+						<input type="hidden" name="edit-entry-id" value="<?php echo $entry['ID']; ?>" />
 <?php
 					} ?>
-					<div class="submit">
+						<div class="submit">
 <?php
 					if($post['ID'] != "0") { ?>
-						<input type="submit" name="save-del" value="<?php _e('Delete Post'); ?>" class="delete" />
+							<input type="submit" name="save-del" value="<?php _e('Delete Post'); ?>" class="delete" />
 <?php
 					} ?>
-						<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
-						<input type="submit" name="save" value="<?php _e('Save Post'); ?>" style="font-weight:bold;" />
+							<input type="submit" name="save-cont" value="<?php _e('Save And Continue Editing'); ?>" /> 
+							<input type="submit" name="save" value="<?php _e('Save Post'); ?>" style="font-weight:bold;" />
+						</div>
 					</div>
 				</div>
 			</form>
 <?php
-	$content = run_filters('post_editor',ob_get_contents());
+	$content = run_filters('entry_editor',ob_get_contents());
 	ob_end_clean();
 	echo $content;
 }
@@ -166,7 +186,40 @@ function do_editorform($post = array('ID'=>'0','title'=>'','shortname'=>'','cont
 #			  the main page, where the tag is added, or the
 #			  edit page.
 function tag_editor($tag = array('ID'=>'0','name'=>'','shortname'=>'','posts_num'=>'')) {
-	
+	ob_start();
+	global $inline; ?>
+			<form name="edit-<?php echo $tag['ID']; ?>" action="" method="post" id="tagform">
+				<p><label for="name"><?php _e('Tag Name'); ?></label><br />
+				<input type="text" name="name" id="name" value="<?php echo $tag['name']; ?>" class="largeinput text100" /></p>
+				<p><label for="shortname"><var title="<?php _e('This is the friendly URL name. Leave this blank and it\'ll be taken directly from the title.'); ?>"><?php _e('Shortname'); ?></var></label><br />
+				<input type="text" name="shortname" id="shortname" value="<?php echo $tag['shortname']; ?>" class="text100" /></p>
+<?php
+				if($tag['ID'] != '0') { ?>
+				<input type="hidden" name="edit-tag-send" value="yes" />
+				<input type="hidden" name="edit-tag-id" value="<?php echo $tag['ID']; ?>" />
+<?php
+				}
+				else { ?>
+				<input type="hidden" name="new-tag-send" value="yes" />
+<?php
+				} ?>
+				<div class="submit">
+					<input type="submit" name="save" value="<?php _e('Save'); ?>" />
+				</div>
+			</form>
+<?php
+			if($inline) { ?>
+			<script type="text/javascript">
+			$('tagform').onsubmit = function(){
+				ajaxAdd('tags.php?req=ajaxadd',this);
+				return false;
+			}
+			</script>
+<?php
+			}
+	$content = run_filters('tag_editor',ob_get_contents());
+	ob_end_clean();
+	echo $content;
 }
 
 #Function: section_editor(Section)
@@ -248,17 +301,23 @@ function section_editor($section = array('ID'=>'0','title'=>'','shortname'=>'','
 #Function: run_bj_forms()
 #Description: Carries out the actions for already-existing forms.
 function run_bj_forms() {
-	if(isset($_POST['new-post-send'])) {
-		bj_new_post();
+	if(isset($_POST['new-entry-send'])) {
+		bj_new_entry();
 	}
-	elseif(isset($_POST['edit-post-send'])) {
-		bj_edit_post($_POST['edit-post-id']);
+	elseif(isset($_POST['edit-entry-send'])) {
+		bj_edit_entry($_POST['edit-entry-id']);
 	}
 	elseif(isset($_POST['new-section-send'])) {
 		bj_new_section();
 	}
 	elseif(isset($_POST['edit-section-send'])) {
 		bj_edit_section($_POST['edit-section-id']);
+	}
+	elseif(isset($_POST['new-tag-send'])) {
+		bj_new_tag();
+	}
+	elseif(isset($_POST['edit-tag-send'])) {
+		bj_edit_tag($_POST['edit-tag-id']);
 	}
 }
 
@@ -279,18 +338,16 @@ function get_admin_header() {
 		<title><?php _e('Blackjack Admin Panel'); ?></title>
 		<link rel="stylesheet" href="blackjack.css" type="text/css" media="screen" />
 		<script language="javascript" type="text/javascript" src="../jscripts/mootools.js"></script>
-		<script language="javascript" type="text/javascript" src="../jscripts/tiny_mce/tiny_mce.js"></script>
-		<script language="javascript" type="text/javascript" src="../jscripts/blackjack.js"></script>
+		<script language="javascript" type="text/javascript" src="../jscripts/blackjack.js.php"></script>
 <?php run_actions('admin_header'); ?>
 	</head>
 	<body>
 		<div id="top">
-			<div class="alignleft userinfo">
+			<div class="alignleft sitename">
 				<h1><a href="<?php siteinfo('siteurl'); ?>"><?php siteinfo('sitename'); ?></a></h1>
-				<p><?php printf(_r('Logged in as %1$s'),$user->display_name); ?></p>
 			</div>
-			<p class="alignright lightpart">
-				<a href="profile.php" class="profile"><?php _e('Profile'); ?></a>
+			<p class="alignright userinfo">
+				<a href="profile.php" class="profile"><?php echo $user->display_name; ?></a>
 				<a href="login.php?req=logout" class="logout"><?php _e('Logout'); ?></a>
 			</p>
 			<div class="clear"></div>
