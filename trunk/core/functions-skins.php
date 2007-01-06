@@ -2,24 +2,25 @@
 
 #Function: get_usable_skins()
 #Description: Returns an array filled with the available skins.
-function get_usable_skins() {
+function get_usable_skins($default=false) {
 	$all_skins = array();
 	foreach(glob(BJPATH . 'content/skins/*') as $skin) {
 		if(is_dir($skin)) {
 			$skin_dirname = end(explode("/",$skin));
-			foreach(glob($skin.'/{*.css,*.php}', GLOB_BRACE) as $file) {
-				$handle = fopen($file,"r");
-				$all_skins[$skin_dirname][end(explode("/",$file))] = fread($handle,filesize($file));
-				fclose($handle);
+			foreach(glob($skin.'/{*.css,*.php,*.png}', GLOB_BRACE) as $file) {
+				$all_skins[$skin_dirname][basename($file)] = true;
 			}
 			# Is this theme missing some required files?
 			if(!isset($all_skins[$skin_dirname]['style.css'])
-				|| !isset($all_skins[$skin_dirname]['index.php'])) {
+				or !isset($all_skins[$skin_dirname]['index.php'])) {
 				unset($all_skins[$skin_dirname]);
 			}
 		}
 	}
-	print_r($all_skins);
+	if(!$default) {
+		unset($all_skins[current_skinname()]);
+	}
+	return $all_skins;
 }
 
 #Function: current_skinname()
@@ -27,8 +28,8 @@ function get_usable_skins() {
 function current_skinname() {
 	$sname = load_option('current_skin');
 	if(!is_dir(BJPATH . 'content/skins/' . $sname)
-		|| !file_exists(BJPATH . 'content/skins/' . $sname . '/index.php')
-		|| !file_exists(BJPATH . 'content/skins/' . $sname . '/style.css')) {
+		or !file_exists(BJPATH . 'content/skins/' . $sname . '/index.php')
+		or !file_exists(BJPATH . 'content/skins/' . $sname . '/style.css')) {
 		$sname = 'twentyone';
 	}
 	return $sname;
@@ -37,7 +38,7 @@ function current_skinname() {
 #Function: skin_header()
 #Description: Skin header. Fool.
 function skin_header() {
-	global $bj_db,$bj_version;
+	global $bj_db,$bj_version,$entries,$entry,$getname,$name_vars,$section,$tag;
 	if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/header.php')) {
 		include(BJPATH . 'content/skins/' . current_skinname() . '/header.php');
 	}
@@ -46,7 +47,7 @@ function skin_header() {
 #Function: skin_footer()
 #Description: Skin footer. Fool.
 function skin_footer() {
-	global $bj_db,$bj_version;
+	global $bj_db,$bj_version,$entries,$entry,$getname,$name_vars,$section,$tag;
 	if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/footer.php')) {
 		include(BJPATH . 'content/skins/' . current_skinname() . '/footer.php');
 	}
@@ -56,6 +57,7 @@ function skin_footer() {
 #Description: Displays sidebar1 (if it exists).
 if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/sidebar.php')) :
 function skin_sidebar() {
+	global $entries,$entry,$comments,$comment,$getname,$name_vars,$section,$tag;
 	include(BJPATH . 'content/skins/' . current_skinname() . '/sidebar.php');
 }
 endif;
@@ -64,6 +66,7 @@ endif;
 #Description: Displays sidebar2 (if it exists).
 if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/sidebar2.php')) :
 function skin_sidebar2() {
+	global $entries,$entry,$comments,$comment,$getname,$name_vars,$section,$tag;
 	include(BJPATH . 'content/skins/' . current_skinname() . '/sidebar2.php');
 }
 endif;
@@ -81,6 +84,40 @@ function load_404_instead() {
 		include(BJPATH . 'content/skins/' . current_skinname() . '/index.php');
 	}
 	die();
+}
+
+#Function: bj_save_skin()
+#Description: Saves the skin file.
+function bj_save_skin() {
+	if($_POST['skin-edit-uniqid'] and $_POST['skin-edit-file']) {
+		$handle = fopen(BJPATH.'content/skins/'.bj_clean_string($_POST['skin-edit-uniqid']).'/'.bj_clean_string($_POST['skin-edit-file']),'w');
+		if(stripslashes($_POST['content']) == '') {
+			$content = '
+'; #fread error protector.
+		}
+		else {
+			$content = stripslashes($_POST['content']);
+		}
+		fwrite($handle,$content);
+		fclose($handle);
+	}
+}
+
+#Function: bj_skin_newfile()
+#Description: Creates a File
+function bj_skin_newfile($inline=false) {
+	if($_GET['req'] == 'ajaxadd' and !$inline) {
+		return false;
+	}
+	if($_POST['skin-newfile-file'] and $_POST['skin-newfile-skin']) {
+		$handle = fopen(BJPATH.'content/skins/'.bj_clean_string($_POST['skin-newfile-skin']).'/'.bj_clean_string($_POST['skin-newfile-file']),'w+');
+		fwrite($handle,'
+');
+		fclose($handle);
+		if($inline) {
+			return array('name'=>bj_clean_string($_POST['skin-newfile-file']),'skin'=>bj_clean_string($_POST['skin-newfile-skin']));
+		}
+	}
 }
 
 ?>

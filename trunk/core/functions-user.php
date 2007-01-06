@@ -1,14 +1,5 @@
 <?php
 
-#Function: get_user_info()
-#Description: Returns the information of a user based on their cookie.
-function get_user_info() {
-	global $bj_db;
-	if(isset($_COOKIE[$bj_db->prefix.'pass']) and isset($_COOKIE[$bj_db->prefix.'id'])) {
-		$user = $bj_db->get_rows("SELECT * FROM `".$bj_db->users."` WHERE `ID` = ".intval($_COOKIE[$bj_db->prefix.'id'])." AND `password` = '".bj_clean_string($_COOKIE[$bj_db->prefix.'pass'])."' LIMIT 1","OBJECT");
-		return $user;
-	}
-}
 #Function: get_users(Extra)
 function get_users($extra=false) {
 	global $bj_db,$i;
@@ -59,7 +50,7 @@ function get_users($extra=false) {
 		$offset = (isset($args['offset'])) ? intval($args['offset']) : $num_off;
 		$limit = (isset($args['limit'])) ? intval($args['limit']) : 20;
 		$query .= " LIMIT ".$offset.",".$limit;
-		return $bj_db->get_rows($query,"ASSOC");
+		return $bj_db->get_rows($query);
 	}
 	else {
 		if($args['inclimit'] == "yes") {
@@ -102,6 +93,12 @@ function we_can($str) {
 		case 'edit_tags' :
 			$check = we_can_check(2);
 			break;
+		case 'edit_skins' :
+			$check = we_can_check(3);
+			break;
+		case 'edit_users' :
+			$check = we_can_check(4);
+			break;
 		default:
 			$check = false;
 	}
@@ -109,7 +106,7 @@ function we_can($str) {
 }
 function we_can_check($int) {
 	global $user;
-	return ($user->user_group >= $int) ? true : false;
+	return ($user['user_group'] >= $int) ? true : false;
 }
 
 #Function: makeSalt([Size])

@@ -19,64 +19,8 @@ $table_prefix = "bj_";
 
 # Okay, that should be everything. Now stop editing and go install me. :) */
 
-error_reporting(E_ALL ^ E_NOTICE);
-ini_set('display_errors',1);
-
 define('BJPATH',dirname(__FILE__).DIRECTORY_SEPARATOR);
 
-// Fix for IIS, which doesn't set REQUEST_URI
-if ( empty( $_SERVER['REQUEST_URI'] ) ) {
-	$_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME']; // Does this work under CGI?
-	
-	// Append the query string if it exists and isn't null
-	if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
-		$_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
-	}
-}
-
-if ( !extension_loaded('mysql') )
-	die( 'You need to install MySQL in order to run Blackjack.' );
-	
-//We're good with MySQL, proceed.
-require_once(BJPATH . 'core/classes/class_db.php');
-
-$bj_db->prefix = $table_prefix;
-$bj_db->tags = $bj_db->prefix.'tags';
-$bj_db->comments = $bj_db->prefix.'comments';
-$bj_db->options = $bj_db->prefix.'options';
-$bj_db->entries = $bj_db->prefix.'entries';
-$bj_db->sections = $bj_db->prefix.'sections';
-$bj_db->users = $bj_db->prefix.'users';
-
-//Load core files.
-//Development: Add them as they come.
-require(BJPATH . 'core/kses.php');
-require(BJPATH . 'core/functions-general.php');
-require(BJPATH . 'core/functions-formatting.php');
-require(BJPATH . 'core/functions-user.php');
-require(BJPATH . 'core/functions-plugins.php');
-require(BJPATH . 'core/functions-skins.php');
-require(BJPATH . 'core/functions-lang.php');
-require(BJPATH . 'core/functions-template.php');
-require(BJPATH . 'core/functions-editing.php');
-require(BJPATH . 'core/functions-condition.php');
-require(BJPATH . 'core/version.php');
-require(BJPATH . 'core/rss/rss_fetch.inc');
-
-define('BJTEMPLATE',BJPATH.'content/skins/'.current_skinname());
-
-load_plugins(); //Load plugins (of course).
-$user = get_user_info();
-
-if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/functions.php')) {
-	require_once(BJPATH . 'content/skins/' . current_skinname() . '/functions.php');
-}
-
-if(load_option('db_version') != $bj_version) {
-	_e('The database\'s Blackjack version is not equal to that of your software copy. It is likely that you may need to upgrade so you can get your site running once more.');
-	die();
-}
-
-run_actions('init');
+require_once('bj_init.php');
 
 ?>

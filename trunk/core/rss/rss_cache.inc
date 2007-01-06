@@ -17,7 +17,7 @@
  */
 
 class RSSCache {
-    var $BASE_CACHE = '../../content/cache/rss';    // where the cache files are stored
+    var $BASE_CACHE = '../../content/cache';    // where the cache files are stored
     var $MAX_AGE    = 10800;         // when are files stale, default one hour
     var $ERROR      = "";           // accumulate error messages
     
@@ -167,7 +167,7 @@ class RSSCache {
     Output:     a file name
 \*=======================================================================*/     
     function file_name ($url) {
-        $filename = md5( $url );
+        $filename = 'rss_'.md5( $url );
         return join( DIRECTORY_SEPARATOR, array( $this->BASE_CACHE, $filename ) );
     }
 

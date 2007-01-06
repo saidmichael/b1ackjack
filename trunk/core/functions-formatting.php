@@ -1,34 +1,61 @@
 <?php
 
-#Function:bj_excerpt(Content, Length)
-#Description:Makes an excerpt out of the content.
-function bj_excerpt($content,$length=120){
-	$content = str_replace(
+#Function: bj_shortname(Title)
+#Description: Converts the title into a friendlier name.
+function bj_shortname($title) {
+	
+    $title = strtolower($title);
+    $title = str_replace(
 		array(
-			"<p>",
-			"</p>",
-			"<br/>",
-			"\n",
-			"\r"
+			"å",
+			"ø",
+			" ",
+			'/',
 		),
 		array(
-			"",
-			" ",
-			" ",
-			" ",
-			""
+			"aa",
+			"o",
+			"-",
+			''
 		),
-		$content);
-	$content = explode(' ',$content);
-	$content = array_slice($content,0,$length);
-	$content = implode(' ',$content); #A bit crude, but it works.
-	return $content;
+	$title);
+	$title = preg_replace(
+		array(
+			'/&.+?;/',
+			'/[^a-z0-9 _-]/',
+			'/\s+/',
+			'|-+|'
+		),
+		array(
+			'',
+			'',
+			'',
+			'-'),
+	$title);
+    $title = trim($title, '-');
+    if(empty($title)) {
+		$title = '-';
+	}
+
+    return $title;
 }
 
 #Function: Formatted_for_editing(Content)
 #Description: Changes text for the editor. Useful for stuff like special characters.
 function formatted_for_editing($content) {
-	return str_replace('&','&amp;',$content);
+	$content = str_replace(
+		'&',
+		'&amp;',
+		$content);
+	$content = str_replace(
+		'\'',
+		'&#39;',
+		$content);
+	$content = str_replace(
+		'"',
+		'&#34;',
+		$content);
+	return $content;
 }
 
 #Function: wptexturize(Text)
@@ -38,7 +65,6 @@ function wptexturize($text){
 		array(
 			'&#039;',
 			'&#39;',
-			'&amp;'
 		),
 		'\'',
 		$text);

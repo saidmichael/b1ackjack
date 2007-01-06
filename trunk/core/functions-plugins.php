@@ -37,7 +37,7 @@ function available_plugins() {
 }
 
 function load_plugins() {
-	foreach (unserialize(load_option('active_plugins')) as $plugin_filename => $active) {
+	foreach (load_option('active_plugins') as $plugin_filename => $active) {
 		$path = BJPATH . 'content/plugins/'.$plugin_filename;
 		if (is_file($path))
 			include($path);
@@ -48,7 +48,7 @@ function load_plugins() {
 
 function return_plugins() {
 	$plug_arr = array();
-	foreach (unserialize(load_option('active_plugins')) as $plugin_filename => $active) {
+	foreach (load_option('active_plugins') as $plugin_filename => $active) {
 		$path = BJPATH . 'content/plugins/'.$plugin_filename;
 		if (is_file($path))
 			$plug_arr[$plugin_filename] = true;
@@ -59,20 +59,20 @@ function return_plugins() {
 }
 
 function is_plugin_enabled($name) {
-	$plugins = unserialize(load_option('active_plugins'));
+	$plugins = load_option('active_plugins');
 	if($plugins[$name]) {
 		return true;
 	}
 }
 
 function enable_plugin($name) {
-	$plugins = unserialize(load_option('active_plugins'));
+	$plugins = load_option('active_plugins');
 	$plugins[$name] = true;
 	update_option('active_plugins',serialize($plugins));
 }
 
 function disable_plugin($name) {
-	$plugins = unserialize(load_option('active_plugins'));
+	$plugins = load_option('active_plugins');
 	unset($plugins[$name]);
 	update_option('active_plugins',serialize($plugins));
 }
@@ -81,35 +81,50 @@ function disable_plugin($name) {
 
 function add_action($hook, $functionname) {
 	global $actions;
-	$actions[$hook][] = array(
-		'name' => $functionname,
-	);
+	$actions[$hook][$functionname] = true;
+	return true;
+}
+
+function remove_action($hook, $functionname) {
+	global $actions;
+	if(isset($actions[$hook][$functionname])) {
+		unset($actions[$hook][$functionname]);
+		return true;
+	}
+	return false;
 }
 
 function run_actions($hookname) {
 	global $actions;
 	$todo = $actions[$hookname];
-	if (!$todo)
-		return false;
-	foreach ($todo as $null => $action) {
-		$buffer .= $action['name']($hookname);
+	if ($todo) {
+		foreach ($todo as $action => $null)
+			$buffer .= $action($tofilter, $hookname);
 	}
 	return $buffer;
 }
 
 function add_filter($hook, $functionname) {
 	global $filters;
-	$filters[$hook][] = array(
-		'name' => $functionname,
-	);
+	$filters[$hook][$functionname] = true;
+	return true;
+}
+
+function remove_filter($hook, $functionname) {
+	global $filters;
+	if(isset($filters[$hook][$functionname])) {
+		unset($filters[$hook][$functionname]);
+		return true;
+	}
+	return false;
 }
 
 function run_filters($hookname, $tofilter) {
 	global $filters;
 	$todo = $filters[$hookname];
 	if ($todo) {
-		foreach ($todo as $null => $filter)
-			$tofilter = $filter['name']($tofilter, $hookname);
+		foreach ($todo as $filter => $null)
+			$tofilter = $filter($tofilter, $hookname);
 	}
 	return $tofilter;
 }
