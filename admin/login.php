@@ -13,7 +13,8 @@ switch($_GET['req']) {
 	break;
 	case "logout" :
 		validate_session();
-		setcookie("bj_auth",'',time()-7200,'/');
+		setcookie($bj_db->prefix."pass",'',time()-7200,'/');
+		setcookie($bj_db->prefix."id",'',time()-7200,'/');
 		@header("Location: ".load_option('siteurl')."admin/login.php");
 		die();
 	break;
@@ -23,14 +24,14 @@ switch($_GET['req']) {
 			$user = $bj_db->get_item("SELECT * FROM `".$bj_db->users."` WHERE `login` = '".bj_clean_string($_POST['login'])."' LIMIT 1");
 			if(
 				isset($user['login']) #User exists...
-				and ($user['password'] == md5( md5($user['pass_salt']) . md5($_POST['password']) )) #Password matches...
+				and ($user['password'] == md5(md5($_POST['password']))) #Password matches...
 			) { #We're good to go.
 				if($_POST['remember'] != "") {
-					setcookie($bj_db->prefix."pass",md5( md5($user['pass_salt']) . md5($_POST['password']) ),time()+31536000,'/');
+					setcookie($bj_db->prefix."pass",$user['password'],time()+31536000,'/');
 					setcookie($bj_db->prefix."id",$user['ID'],time()+31536000,'/');
 				}
 				else {
-					setcookie($bj_db->prefix."pass",md5( md5($user['pass_salt']) . md5($user['password']) ),time()+7200,'/');
+					setcookie($bj_db->prefix."pass",$user['password'],time()+7200,'/');
 					setcookie($bj_db->prefix."id",$user['ID'],time()+7200,'/');
 				}
 				@header("Location: ".load_option('siteurl')."admin/".$_POST['redirect']);

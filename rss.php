@@ -1,6 +1,9 @@
 <?php
 
-require_once('bj_config.php');
+if(!defined('BJPATH')) {
+	echo"Naughty naughty.";
+	die();
+}
 
 header('Content-type: text/xml; charset=iso-8859-1', true);
 
@@ -9,7 +12,7 @@ echo '<?xml version="1.0" encoding="iso-8859-1"?'.'>';
 $extra_str = '';
 $hook_name = '';
 if(is_entry()) {
-	$name = (!empty($_GET['name'])) ? bj_clean_string($_GET['name']) : '';
+	$name = (!empty($name_vars[1])) ? bj_clean_string($name_vars[1]) : '';
 	$entries = get_entries('limit=1&shortname='.$name);
 	if(!$entries) {
 		load_404_instead();
@@ -48,7 +51,7 @@ if(is_entry()) {
 }
 else {
 	if(is_section() or is_front()) {
-		$name = (!empty($_GET['name'])) ? bj_clean_string($_GET['name']) : load_option('default_section');
+		$name = (!empty($name_vars[1])) ? bj_clean_string($name_vars[1]) : load_option('default_section');
 		$section = $bj_db->get_item("SELECT * FROM `".$bj_db->sections."` WHERE `shortname` = '".$name."' LIMIT 1");
 		if(!$section) {
 			load_404_instead();
@@ -57,7 +60,7 @@ else {
 		$hook_name = 'section_'.$section['ID'];
 	}
 	elseif(is_tag()) {
-		$name = (!empty($_GET['name'])) ? bj_clean_string($_GET['name']) : '';
+		$name = (!empty($name_vars[1])) ? bj_clean_string($name_vars[1]) : '';
 		$tag = $bj_db->get_item("SELECT * FROM `".$bj_db->tags."` WHERE `shortname` = '".$name."' LIMIT 1");
 		if(!$tag) {
 			load_404_instead();

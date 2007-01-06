@@ -17,16 +17,14 @@ if(we_can('edit_entries')) {
 	
 		case "delete" :
 			if(isset($_GET['id'])) {
-				$bj_db->query("DELETE FROM `".$bj_db->entries."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
-				$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".intval($_GET['id'])."' LIMIT 1");
-				@header("Location: ".load_option('siteurl')."admin/entries.php?deleted=true");
+				bj_delete_entry(intval($_GET['id']));
+				@header("Location: ".load_option('siteurl')."admin/entries.php");
 			}
 			break;
 			
 		case "ajaxdelete" :
 			if(isset($_GET['id'])) {
-				$bj_db->query("DELETE FROM `".$bj_db->entries."` WHERE `ID` = '".intval($_GET['id'])."' LIMIT 1");
-				$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".intval($_GET['id'])."' LIMIT 1");
+				bj_delete_entry(intval($_GET['id']));
 				echo '<strong class="error">'._r('Entry deleted.').'</strong>';
 			}
 			break;
@@ -38,9 +36,9 @@ if(we_can('edit_entries')) {
 			get_admin_header();
 ?>
 			<h2><?php _e('Manage Entries'); ?></h2>
-			<div id="ajaxmessage"><?php if($_GET['deleted'] == "true") { echo '<strong class="error">'._r('Entry deleted.').'</strong>'; } ?></div>
+			<div id="ajaxmessage"></div>
 <?php
-			$drafts = $bj_db->get_rows("SELECT `ID`,`title` FROM `".$bj_db->entries."` WHERE `ptype` = 'draft' ORDER BY `ID` DESC","ASSOC");
+			$drafts = $bj_db->get_rows("SELECT `ID`,`title` FROM `".$bj_db->entries."` WHERE `ptype` = 'draft' ORDER BY `ID` DESC");
 			if($drafts) { ?>
 			<div class="drafts">
 				<h3><?php _e('Drafts'); ?></h3>
@@ -112,6 +110,7 @@ if(we_can('edit_entries')) {
 					<th class="width10">&nbsp;</th>
 				</tr>
 <?php
+				$offset = (isset($_GET['offset'])) ? intval($_GET['offset']) : 0;
 				$query_string = 'limit=16&type=public';
 				if($_GET['req'] == 'filtertag') {
 					$query_string .= '&tag='.intval($_GET['tag']);
@@ -132,7 +131,7 @@ if(we_can('edit_entries')) {
 					<td><?php echo_tags(", ","","","admin=true"); ?></td>
 					<td class="capitalize aligncenter"><?php _e(get_entry_type()); ?></td>
 					<td class="editbutton"><a href="entries.php?req=edit&amp;id=<?php echo_ID(); ?>" class="blockit"><?php _e('Edit'); ?></a></td>
-					<td class="editbutton"><a href="entries.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit" onclick="ajaxDelete('entries.php?req=ajaxdelete&amp;id=<?php echo_ID(); ?>','post-<?php echo_ID(); ?>','<?php _e('Are you sure you wish to delete this post? Comments made to this post will be deleted as well.'); ?>');return false;"><?php _e('Delete'); ?></a></td>
+					<td class="editbutton"><a href="entries.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit deleteme" rel="entries.php?req=ajaxdelete&amp;id=<?php echo_ID(); ?>$post-<?php echo_ID(); ?>$<?php _e('Are you sure you wish to delete this post? Comments made to this post will be deleted as well.'); ?>"><?php _e('Delete'); ?></a></td>
 				</tr>
 <?php
 					}

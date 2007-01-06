@@ -20,7 +20,7 @@ if(we_can('edit_comments')) {
 					</div>
 					<div class="comment-options">
 						<a href="comments.php?req=edit&amp;id=<?php comment_ID(); ?>"><?php _e('Edit'); ?></a> &#8212; 
-						<a href="comments.php?req=delete&amp;id=<?php comment_ID(); ?>" onclick="ajaxDelete('comments.php?req=ajaxdelete&amp;id=<?php comment_ID(); ?>','comment-<?php comment_ID(); ?>','<?php _e('Are you sure you wish to delete this comment?'); ?>');return false;"><?php _e('Delete'); ?></a> &#8212; 
+						<a href="comments.php?req=delete&amp;id=<?php comment_ID(); ?>" class="deleteme" rel="comments.php?req=ajaxdelete&amp;id=<?php comment_id(); ?>$comment-<?php comment_ID(); ?>$<?php _e('Are you sure you wish to delete this comment?'); ?>"><?php _e('Delete'); ?></a> &#8212; 
 						<a href="comments.php?req=status&amp;to=normal&amp;id=<?php comment_ID(); ?>"><?php _e('Approve'); ?></a> &#8212; 
 						<a href="comments.php?req=status&amp;to=spam&amp;id=<?php comment_ID(); ?>"><?php _e('Spam'); ?></a>
 					</div>

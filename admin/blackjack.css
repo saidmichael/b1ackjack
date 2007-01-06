@@ -222,16 +222,20 @@ body.login {
 		padding:4px 0px 9px 0px;
 	}
 
-		#wrapper ul.altrows li {
+		#wrapper ul.altrows li,
+		#wrapper ul.altrows tr {
 			background:#ebebeb;
+			display:list-item;
 		}
 			
-			#wrapper ul.altrows li a {
+			#wrapper ul.altrows li a,
+			#wrapper ul.altrows tr a {
 				display:block;
 				padding:1px;
 			}
 			
-			#wrapper ul.altrows li label {
+			#wrapper ul.altrows li label,
+			#wrapper ul.altrows tr label {
 				display:block;
 			}
 
@@ -350,6 +354,16 @@ body.login {
 		margin-bottom:4px;
 		padding:4px;
 	}
+
+		#commentlist li .comment-content ul,
+		#commentlist li .comment-content ol,
+		#commentlist li .comment-content p {
+			padding:5px 0px 5px 16px;
+		}
+
+		#commentlist li .comment-content p {
+			padding-left:0;
+		}		
 
 	#commentlist li.alt {
 		background:#ededed;
@@ -476,6 +490,10 @@ input.inlinesubmit {
 			background: url(images/indent.gif) no-repeat center;
 		}
 		
+		#editor #editbar a.hr span {
+			background: url(images/hr.gif) no-repeat center;
+		}
+		
 		#editor #editbar a.more span {
 			background: url(images/expand.gif) no-repeat center;
 		}
@@ -495,10 +513,6 @@ input.inlinesubmit {
 
 select {
 	padding:2px;
-}
-
-label {
-	cursor:pointer;
 }
 
 /* Errors */
@@ -553,9 +567,20 @@ strong.error {
 }
 
 /* Text block */
-.tblock {
-	
+.tblock { }
+
+#loading {
+	background: transparent url(images/spinner.gif) no-repeat center left;
+	padding-left:20px;
+	color:#666;
 }
+
+#ajaxmessage { }
+
+	#ajaxmessage strong,
+	#ajaxmessage div {
+		margin-bottom:5px;
+	}
 
 .capitalize {
 	text-transform:capitalize;
@@ -585,9 +610,11 @@ strong.error {
 	display:block;
 }
 
-#addtag { }
+.editortaginsert {
+	margin-bottom:5px;
+}
 
-	#addtag input {
+	.editortaginsert input {
 		font-size:10px;
 	}
 
@@ -614,6 +641,7 @@ var {
 	background:url(images/help.png) no-repeat center right;
 	padding-right:18px;
 	font-style:normal;
+	cursor:help;
 }
 
 .clear {

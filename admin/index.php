@@ -13,7 +13,7 @@ if(we_can('view_frontpage')) {
 						<ul class="altrows">
 <?php			 fancy_altrows(
 					array(_r('Write an Entry')=>"entry-write.php",
-						  _r('Create a Section')=>"section-create.php",
+						  _r('Create a Section')=>"sections.php",
 						  _r('Change the Website&#8217;s Skin')=>"skins.php"
 					)); ?>
 						</ul>
@@ -22,7 +22,7 @@ if(we_can('view_frontpage')) {
 						<h3><?php _e('Statistics'); ?></h3>
 						<p><?php printf(
 					_r('Right now, there are <a href="entries.php">%1$s entries</a>, <a href="sections.php">%2$s sections</a>, <a href="comments.php">%3$s comments</a>, and <a href="tags.php">%4$s tags</a>.'),
-					get_entries('num=yes'),
+					get_entries('num=yes&inclimit=false'),
 					mysql_num_rows($bj_db->query("SELECT * FROM `".$bj_db->sections."`")),
 					get_comments('num=yes'),
 					mysql_num_rows($bj_db->query("SELECT * FROM `".$bj_db->tags."`"))
@@ -85,13 +85,13 @@ if(we_can('view_frontpage')) {
 <?php			} ?>
 					</div>
 					<div class="tblock">
-						<h3><?php _e('Recent Comments'); ?></h3>
-<?php			$comments = $bj_db->get_rows("SELECT * FROM `".$bj_db->comments."` WHERE `status` = 'normal' ORDER BY `posted_on` ASC LIMIT 0,6","ASSOC");
+						<h3><?php _e('Latest Comments'); ?></h3>
+<?php			$comments = get_comments('status=normal&sortby=posted_on&order=ASC',' LIMIT 0,6');
 				if(!$comments) { ?><p><?php _e('None found.'); ?></p><?php }
 				else { ?>
 						<ul class="altrows">
 <?php			foreach($comments as $comment) {
-					$bjcomments[return_comment_name().": ".bj_excerpt(return_comment_text(),7)."&#8230;"] = "comments.php?req=edit&amp;id=".return_comment_ID();
+					$bjcomments[return_comment_name().": ".return_comment_snippet(9)] = "comments.php?req=edit&amp;id=".return_comment_ID();
 				}
 				fancy_altrows($bjcomments); ?>
 						</ul>

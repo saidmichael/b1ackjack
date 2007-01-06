@@ -82,7 +82,7 @@ require_once( MAGPIE_EXTLIB . 'Snoopy.class.inc');
 \*=======================================================================*/
 
 define('MAGPIE_VERSION', '0.72');
-define('MAGPIE_CACHE_DIR', BJPATH . 'content/cache/rss');
+define('MAGPIE_CACHE_DIR', BJPATH . 'content/cache');
 
 $MAGPIE_ERROR = "";
 

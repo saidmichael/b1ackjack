@@ -19,10 +19,11 @@ function bj_edit_entry($id=0) {
 			die();
 		}
 		$post['title'] = bj_clean_string($_POST['title']);
-		$post['shortname'] = (bj_clean_string($_POST['shortname']) == '') ? $id : bj_clean_string($_POST['shortname']);
-		$post['content'] = bj_clean_string($_POST['content'],$bj_html_post);
+		$post['shortname'] = (bj_clean_string($_POST['shortname']) == '') ? bj_shortname($post['title']) : bj_shortname(bj_clean_string($_POST['shortname']));
+		$post['content'] = bj_clean_string($_POST['content'],get_html_entry());
 		$post['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$post['author'] = bj_clean_string($_POST['author']);
+		$post['comments_open'] = (empty($_POST['comments_open'])) ? 0 : 1;
 		$tag_string = array();
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
@@ -77,10 +78,11 @@ function bj_new_entry() {
 		run_actions('pre_entry_new');
 		$post = array();
 		$post['title'] = bj_clean_string($_POST['title']);
-		$post['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($post['title']) : bj_clean_string($_POST['shortname']);
-		$post['content'] = bj_clean_string($_POST['content'],$bj_html_post);
+		$post['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($post['title']) : bj_shortname(bj_clean_string($_POST['shortname']));
+		$post['content'] = bj_clean_string($_POST['content'],get_html_entry());
 		$post['ptype'] = (isset($_POST['ptype'])) ? $_POST['ptype'] : 'draft';
 		$post['author'] = bj_clean_string($_POST['author']);
+		$post['comments_open'] = (empty($_POST['comments_open'])) ? 0 : 1;
 		$tag_string = array();
 		if(is_array($_POST['tags'])) {
 			foreach($_POST['tags'] as $tag=>$on) {
@@ -115,17 +117,35 @@ function bj_new_entry() {
 	}
 }
 
+#Function: bj_delete_entry(ID)
+#Description: Kill, kill!
+function bj_delete_entry($id=0) {
+	global $bj_db;
+	if(we_can('edit_entries')) {
+		$bj_db->query("DELETE FROM `".$bj_db->entries."` WHERE `ID` = '".$id."' LIMIT 1");
+		$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `post_ID` = '".$id."' LIMIT 1");
+		run_filters('entry_deleted',$id);
+		return true;
+	}
+	return false;
+}
+
 #Function: bj_new_section()
 #Description: Creates a section.
-function bj_new_section() {
+function bj_new_section($inline=false) {
 	global $bj_db;
 	if(we_can('edit_sections')) {
 		run_actions('pre_new_section');
+		#Prevent the system from calling bj_new_section() twice on ajax.
+		if(!$inline and $_GET['req'] == 'ajaxadd') {
+			return false;
+		}
 		$section['title'] = bj_clean_string($_POST['title']);
-		$section['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($section['title']) : bj_clean_string($_POST['shortname']);
+		$section['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($section['title']) : bj_shortname(bj_clean_string($_POST['shortname']));
 		$section['hidden'] = bj_clean_string($_POST['hidden']);
 		$section['page_order'] = (empty($_POST['page_order'])) ? 0 : intval($_POST['page_order']);
 		$section['handler'] = bj_clean_string($_POST['handler']);
+		$section['stylesheet'] = bj_clean_string($_POST['stylesheet']);
 		$section = run_filters('section_new',$section);
 		#Query query.
 		$keys = ''; $values = '';
@@ -137,12 +157,12 @@ function bj_new_section() {
 		$query .= "(`ID`,`last_updated`".$keys.")";
 		$query .= " VALUES ('','".date('Y-m-d H:i:s',time())."'".$values.")";
 		$bj_db->query($query);
-		if(isset($_POST['save'])) {
-			@header("Location: ".load_option('siteurl')."admin/sections.php");
+		if($inline) {
+			return $bj_db->get_item("SELECT * FROM `".$bj_db->sections."` WHERE `title` = '".$section['title']."' LIMIT 1");
 		}
-		elseif(isset($_POST['save-cont'])) {
-			$saved = $bj_db->get_item("SELECT `ID` FROM `".$bj_db->sections."` WHERE `title` = '".$section['title']."' LIMIT 1");
-			@header("Location: ".load_option('siteurl')."admin/sections.php?req=edit&id=".$saved['ID']);
+		else {
+			@header("Location: ".load_option('siteurl')."admin/sections.php");
+			die();
 		}
 		die();
 	}
@@ -165,11 +185,12 @@ function bj_edit_section($id = 0) {
 			die();
 		}
 		$section['title'] = bj_clean_string($_POST['title']);
-		$section['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($section['title']) : bj_clean_string($_POST['shortname']);
+		$section['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($section['title']) : bj_shortname(bj_clean_string($_POST['shortname']));
 		$section['hidden'] = bj_clean_string($_POST['hidden']);
 		$section['last_updated'] = date('Y-m-d H:i:s',time());
 		$section['page_order'] = (empty($_POST['page_order'])) ? 0 : intval($_POST['page_order']);
 		$section['handler'] = bj_clean_string($_POST['handler']);
+		$section['stylesheet'] = bj_clean_string($_POST['stylesheet']);
 		$section = run_filters('section_edit',$section);
 		#Query query.
 		$query = "UPDATE `".$bj_db->sections."` SET `ID` = '".$id."'";
@@ -180,14 +201,22 @@ function bj_edit_section($id = 0) {
 		}
 		$query .= " WHERE `ID` = ".$id." LIMIT 1";
 		$bj_db->query($query);
-		if(isset($_POST['save'])) {
-			@header("Location: ".load_option('siteurl')."admin/sections.php");
-		}
-		elseif(isset($_POST['save-cont'])) {
-			@header("Location: ".load_option('siteurl')."admin/sections.php?req=edit&id=".$id);
-		}
+		@header("Location: ".load_option('siteurl')."admin/sections.php");
 		die();
 	}
+}
+
+#Function: bj_delete_section(ID)
+#Description: Deletes our special little section.
+function bj_delete_section($id=0) {
+	global $bj_db;
+	if(we_can('edit_sections')) {
+		$bj_db->query("DELETE FROM `".$bj_db->sections."` WHERE `ID` = '".$id."' LIMIT 1");
+		$bj_db->query("DELETE FROM `".$bj_db->entries."` WHERE `section` = '".$id."'");
+		run_filters('section_deleted',$id);
+		return true;
+	}
+	return false;
 }
 
 #Function: bj_new_tag(Inline)
@@ -201,7 +230,7 @@ function bj_new_tag($inline=false) {
 			return false;
 		}
 		$tag['name'] = bj_clean_string($_POST['name']);
-		$tag['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($tag['name']) : bj_clean_string($_POST['shortname']);
+		$tag['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($tag['name']) : bj_shortname(bj_clean_string($_POST['shortname']));
 		$tag['posts_num'] = 0;
 		$tag = run_filters('tag_new',$tag);
 		$keys = ''; $values = '';
@@ -235,7 +264,7 @@ function bj_edit_tag($id = 0) {
 			return false;
 		}
 		$tag['name'] = bj_clean_string($_POST['name']);
-		$tag['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($tag['name']) : bj_clean_string($_POST['shortname']);
+		$tag['shortname'] = (empty($_POST['shortname'])) ? bj_shortname($tag['name']) : bj_shortname(bj_clean_string($_POST['shortname']));
 		$tag['posts_num'] = 0;
 		$tag = run_filters('tag_edit',$tag);
 		$query = "UPDATE `".$bj_db->tags."` SET `ID` = '".$id."'";
@@ -247,6 +276,51 @@ function bj_edit_tag($id = 0) {
 		$query .= " WHERE `ID` = ".$id." LIMIT 1";
 		$bj_db->query($query);
 		@header("Location: ".load_option('siteurl')."admin/tags.php");
+		die();
+	}
+}
+
+#Function: bj_delete_tag(ID)
+#Description: Gone with the tag.
+function bj_delete_tag($id=0) {
+	global $bj_db;
+	if(we_can('edit_tags')) {
+		$bj_db->query("DELETE FROM `".$bj_db->tags."` WHERE `ID` = '".$id."' LIMIT 1");
+		run_filters('tag_deleted',$id);
+		return true;
+	}
+	return false;
+}
+
+#Function: bj_edit_comment(ID)
+#Description: Edits the comment.
+function bj_edit_comment($id=0) {
+	global $bj_db;
+	if(we_can('edit_comments')) {
+		run_actions('pre_edit_comment');
+		$id = intval($id);
+		$former = $bj_db->get_item("SELECT * FROM `".$bj_db->comments."` WHERE `ID` = '".$id."' LIMIT 1");
+		if($id == 0 or !$former) {
+			return false;
+		}
+		$comment['author_name'] = bj_clean_string($_POST['author_name']);
+		$comment['author_email'] = bj_clean_string($_POST['author_email']);
+		$comment['author_url'] = bj_clean_string($_POST['author_url']);
+		$comment['status'] = bj_clean_string($_POST['status']);
+		$comment['content'] = bj_clean_string($_POST['content'],get_html());
+		if($_POST['editstamp'] == "yes") {
+			$post['posted_on'] = intval($_POST['stamp_year']).'-'.intval($_POST['stamp_month']).'-'.intval($_POST['stamp_date']).' '.intval($_POST['stamp_hour']).':'.intval($_POST['stamp_min']).':'.intval($_POST['stamp_sec']);
+		}
+		$comment = run_filters('comment_edit',$comment);
+		$query = "UPDATE `".$bj_db->comments."` SET `ID` = '".$id."'";
+		foreach($comment as $key=>$value) {
+			if(isset($former[$key]) and $former[$key] != $value) {
+				$query .= ", `".$key."` = '".$value."'";
+			}
+		}
+		$query .= " WHERE `ID` = ".$id." LIMIT 1";
+		$bj_db->query($query);
+		@header("Location: ".load_option('siteurl')."admin/comments.php");
 		die();
 	}
 }
@@ -294,44 +368,6 @@ function bj_selected($value1,$value2) {
 	if($value1 == $value2) {
 		echo " selected=\"selected\"";
 	}
-}
-
-#Function: bj_shortname(Title)
-#Description: Converts the title into a friendlier name.
-function bj_shortname($title) {
-	
-    $title = strtolower($title);
-    $title = str_replace(
-		array(
-			"å",
-			"ø",
-			" "
-		),
-		array(
-			"aa",
-			"o",
-			"-"
-		),
-	$title);
-	$title = preg_replace(
-		array(
-			'/&.+?;/',
-			'/[^a-z0-9 _-]/',
-			'/\s+/',
-			'|-+|'
-		),
-		array(
-			'',
-			'',
-			'',
-			'-'),
-	$title);
-    $title = trim($title, '-');
-    if(empty($title)) {
-		$title = '-';
-	}
-
-    return $title;
 }
 
 ?>

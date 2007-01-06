@@ -1,8 +1,8 @@
 <html>
 	<head>
-		<title><?php siteinfo('sitename'); ?></title>
+		<title><?php printf(_r('%1$s &raquo; %2$s'),get_siteinfo('sitename'),get_bj_title()); ?></title>
 		<link rel="stylesheet" href="<?php siteinfo('stylesheet'); ?>" type="text/css" />
-		<script type="text/javascript" src="<?php siteinfo('siteurl'); ?>jscripts/mootools.js" language="javascript"></script>
+<?php /*		<link rel="stylesheet" href="<?php siteinfo('skinurl'); ?>/print.css" type="text/css" media="print" />*/ ?>
 		<?php run_actions('site_header'); ?>
 	</head>
 	<body class="<?php TO_body_class(); ?>">
