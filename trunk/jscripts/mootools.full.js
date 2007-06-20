@@ -1,103 +1,101 @@
 //MooTools, My Object Oriented Javascript Tools. Copyright (c) 2006 Valerio Proietti, <http://mad4milk.net>, MIT Style License.
 
-var Class = function(properties){
-	var klass = function(){
-		for (var p in this){
-			if (this[p]) this[p]._proto_ = this;
-		}
-		if (arguments[0] != 'noinit' && this.initialize) return this.initialize.apply(this, arguments);
-	};
-	klass.extend = this.extend;
-	klass.implement = this.implement;
-	klass.prototype = properties;
-	return klass;
+var MooTools = {
+	'version': 1.1
 };
 
-Class.empty = function(){};
-
-Class.create = function(properties){
-	return new Class(properties);
+function $defined(obj){
+	return (obj != undefined);
 };
 
-Class.prototype = {
-
-	extend: function(properties){
-		var pr0t0typ3 = new this('noinit');
-		for (var property in properties){
-			var previous = pr0t0typ3[property];
-			var current = properties[property];
-			if (previous && previous != current) current = previous.parentize(current) || current;
-			pr0t0typ3[property] = current;
+function $type(obj){
+	if (!$defined(obj)) return false;
+	if (obj.htmlElement) return 'element';
+	var type = typeof obj;
+	if (type == 'object' && obj.nodeName){
+		switch(obj.nodeType){
+			case 1: return 'element';
+			case 3: return /\S/.test(obj.nodeValue) ? 'textnode' : 'whitespace';
 		}
-		return new Class(pr0t0typ3);
-	},
-
-	implement: function(properties){
-		for (var property in properties) this.prototype[property] = properties[property];
 	}
-
+	if (type == 'object' || type == 'function'){
+		switch(obj.constructor){
+			case Array: return 'array';
+			case RegExp: return 'regexp';
+			case Class: return 'class';
+		}
+		if (typeof obj.length == 'number'){
+			if (obj.item) return 'collection';
+			if (obj.callee) return 'arguments';
+		}
+	}
+	return type;
 };
 
-Object.extend = function(){
+function $merge(){
+	var mix = {};
+	for (var i = 0; i < arguments.length; i++){
+		for (var property in arguments[i]){
+			var ap = arguments[i][property];
+			var mp = mix[property];
+			if (mp && $type(ap) == 'object' && $type(mp) == 'object') mix[property] = $merge(mp, ap);
+			else mix[property] = ap;
+		}
+	}
+	return mix;
+};
+
+var $extend = Object.extend = function(){
 	var args = arguments;
-	if (args[1]) args = [args[0], args[1]];
-	else args = [this, args[0]];
+	if (!args[1]) args = [this, args[0]];
 	for (var property in args[1]) args[0][property] = args[1][property];
 	return args[0];
 };
 
-Object.Native = function(){
-	for (var i = 0; i < arguments.length; i++) arguments[i].extend = Class.prototype.implement;
+var $native = Object.Native = function(){
+	for (var i = 0, l = arguments.length; i < l; i++){
+		arguments[i].extend = function(props){
+			for (var prop in props){
+				if (!this.prototype[prop]) this.prototype[prop] = props[prop];
+				if (!this[prop]) this[prop] = $native.generic(prop);
+			}
+		};
+	}
 };
 
-new Object.Native(Function, Array, String, Number);
+$native.generic = function(prop){
+	return function(bind){
+		return this.prototype[prop].apply(bind, Array.prototype.slice.call(arguments, 1));
+	};
+};
 
-Function.extend({
+$native(Function, Array, String, Number);
 
-	parentize: function(current){
-		var previous = this;
-		return function(){
-			this.parent = previous;
-			return current.apply(this, arguments);
-		};
-	}
+var Abstract = function(obj){
+	obj = obj || {};
+	obj.extend = $extend;
+	return obj;
+};
 
-});
+var Window = new Abstract(window);
+var Document = new Abstract(document);
+document.head = document.getElementsByTagName('head')[0];
 
-Function.extend({
+function $chk(obj){
+	return !!(obj || obj === 0);
+};
 
-	pass: function(args, bind){
-		var fn = this;
-		if ($type(args) != 'array') args = [args];
-		return function(){
-			return fn.apply(bind || fn._proto_ || fn, args);
-		};
-	},
+function $pick(obj, picked){
+	return $defined(obj) ? obj : picked;
+};
 
-	bind: function(bind){
-		var fn = this;
-		return function(){
-			return fn.apply(bind, arguments);
-		};
-	},
-	
-	bindAsEventListener: function(bind){
-		var fn = this;
-		return function(event){
-			fn.call(bind, event || window.event);
-			return false;
-		};
-	},
+function $random(min, max){
+	return Math.floor(Math.random() * (max - min + 1) + min);
+};
 
-	delay: function(ms, bind){
-		return setTimeout(this.bind(bind || this._proto_ || this), ms);
-	},
-
-	periodical: function(ms, bind){
-		return setInterval(this.bind(bind || this._proto_ || this), ms);
-	}
-
-});
+function $time(){
+	return new Date().getTime();
+};
 
 function $clear(timer){
 	clearTimeout(timer);
@@ -105,19 +103,65 @@ function $clear(timer){
 	return null;
 };
 
-function $type(obj){
-	if (!obj) return false;
-	var type = false;
-	if (obj instanceof Function) type = 'function';
-	else if (obj.nodeName){
-		if (obj.nodeType == 3 && !/\S/.test(obj.nodeValue)) type = 'textnode';
-		else if (obj.nodeType == 1) type = 'element';
+window.xpath = !!(document.evaluate);
+if (window.ActiveXObject) window.ie = window[window.XMLHttpRequest ? 'ie7' : 'ie6'] = true;
+else if (document.childNodes && !document.all && !navigator.taintEnabled) window.khtml = window.webkit = window[window.xpath ? 'webkit420' : 'webkit419'] = true;
+else if (document.getBoxObjectFor != null) window.gecko = true;
+
+if (typeof HTMLElement == 'undefined'){
+	var HTMLElement = function(){};
+	if (window.webkit) document.createElement("iframe");
+	HTMLElement.prototype = (window.webkit) ? window["[[DOMElement.prototype]]"] : {};
+}
+HTMLElement.prototype.htmlElement = true;
+
+if (window.ie6) try {document.execCommand("BackgroundImageCache", false, true);} catch(e){};
+
+var Class = function(properties){
+	var klass = function(){
+		return (arguments[0] !== null && this.initialize && $type(this.initialize) == 'function') ? this.initialize.apply(this, arguments) : this;
+	};
+	$extend(klass, this);
+	klass.prototype = properties;
+	klass.constructor = Class;
+	return klass;
+};
+
+Class.empty = function(){};
+
+Class.prototype = {
+
+	extend: function(properties){
+		var proto = new this(null);
+		for (var property in properties){
+			var pp = proto[property];
+			proto[property] = Class.Merge(pp, properties[property]);
+		}
+		return new Class(proto);
+	},
+
+	implement: function(){
+		for (var i = 0, l = arguments.length; i < l; i++) $extend(this.prototype, arguments[i]);
 	}
-	else if (obj instanceof Array) type = 'array';
-	else if (typeof obj == 'object') type = 'object';
-	else if (typeof obj == 'string') type = 'string';
-	else if (typeof obj == 'number' && isFinite(obj)) type = 'number';
-	return type;
+
+};
+
+Class.Merge = function(previous, current){
+	if (previous && previous != current){
+		var type = $type(current);
+		if (type != $type(previous)) return current;
+		switch(type){
+			case 'function':
+				var merged = function(){
+					this.parent = arguments.callee.parent;
+					return current.apply(this, arguments);
+				};
+				merged.parent = previous;
+				return merged;
+			case 'object': return $merge(previous, current);
+		}
+	}
+	return current;
 };
 
 var Chain = new Class({
@@ -129,7 +173,7 @@ var Chain = new Class({
 	},
 
 	callChain: function(){
-		if (this.chains && this.chains.length) this.chains.splice(0, 1)[0].delay(10, this);
+		if (this.chains && this.chains.length) this.chains.shift().delay(10, this);
 	},
 
 	clearChain: function(){
@@ -138,105 +182,295 @@ var Chain = new Class({
 
 });
 
-if (!Array.prototype.forEach){
+var Events = new Class({
 
-	Array.prototype.forEach = function(fn, bind){
-		for(var i = 0; i < this.length ; i++) fn.call(bind, this[i], i);
-	};
-}
-
-Array.extend({
-
-	each: Array.prototype.forEach,
-
-	copy: function(){
-		var newArray = [];
-		for (var i = 0; i < this.length; i++) newArray.push(this[i]);
-		return newArray;
-	},
-
-	remove: function(item){
-		for (var i = 0; i < this.length; i++){
-			if (this[i] == item) this.splice(i, 1);
+	addEvent: function(type, fn){
+		if (fn != Class.empty){
+			this.$events = this.$events || {};
+			this.$events[type] = this.$events[type] || [];
+			this.$events[type].include(fn);
 		}
 		return this;
 	},
 
-	test: function(item){
-		for (var i = 0; i < this.length; i++){
-			if (this[i] == item) return true;
-		};
-		return false;
-	},
-
-	extend: function(newArray){
-		for (var i = 0; i < newArray.length; i++) this.push(newArray[i]);
+	fireEvent: function(type, args, delay){
+		if (this.$events && this.$events[type]){
+			this.$events[type].each(function(fn){
+				fn.create({'bind': this, 'delay': delay, 'arguments': args})();
+			}, this);
+		}
 		return this;
 	},
 
-	associate: function(keys){
-		var newArray = [];
-		for (var i =0; i < this.length; i++) newArray[keys[i]] = this[i];
-		return newArray;
+	removeEvent: function(type, fn){
+		if (this.$events && this.$events[type]) this.$events[type].remove(fn);
+		return this;
 	}
 
 });
 
+var Options = new Class({
+
+	setOptions: function(){
+		this.options = $merge.apply(null, [this.options].extend(arguments));
+		if (!this.addEvent) return this;
+		for (var option in this.options){
+			if ($type(this.options[option] == 'function') && option.test(/^on[A-Z]/)) this.addEvent(option, this.options[option]);
+		}
+		return this;
+	}
+
+});
+
+Array.extend({
+
+	forEach: function(fn, bind){
+		for (var i = 0, j = this.length; i < j; i++) fn.call(bind, this[i], i, this);
+	},
+
+	filter: function(fn, bind){
+		var results = [];
+		for (var i = 0, j = this.length; i < j; i++){
+			if (fn.call(bind, this[i], i, this)) results.push(this[i]);
+		}
+		return results;
+	},
+
+	map: function(fn, bind){
+		var results = [];
+		for (var i = 0, j = this.length; i < j; i++) results[i] = fn.call(bind, this[i], i, this);
+		return results;
+	},
+
+	every: function(fn, bind){
+		for (var i = 0, j = this.length; i < j; i++){
+			if (!fn.call(bind, this[i], i, this)) return false;
+		}
+		return true;
+	},
+
+	some: function(fn, bind){
+		for (var i = 0, j = this.length; i < j; i++){
+			if (fn.call(bind, this[i], i, this)) return true;
+		}
+		return false;
+	},
+
+	indexOf: function(item, from){
+		var len = this.length;
+		for (var i = (from < 0) ? Math.max(0, len + from) : from || 0; i < len; i++){
+			if (this[i] === item) return i;
+		}
+		return -1;
+	},
+
+	copy: function(start, length){
+		start = start || 0;
+		if (start < 0) start = this.length + start;
+		length = length || (this.length - start);
+		var newArray = [];
+		for (var i = 0; i < length; i++) newArray[i] = this[start++];
+		return newArray;
+	},
+
+	remove: function(item){
+		var i = 0;
+		var len = this.length;
+		while (i < len){
+			if (this[i] === item){
+				this.splice(i, 1);
+				len--;
+			} else {
+				i++;
+			}
+		}
+		return this;
+	},
+
+	contains: function(item, from){
+		return this.indexOf(item, from) != -1;
+	},
+
+	associate: function(keys){
+		var obj = {}, length = Math.min(this.length, keys.length);
+		for (var i = 0; i < length; i++) obj[keys[i]] = this[i];
+		return obj;
+	},
+
+	extend: function(array){
+		for (var i = 0, j = array.length; i < j; i++) this.push(array[i]);
+		return this;
+	},
+
+	merge: function(array){
+		for (var i = 0, l = array.length; i < l; i++) this.include(array[i]);
+		return this;
+	},
+
+	include: function(item){
+		if (!this.contains(item)) this.push(item);
+		return this;
+	},
+
+	getRandom: function(){
+		return this[$random(0, this.length - 1)] || false;
+	},
+
+	getLast: function(){
+		return this[this.length - 1] || false;
+	}
+
+});
+
+Array.prototype.each = Array.prototype.forEach;
+Array.prototype.test = Array.prototype.contains;
+
 function $A(array){
-	return Array.prototype.copy.call(array);
+	return Array.copy(array);
+};
+
+function $each(iterable, fn, bind){
+	if (iterable && typeof iterable.length == 'number' && $type(iterable) != 'object') Array.forEach(iterable, fn, bind);
+	else for (var name in iterable) fn.call(bind || iterable, iterable[name], name);
 };
 
 String.extend({
 
 	test: function(regex, params){
-		return this.match(new RegExp(regex, params));
+		return (($type(regex) == 'string') ? new RegExp(regex, params) : regex).test(this);
 	},
+
 	toInt: function(){
-		return parseInt(this);
+		return parseInt(this, 10);
+	},
+
+	toFloat: function(){
+		return parseFloat(this);
 	},
 
 	camelCase: function(){
-		return this.replace(/-\D/gi, function(match){
-			return match.charAt(match.length - 1).toUpperCase();
+		return this.replace(/-\D/g, function(match){
+			return match.charAt(1).toUpperCase();
 		});
 	},
+
+	hyphenate: function(){
+		return this.replace(/\w[A-Z]/g, function(match){
+			return (match.charAt(0) + '-' + match.charAt(1).toLowerCase());
+		});
+	},
+
 	capitalize: function(){
-		return this.toLowerCase().replace(/\b[a-z]/g, function(match){
+		return this.replace(/\b[a-z]/g, function(match){
 			return match.toUpperCase();
 		});
 	},
 
 	trim: function(){
-		return this.replace(/^\s*|\s*$/g, '');
+		return this.replace(/^\s+|\s+$/g, '');
 	},
 
 	clean: function(){
-		return this.replace(/\s\s/g, ' ').trim();
+		return this.replace(/\s{2,}/g, ' ').trim();
 	},
 
 	rgbToHex: function(array){
-		var rgb = this.test('([\\d]{1,3})', 'g');
-		if (rgb[3] == 0) return 'transparent';
-		var hex = [];
-		for (var i = 0; i < 3; i++){
-			var bit = (rgb[i]-0).toString(16);
-			hex.push(bit.length == 1 ? '0'+bit : bit);
-		}
-		var hexText = '#'+hex.join('');
-		if (array) return hex;
-		else return hexText;
+		var rgb = this.match(/\d{1,3}/g);
+		return (rgb) ? rgb.rgbToHex(array) : false;
 	},
 
 	hexToRgb: function(array){
-		var hex = this.test('^[#]{0,1}([\\w]{1,2})([\\w]{1,2})([\\w]{1,2})$');
-		var rgb = [];
-		for (var i = 1; i < hex.length; i++){
-			if (hex[i].length == 1) hex[i] += hex[i];
-			rgb.push(parseInt(hex[i], 16));
+		var hex = this.match(/^#?(\w{1,2})(\w{1,2})(\w{1,2})$/);
+		return (hex) ? hex.slice(1).hexToRgb(array) : false;
+	},
+
+	contains: function(string, s){
+		return (s) ? (s + this + s).indexOf(s + string + s) > -1 : this.indexOf(string) > -1;
+	},
+
+	escapeRegExp: function(){
+		return this.replace(/([.*+?^${}()|[\]\/\\])/g, '\\$1');
+	}
+
+});
+
+Array.extend({
+
+	rgbToHex: function(array){
+		if (this.length < 3) return false;
+		if (this.length == 4 && this[3] == 0 && !array) return 'transparent';
+		var hex = [];
+		for (var i = 0; i < 3; i++){
+			var bit = (this[i] - 0).toString(16);
+			hex.push((bit.length == 1) ? '0' + bit : bit);
 		}
-		var rgbText = 'rgb('+rgb.join(',')+')';
-		if (array) return rgb;
-		else return rgbText;
+		return array ? hex : '#' + hex.join('');
+	},
+
+	hexToRgb: function(array){
+		if (this.length != 3) return false;
+		var rgb = [];
+		for (var i = 0; i < 3; i++){
+			rgb.push(parseInt((this[i].length == 1) ? this[i] + this[i] : this[i], 16));
+		}
+		return array ? rgb : 'rgb(' + rgb.join(',') + ')';
+	}
+
+});
+
+Function.extend({
+
+	create: function(options){
+		var fn = this;
+		options = $merge({
+			'bind': fn,
+			'event': false,
+			'arguments': null,
+			'delay': false,
+			'periodical': false,
+			'attempt': false
+		}, options);
+		if ($chk(options.arguments) && $type(options.arguments) != 'array') options.arguments = [options.arguments];
+		return function(event){
+			var args;
+			if (options.event){
+				event = event || window.event;
+				args = [(options.event === true) ? event : new options.event(event)];
+				if (options.arguments) args.extend(options.arguments);
+			}
+			else args = options.arguments || arguments;
+			var returns = function(){
+				return fn.apply($pick(options.bind, fn), args);
+			};
+			if (options.delay) return setTimeout(returns, options.delay);
+			if (options.periodical) return setInterval(returns, options.periodical);
+			if (options.attempt) try {return returns();} catch(err){return false;};
+			return returns();
+		};
+	},
+
+	pass: function(args, bind){
+		return this.create({'arguments': args, 'bind': bind});
+	},
+
+	attempt: function(args, bind){
+		return this.create({'arguments': args, 'bind': bind, 'attempt': true})();
+	},
+
+	bind: function(bind, args){
+		return this.create({'bind': bind, 'arguments': args});
+	},
+
+	bindAsEventListener: function(bind, args){
+		return this.create({'bind': bind, 'event': true, 'arguments': args});
+	},
+
+	delay: function(delay, bind, args){
+		return this.create({'delay': delay, 'bind': bind, 'arguments': args})();
+	},
+
+	periodical: function(interval, bind, args){
+		return this.create({'periodical': interval, 'bind': bind, 'arguments': args})();
 	}
 
 });
@@ -244,27 +478,165 @@ String.extend({
 Number.extend({
 
 	toInt: function(){
-		return this;
+		return parseInt(this);
+	},
+
+	toFloat: function(){
+		return parseFloat(this);
+	},
+
+	limit: function(min, max){
+		return Math.min(max, Math.max(min, this));
+	},
+
+	round: function(precision){
+		precision = Math.pow(10, precision || 0);
+		return Math.round(this * precision) / precision;
+	},
+
+	times: function(fn) {
+		for (var i = 0; i < this; i++) fn(i);
 	}
 
 });
 
 var Element = new Class({
 
-	initialize: function(el){
-		if ($type(el) == 'string') el = document.createElement(el);
-		return $(el);
+	initialize: function(el, props){
+		if ($type(el) == 'string'){
+			if (window.ie && props && (props.name || props.type)){
+				var name = (props.name) ? ' name="' + props.name + '"' : '';
+				var type = (props.type) ? ' type="' + props.type + '"' : '';
+				delete props.name;
+				delete props.type;
+				el = '<' + el + name + type + '>';
+			}
+			el = document.createElement(el);
+		}
+		el = $(el);
+		return (!props || !el) ? el : el.set(props);
+	}
+
+});
+
+var Elements = new Class({
+
+	initialize: function(elements){
+		return (elements) ? $extend(elements, this) : this;
+	}
+
+});
+
+Elements.extend = function(props){
+	for (var prop in props){
+		this.prototype[prop] = props[prop];
+		this[prop] = $native.generic(prop);
+	}
+};
+
+function $(el){
+	if (!el) return false;
+	if (el.htmlElement) return Garbage.collect(el);
+	if ([window, document].contains(el)) return el;
+	var type = $type(el);
+	if (type == 'string'){
+		el = document.getElementById(el);
+		type = (el) ? 'element' : false;
+	}
+	if (type != 'element') return false;
+	if (el.htmlElement) return Garbage.collect(el);
+	if (['object', 'embed'].contains(el.tagName.toLowerCase())) return el;
+	$extend(el, Element.prototype);
+	el.htmlElement = true;
+	return Garbage.collect(el);
+};
+
+document.getElementsBySelector = document.getElementsByTagName;
+
+function $$(){
+	var elements = [];
+	for (var i = 0, j = arguments.length; i < j; i++){
+		var selector = arguments[i];
+		switch($type(selector)){
+			case 'element': elements.push(selector);
+			case 'boolean': break;
+			case false: break;
+			case 'string': selector = document.getElementsBySelector(selector, true);
+			default: elements.extend(selector);
+		}
+	}
+	return $$.unique(elements);
+};
+
+$$.unique = function(array){
+	var elements = [];
+	for (var i = 0, l = array.length; i < l; i++){
+		if (array[i].$included) continue;
+		var element = $(array[i]);
+		if (element && !element.$included){
+			element.$included = true;
+			elements.push(element);
+		}
+	}
+	for (var i = 0, l = elements.length; i < l; i++) elements[i].$included = null;
+	return new Elements(elements);
+};
+
+Elements.Multi = function(property){
+	return function(){
+		var args = arguments;
+		var items = [];
+		var elements = true;
+		for (var i = 0, j = this.length, returns; i < j; i++){
+			returns = this[i][property].apply(this[i], args);
+			if ($type(returns) != 'element') elements = false;
+			items.push(returns);
+		};
+		return (elements) ? $$.unique(items) : items;
+	};
+};
+
+Element.extend = function(properties){
+	for (var property in properties){
+		HTMLElement.prototype[property] = properties[property];
+		Element.prototype[property] = properties[property];
+		Element[property] = $native.generic(property);
+		var elementsProperty = (Array.prototype[property]) ? property + 'Elements' : property;
+		Elements.prototype[elementsProperty] = Elements.Multi(property);
+	}
+};
+
+Element.extend({
+
+	set: function(props){
+		for (var prop in props){
+			var val = props[prop];
+			switch(prop){
+				case 'styles': this.setStyles(val); break;
+				case 'events': if (this.addEvents) this.addEvents(val); break;
+				case 'properties': this.setProperties(val); break;
+				default: this.setProperty(prop, val);
+			}
+		}
+		return this;
 	},
 
 	inject: function(el, where){
-		el = $(el) || new Element(el);
+		el = $(el);
 		switch(where){
-			case "before": $(el.parentNode).insertBefore(this, el); break;
-			case "after": {
-					if (!el.getNext()) $(el.parentNode).appendChild(this);
-					else $(el.parentNode).insertBefore(this, el.getNext());
-			} break;
-			case "inside": el.appendChild(this); break;
+			case 'before': el.parentNode.insertBefore(this, el); break;
+			case 'after':
+				var next = el.getNext();
+				if (!next) el.parentNode.appendChild(this);
+				else el.parentNode.insertBefore(this, next);
+				break;
+			case 'top':
+				var first = el.firstChild;
+				if (first){
+					el.insertBefore(this, first);
+					break;
+				}
+			default: el.appendChild(this);
 		}
 		return this;
 	},
@@ -278,286 +650,919 @@ var Element = new Class({
 	},
 
 	injectInside: function(el){
-		return this.inject(el, 'inside');
+		return this.inject(el, 'bottom');
 	},
 
-	adopt: function(el){
-		this.appendChild($(el) || new Element(el));
+	injectTop: function(el){
+		return this.inject(el, 'top');
+	},
+
+	adopt: function(){
+		var elements = [];
+		$each(arguments, function(argument){
+			elements = elements.concat(argument);
+		});
+		$$(elements).inject(this);
 		return this;
 	},
 
 	remove: function(){
-		this.parentNode.removeChild(this);
+		return this.parentNode.removeChild(this);
 	},
 
 	clone: function(contents){
-		return $(this.cloneNode(contents || true));
+		var el = $(this.cloneNode(contents !== false));
+		if (!el.$events) return el;
+		el.$events = {};
+		for (var type in this.$events) el.$events[type] = {
+			'keys': $A(this.$events[type].keys),
+			'values': $A(this.$events[type].values)
+		};
+		return el.removeEvents();
 	},
 
 	replaceWith: function(el){
-		var el = $(el) || new Element(el);
+		el = $(el);
 		this.parentNode.replaceChild(el, this);
 		return el;
 	},
 
 	appendText: function(text){
-		if (this.getTag() == 'style' && window.ActiveXObject) this.styleSheet.cssText = text;
-		else this.appendChild(document.createTextNode(text));
+		if (window.ie){
+			switch(this.getTag()){
+				case 'style': this.styleSheet.cssText = text; return this;
+				case 'script': return this.setProperty('text', text);
+			}
+		}
+		this.appendChild(document.createTextNode(text));
 		return this;
 	},
 
 	hasClass: function(className){
-		return !!this.className.test("\\b"+className+"\\b");
+		return this.className.contains(className, ' ');
 	},
 
 	addClass: function(className){
-		if (!this.hasClass(className)) this.className = (this.className+' '+className.trim()).clean();
+		if (!this.hasClass(className)) this.className = (this.className + ' ' + className).clean();
 		return this;
 	},
 
 	removeClass: function(className){
-		if (this.hasClass(className)) this.className = this.className.replace(className.trim(), '').clean();
+		this.className = this.className.replace(new RegExp('(^|\\s)' + className + '(?:\\s|$)'), '$1').clean();
 		return this;
 	},
 
 	toggleClass: function(className){
-		if (this.hasClass(className)) return this.removeClass(className);
-		else return this.addClass(className);
+		return this.hasClass(className) ? this.removeClass(className) : this.addClass(className);
 	},
 
 	setStyle: function(property, value){
-		if (property == 'opacity') this.setOpacity(parseFloat(value));
-		else this.style[property.camelCase()] = value;
+		switch(property){
+			case 'opacity': return this.setOpacity(parseFloat(value));
+			case 'float': property = (window.ie) ? 'styleFloat' : 'cssFloat';
+		}
+		property = property.camelCase();
+		switch($type(value)){
+			case 'number': if (!['zIndex', 'zoom'].contains(property)) value += 'px'; break;
+			case 'array': value = 'rgb(' + value.join(',') + ')';
+		}
+		this.style[property] = value;
 		return this;
 	},
 
 	setStyles: function(source){
-		if ($type(source) == 'object') {
-			for (var property in source) this.setStyle(property, source[property]);
-		} else if ($type(source) == 'string') {
-			if (window.ActiveXObject) this.cssText = source;
-			else this.setAttribute('style', source);
+		switch($type(source)){
+			case 'object': Element.setMany(this, 'setStyle', source); break;
+			case 'string': this.style.cssText = source;
 		}
 		return this;
 	},
 
 	setOpacity: function(opacity){
 		if (opacity == 0){
-			if(this.style.visibility != "hidden") this.style.visibility = "hidden";
+			if (this.style.visibility != "hidden") this.style.visibility = "hidden";
 		} else {
-			if(this.style.visibility != "visible") this.style.visibility = "visible";
+			if (this.style.visibility != "visible") this.style.visibility = "visible";
 		}
-		if (window.ActiveXObject) this.style.filter = "alpha(opacity=" + opacity*100 + ")";
-		this.style.opacity = opacity;
+		if (!this.currentStyle || !this.currentStyle.hasLayout) this.style.zoom = 1;
+		if (window.ie) this.style.filter = (opacity == 1) ? '' : "alpha(opacity=" + opacity * 100 + ")";
+		this.style.opacity = this.$tmp.opacity = opacity;
 		return this;
 	},
 
 	getStyle: function(property){
-		var proPerty = property.camelCase();
-		var style = this.style[proPerty] || false;
-		if (!style) {
-			if (document.defaultView) style = document.defaultView.getComputedStyle(this,null).getPropertyValue(property);
-			else if (this.currentStyle) style = this.currentStyle[proPerty];
+		property = property.camelCase();
+		var result = this.style[property];
+		if (!$chk(result)){
+			if (property == 'opacity') return this.$tmp.opacity;
+			var result = [];
+			for (var style in Element.Styles){
+				if (property == style){
+					Element.Styles[style].each(function(s){
+						var style = this.getStyle(s);
+						result.push(parseInt(style) ? style : '0px');
+					}, this);
+					if (property == 'border'){
+						var every = result.every(function(bit){
+							return (bit == result[0]);
+						});
+						return (every) ? result[0] : false;
+					}
+					return result.join(' ');
+				}
+			}
+			if (property.contains('border')){
+				if (Element.Styles.border.contains(property)){
+					return ['Width', 'Style', 'Color'].map(function(p){
+						return this.getStyle(property + p);
+					}, this).join(' ');
+				} else if (Element.borderShort.contains(property)){
+					return ['Top', 'Right', 'Bottom', 'Left'].map(function(p){
+						return this.getStyle('border' + p + property.replace('border', ''));
+					}, this).join(' ');
+				}
+			}
+			if (document.defaultView) result = document.defaultView.getComputedStyle(this, null).getPropertyValue(property.hyphenate());
+			else if (this.currentStyle) result = this.currentStyle[property];
 		}
-		if (style && ['color', 'backgroundColor', 'borderColor'].test(proPerty) && style.test('rgb')) style = style.rgbToHex();
-		return style;
+		if (window.ie) result = Element.fixStyle(property, result, this);
+		if (result && property.test(/color/i) && result.contains('rgb')){
+			return result.split('rgb').splice(1,4).map(function(color){
+				return color.rgbToHex();
+			}).join(' ');
+		}
+		return result;
 	},
 
-	addEvent: function(action, fn){
-		this[action+fn] = fn.bind(this);
-		if (this.addEventListener) this.addEventListener(action, fn, false);
-		else this.attachEvent('on'+action, this[action+fn]);
-		var el = this;
-		if (this != window) Unload.functions.push(function(){
-			el.removeEvent(action, fn);
-			el[action+fn] = null;
-		});
-		return this;
+	getStyles: function(){
+		return Element.getMany(this, 'getStyle', arguments);
 	},
 
-	removeEvent: function(action, fn){
-		if (this.removeEventListener) this.removeEventListener(action, fn, false);
-		else this.detachEvent('on'+action, this[action+fn]);
-		return this;
-	},
-
-	getBrother: function(what){
-		var el = this[what+'Sibling'];
-		while ($type(el) == 'textnode') el = el[what+'Sibling'];
+	walk: function(brother, start){
+		brother += 'Sibling';
+		var el = (start) ? this[start] : this[brother];
+		while (el && $type(el) != 'element') el = el[brother];
 		return $(el);
 	},
 
 	getPrevious: function(){
-		return this.getBrother('previous');
+		return this.walk('previous');
 	},
 
 	getNext: function(){
-		return this.getBrother('next');
+		return this.walk('next');
 	},
 
 	getFirst: function(){
-		var el = this.firstChild;
-		while ($type(el) == 'textnode') el = el.nextSibling;
-		return $(el);
+		return this.walk('next', 'firstChild');
 	},
 
 	getLast: function(){
-		var el = this.lastChild;
-		while ($type(el) == 'textnode')
-		el = el.previousSibling;
-		return $(el);
+		return this.walk('previous', 'lastChild');
 	},
 
-	setProperty: function(property, value){
-		var el = false;
-		switch(property){
-			case 'class': this.className = value; break;
-			case 'style': this.setStyles(value); break;
-			case 'name': if (window.ActiveXObject && this.getTag() == 'input'){
-				el = $(document.createElement('<input name="'+value+'" />'));
-				$A(this.attributes).each(function(attribute){
-					if (attribute.name != 'name') el.setProperty(attribute.name, attribute.value);
-				
-				});
-				if (this.parentNode) this.replaceWith(el);
-			};
-			default: this.setAttribute(property, value);
-		}
-		return el || this;
+	getParent: function(){
+		return $(this.parentNode);
 	},
 
-	setProperties: function(source){
-		for (var property in source) this.setProperty(property, source[property]);
-		return this;
+	getChildren: function(){
+		return $$(this.childNodes);
 	},
 
-	setHTML: function(html){
-		this.innerHTML = html;
-		return this;
+	hasChild: function(el) {
+		return !!$A(this.getElementsByTagName('*')).contains(el);
 	},
 
 	getProperty: function(property){
-		return this.getAttribute(property);
+		var index = Element.Properties[property];
+		if (index) return this[index];
+		if (!window.ie) return this.getAttribute(property);
+		var node = this.attributes[property];
+		return (node) ? node.nodeValue : null;
+	},
+
+	removeProperty: function(property){
+		var index = Element.Properties[property];
+		if (index) this[index] = '';
+		else this.removeAttribute(property);
+		return this;
+	},
+
+	getProperties: function(){
+		return Element.getMany(this, 'getProperty', arguments);
+	},
+
+	setProperty: function(property, value){
+		var index = Element.Properties[property];
+		if (index) this[index] = value;
+		else this.setAttribute(property, value);
+		return this;
+	},
+
+	setProperties: function(source){
+		return Element.setMany(this, 'setProperty', source);
+	},
+
+	setHTML: function(){
+		this.innerHTML = $A(arguments).join('');
+		return this;
 	},
 
 	getTag: function(){
 		return this.tagName.toLowerCase();
 	},
 
-	getOffset: function(what){
-		what = what.capitalize();
-		var el = this;
-		var offset = 0;
-		do {
-			offset += el['offset'+what] || 0;
-			el = el.offsetParent;
-		} while (el);
-		return offset;
-	},
-
-	getTop: function(){
-		return this.getOffset('top');
-	},
-
-	getLeft: function(){
-		return this.getOffset('left');
-	},
-
-	getValue: function(){
-		var value = false;
-		switch(this.getTag()){
-			case 'select': value = this.getElementsByTagName('option')[this.selectedIndex].value; break;
-			case 'input': if ( (this.checked && ['checkbox', 'radio'].test(this.type)) || (['hidden', 'text', 'password'].test(this.type)) ) 
-				value = this.value; break;
-			case 'textarea': value = this.value;
-		}
-		return value;
+	empty: function(){
+		Garbage.trash(this.getElementsByTagName('*'));
+		return this.setHTML('');
 	}
 
 });
 
-new Object.Native(Element);
-
-Element.extend({
-	hasClassName: Element.prototype.hasClass,
-	addClassName: Element.prototype.addClass,
-	removeClassName: Element.prototype.removeClass,
-	toggleClassName: Element.prototype.toggleClass
-});
-
-function $Element(el, method, args){
-	if ($type(args) != 'array') args = [args];
-	return Element.prototype[method].apply(el, args);
+Element.fixStyle = function(property, result, element){
+	if ($chk(parseInt(result))) return result;
+	if (['height', 'width'].contains(property)){
+		var values = (property == 'width') ? ['left', 'right'] : ['top', 'bottom'];
+		var size = 0;
+		values.each(function(value){
+			size += element.getStyle('border-' + value + '-width').toInt() + element.getStyle('padding-' + value).toInt();
+		});
+		return element['offset' + property.capitalize()] - size + 'px';
+	} else if (property.test(/border(.+)Width|margin|padding/)){
+		return '0px';
+	}
+	return result;
 };
 
-function $(el){
-	if ($type(el) == 'string') el = document.getElementById(el);
-	if ($type(el) == 'element'){
-		if (!el.extend){
-			Unload.elements.push(el);
-			el.extend = Object.extend;
-			el.extend(Element.prototype);
+Element.Styles = {'border': [], 'padding': [], 'margin': []};
+['Top', 'Right', 'Bottom', 'Left'].each(function(direction){
+	for (var style in Element.Styles) Element.Styles[style].push(style + direction);
+});
+
+Element.borderShort = ['borderWidth', 'borderStyle', 'borderColor'];
+
+Element.getMany = function(el, method, keys){
+	var result = {};
+	$each(keys, function(key){
+		result[key] = el[method](key);
+	});
+	return result;
+};
+
+Element.setMany = function(el, method, pairs){
+	for (var key in pairs) el[method](key, pairs[key]);
+	return el;
+};
+
+Element.Properties = new Abstract({
+	'class': 'className', 'for': 'htmlFor', 'colspan': 'colSpan',
+	'rowspan': 'rowSpan', 'accesskey': 'accessKey', 'tabindex': 'tabIndex',
+	'maxlength': 'maxLength', 'readonly': 'readOnly', 'value': 'value',
+	'disabled': 'disabled', 'checked': 'checked', 'multiple': 'multiple'
+});
+
+Element.Methods = {
+	Listeners: {
+		addListener: function(type, fn){
+			if (this.addEventListener) this.addEventListener(type, fn, false);
+			else this.attachEvent('on' + type, fn);
+			return this;
+		},
+
+		removeListener: function(type, fn){
+			if (this.removeEventListener) this.removeEventListener(type, fn, false);
+			else this.detachEvent('on' + type, fn);
+			return this;
+		}
+	}
+};
+
+window.extend(Element.Methods.Listeners);
+document.extend(Element.Methods.Listeners);
+Element.extend(Element.Methods.Listeners);
+
+var Garbage = {
+
+	elements: [],
+
+	collect: function(el){
+		if (!el.$tmp){
+			Garbage.elements.push(el);
+			el.$tmp = {'opacity': 1};
 		}
 		return el;
-	} else return false;
+	},
+
+	trash: function(elements){
+		for (var i = 0, j = elements.length, el; i < j; i++){
+			if (!(el = elements[i]) || !el.$tmp) continue;
+			if (el.$events) el.fireEvent('trash').removeEvents();
+			for (var p in el.$tmp) el.$tmp[p] = null;
+			for (var p in Element.prototype) el[p] = null;
+			el.htmlElement = el.$tmp = el = null;
+			Garbage.elements.remove(el);
+		}
+	},
+
+	empty: function(){
+		Garbage.collect(window);
+		Garbage.collect(document);
+		Garbage.trash(Garbage.elements);
+	}
+
 };
+window.addListener('beforeunload', function(){
+	window.addListener('unload', Garbage.empty);
+	if (window.ie) window.addListener('unload', CollectGarbage);
+});
 
-window.addEvent = document.addEvent = Element.prototype.addEvent;
-window.removeEvent = document.removeEvent = Element.prototype.removeEvent;
+var Event = new Class({
 
-var Unload = {
-
-	elements: [], functions: [], vars: [],
-
-	unload: function(){
-		Unload.functions.each(function(fn){
-			fn();
-		});
-	
-		window.removeEvent('unload', window.removeFunction);
-	
-		Unload.elements.each(function(el){
-			for(var p in Element.prototype){
-				window[p] = null;
-				document[p] = null;
-				el[p] = null;
+	initialize: function(event){
+		if (event && event.$extended) return event;
+		this.$extended = true;
+		event = event || window.event;
+		this.event = event;
+		this.type = event.type;
+		this.target = event.target || event.srcElement;
+		if (this.target.nodeType == 3) this.target = this.target.parentNode;
+		this.shift = event.shiftKey;
+		this.control = event.ctrlKey;
+		this.alt = event.altKey;
+		this.meta = event.metaKey;
+		if (['DOMMouseScroll', 'mousewheel'].contains(this.type)){
+			this.wheel = (event.wheelDelta) ? event.wheelDelta / 120 : -(event.detail || 0) / 3;
+		} else if (this.type.contains('key')){
+			this.code = event.which || event.keyCode;
+			for (var name in Event.keys){
+				if (Event.keys[name] == this.code){
+					this.key = name;
+					break;
+				}
 			}
-			el.extend = null;
-		});
+			if (this.type == 'keydown'){
+				var fKey = this.code - 111;
+				if (fKey > 0 && fKey < 13) this.key = 'f' + fKey;
+			}
+			this.key = this.key || String.fromCharCode(this.code).toLowerCase();
+		} else if (this.type.test(/(click|mouse|menu)/)){
+			this.page = {
+				'x': event.pageX || event.clientX + document.documentElement.scrollLeft,
+				'y': event.pageY || event.clientY + document.documentElement.scrollTop
+			};
+			this.client = {
+				'x': event.pageX ? event.pageX - window.pageXOffset : event.clientX,
+				'y': event.pageY ? event.pageY - window.pageYOffset : event.clientY
+			};
+			this.rightClick = (event.which == 3) || (event.button == 2);
+			switch(this.type){
+				case 'mouseover': this.relatedTarget = event.relatedTarget || event.fromElement; break;
+				case 'mouseout': this.relatedTarget = event.relatedTarget || event.toElement;
+			}
+			this.fixRelatedTarget();
+		}
+		return this;
+	},
+
+	stop: function() {
+		return this.stopPropagation().preventDefault();
+	},
+
+	stopPropagation: function(){
+		if (this.event.stopPropagation) this.event.stopPropagation();
+		else this.event.cancelBubble = true;
+		return this;
+	},
+
+	preventDefault: function(){
+		if (this.event.preventDefault) this.event.preventDefault();
+		else this.event.returnValue = false;
+		return this;
+	}
+
+});
+
+Event.fix = {
+
+	relatedTarget: function(){
+		if (this.relatedTarget && this.relatedTarget.nodeType == 3) this.relatedTarget = this.relatedTarget.parentNode;
+	},
+
+	relatedTargetGecko: function(){
+		try {Event.fix.relatedTarget.call(this)} catch(e){this.relatedTarget = this.target};
 	}
 
 };
 
-window.removeFunction = Unload.unload;
-window.addEvent('unload', window.removeFunction);
-var Fx = fx = {};
+Event.prototype.fixRelatedTarget = (window.gecko) ? Event.fix.relatedTargetGecko : Event.fix.relatedTarget;
+
+Event.keys = new Abstract({
+	'enter': 13,
+	'up': 38,
+	'down': 40,
+	'left': 37,
+	'right': 39,
+	'esc': 27,
+	'space': 32,
+	'backspace': 8,
+	'tab': 9,
+	'delete': 46
+});
+
+Element.Methods.Events = {
+
+	addEvent: function(type, fn){
+		this.$events = this.$events || {};
+		this.$events[type] = this.$events[type] || {'keys': [], 'values': []};
+		if (this.$events[type].keys.contains(fn)) return this;
+		this.$events[type].keys.push(fn);
+		var realType = type;
+		var custom = Element.Events[type];
+		if (custom){
+			if (custom.add) custom.add.call(this, fn);
+			if (custom.map) fn = custom.map;
+			if (custom.type) realType = custom.type;
+		}
+		if (!this.addEventListener) fn = fn.create({'bind': this, 'event': true});
+		this.$events[type].values.push(fn);
+		return this.addListener(realType, fn);
+	},
+
+	removeEvent: function(type, fn){
+		if (!this.$events || !this.$events[type]) return this;
+		var pos = this.$events[type].keys.indexOf(fn);
+		if (pos == -1) return this;
+		var key = this.$events[type].keys.splice(pos,1)[0];
+		var value = this.$events[type].values.splice(pos,1)[0];
+		var custom = Element.Events[type];
+		if (custom){
+			if (custom.remove) custom.remove.call(this, fn);
+			if (custom.type) type = custom.type;
+		}
+		return this.removeListener(type, value);
+	},
+
+	addEvents: function(source){
+		return Element.setMany(this, 'addEvent', source);
+	},
+
+	removeEvents: function(type){
+		if (!this.$events) return this;
+		if (!type){
+			for (var evType in this.$events) this.removeEvents(evType);
+			this.$events = null;
+		} else if (this.$events[type]){
+			this.$events[type].keys.each(function(fn){
+				this.removeEvent(type, fn);
+			}, this);
+			this.$events[type] = null;
+		}
+		return this;
+	},
+
+	fireEvent: function(type, args, delay){
+		if (!this.$events || !this.$events[type]) return this;
+		this.$events[type].keys.each(function(fn){
+			fn.create({'bind': this, 'delay': delay, 'arguments': args})();
+		}, this);
+		return this;
+	},
+
+	cloneEvents: function(from, type){
+		if (!from.$events) return this;
+		if (!type){
+			for (var evType in from.$events) this.cloneEvents(from, evType);
+		} else if (from.$events[type]){
+			from.$events[type].keys.each(function(fn){
+				this.addEvent(type, fn);
+			}, this);
+		}
+		return this;
+	}
+
+};
+
+window.extend(Element.Methods.Events);
+document.extend(Element.Methods.Events);
+Element.extend(Element.Methods.Events);
+
+Element.Events = new Abstract({
+
+	'mouseenter': {
+		type: 'mouseover',
+		map: function(event){
+			event = new Event(event);
+			if (event.relatedTarget == this || this.hasChild(event.relatedTarget)) return;
+			this.fireEvent('mouseenter', event);
+		}
+	},
+
+	'mouseleave': {
+		type: 'mouseout',
+		map: function(event){
+			event = new Event(event);
+			if (event.relatedTarget == this || this.hasChild(event.relatedTarget)) return;
+			this.fireEvent('mouseleave', event);
+		}
+	},
+
+	'mousewheel': {
+		type: (window.gecko) ? 'DOMMouseScroll' : 'mousewheel'
+	}
+
+});
+
+Function.extend({
+
+	bindWithEvent: function(bind, args){
+		return this.create({'bind': bind, 'arguments': args, 'event': Event});
+	}
+
+});
+
+Elements.extend({
+
+	filterByTag: function(tag){
+		return new Elements(this.filter(function(el){
+			return (Element.getTag(el) == tag);
+		}));
+	},
+
+	filterByClass: function(className, nocash){
+		var elements = this.filter(function(el){
+			return (el.className && el.className.contains(className, ' '));
+		});
+		return (nocash) ? elements : new Elements(elements);
+	},
+
+	filterById: function(id, nocash){
+		var elements = this.filter(function(el){
+			return (el.id == id);
+		});
+		return (nocash) ? elements : new Elements(elements);
+	},
+
+	filterByAttribute: function(name, operator, value, nocash){
+		var elements = this.filter(function(el){
+			var current = Element.getProperty(el, name);
+			if (!current) return false;
+			if (!operator) return true;
+			switch(operator){
+				case '=': return (current == value);
+				case '*=': return (current.contains(value));
+				case '^=': return (current.substr(0, value.length) == value);
+				case '$=': return (current.substr(current.length - value.length) == value);
+				case '!=': return (current != value);
+				case '~=': return current.contains(value, ' ');
+			}
+			return false;
+		});
+		return (nocash) ? elements : new Elements(elements);
+	}
+
+});
+
+function $E(selector, filter){
+	return ($(filter) || document).getElement(selector);
+};
+
+function $ES(selector, filter){
+	return ($(filter) || document).getElementsBySelector(selector);
+};
+
+$$.shared = {
+
+	'regexp': /^(\w*|\*)(?:#([\w-]+)|\.([\w-]+))?(?:\[(\w+)(?:([!*^$]?=)["']?([^"'\]]*)["']?)?])?$/,
+
+	'xpath': {
+
+		getParam: function(items, context, param, i){
+			var temp = [context.namespaceURI ? 'xhtml:' : '', param[1]];
+			if (param[2]) temp.push('[@id="', param[2], '"]');
+			if (param[3]) temp.push('[contains(concat(" ", @class, " "), " ', param[3], ' ")]');
+			if (param[4]){
+				if (param[5] && param[6]){
+					switch(param[5]){
+						case '*=': temp.push('[contains(@', param[4], ', "', param[6], '")]'); break;
+						case '^=': temp.push('[starts-with(@', param[4], ', "', param[6], '")]'); break;
+						case '$=': temp.push('[substring(@', param[4], ', string-length(@', param[4], ') - ', param[6].length, ' + 1) = "', param[6], '"]'); break;
+						case '=': temp.push('[@', param[4], '="', param[6], '"]'); break;
+						case '!=': temp.push('[@', param[4], '!="', param[6], '"]');
+					}
+				} else {
+					temp.push('[@', param[4], ']');
+				}
+			}
+			items.push(temp.join(''));
+			return items;
+		},
+
+		getItems: function(items, context, nocash){
+			var elements = [];
+			var xpath = document.evaluate('.//' + items.join('//'), context, $$.shared.resolver, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
+			for (var i = 0, j = xpath.snapshotLength; i < j; i++) elements.push(xpath.snapshotItem(i));
+			return (nocash) ? elements : new Elements(elements.map($));
+		}
+
+	},
+
+	'normal': {
+
+		getParam: function(items, context, param, i){
+			if (i == 0){
+				if (param[2]){
+					var el = context.getElementById(param[2]);
+					if (!el || ((param[1] != '*') && (Element.getTag(el) != param[1]))) return false;
+					items = [el];
+				} else {
+					items = $A(context.getElementsByTagName(param[1]));
+				}
+			} else {
+				items = $$.shared.getElementsByTagName(items, param[1]);
+				if (param[2]) items = Elements.filterById(items, param[2], true);
+			}
+			if (param[3]) items = Elements.filterByClass(items, param[3], true);
+			if (param[4]) items = Elements.filterByAttribute(items, param[4], param[5], param[6], true);
+			return items;
+		},
+
+		getItems: function(items, context, nocash){
+			return (nocash) ? items : $$.unique(items);
+		}
+
+	},
+
+	resolver: function(prefix){
+		return (prefix == 'xhtml') ? 'http://www.w3.org/1999/xhtml' : false;
+	},
+
+	getElementsByTagName: function(context, tagName){
+		var found = [];
+		for (var i = 0, j = context.length; i < j; i++) found.extend(context[i].getElementsByTagName(tagName));
+		return found;
+	}
+
+};
+
+$$.shared.method = (window.xpath) ? 'xpath' : 'normal';
+
+Element.Methods.Dom = {
+
+	getElements: function(selector, nocash){
+		var items = [];
+		selector = selector.trim().split(' ');
+		for (var i = 0, j = selector.length; i < j; i++){
+			var sel = selector[i];
+			var param = sel.match($$.shared.regexp);
+			if (!param) break;
+			param[1] = param[1] || '*';
+			var temp = $$.shared[$$.shared.method].getParam(items, this, param, i);
+			if (!temp) break;
+			items = temp;
+		}
+		return $$.shared[$$.shared.method].getItems(items, this, nocash);
+	},
+
+	getElement: function(selector){
+		return $(this.getElements(selector, true)[0] || false);
+	},
+
+	getElementsBySelector: function(selector, nocash){
+		var elements = [];
+		selector = selector.split(',');
+		for (var i = 0, j = selector.length; i < j; i++) elements = elements.concat(this.getElements(selector[i], true));
+		return (nocash) ? elements : $$.unique(elements);
+	},
+
+	getElementsByClassName: function(className){
+		return this.getElements('.' + className);
+	}
+
+};
+
+Element.extend({
+
+	getElementById: function(id){
+		var el = document.getElementById(id);
+		if (!el) return false;
+		for (var parent = el.parentNode; parent != this; parent = parent.parentNode){
+			if (!parent) return false;
+		}
+		return el;
+	}
+
+});
+
+document.extend(Element.Methods.Dom);
+Element.extend(Element.Methods.Dom);
+
+Element.extend({
+
+	getValue: function(){
+		switch(this.getTag()){
+			case 'select':
+				var values = [];
+				$each(this.options, function(option){
+					if (option.selected) values.push($pick(option.value, option.text));
+				});
+				return (this.multiple) ? values : values[0];
+			case 'input': if (!(this.checked && ['checkbox', 'radio'].contains(this.type)) && !['hidden', 'text', 'password'].contains(this.type)) break;
+			case 'textarea': return this.value;
+		}
+		return false;
+	},
+
+	getFormElements: function(){
+		return $$(this.getElementsByTagName('input'), this.getElementsByTagName('select'), this.getElementsByTagName('textarea'));
+	},
+
+	toQueryString: function(){
+		var queryString = [];
+		this.getFormElements().each(function(el){
+			var name = el.name;
+			var value = el.getValue();
+			if (value === false || !name || el.disabled) return;
+			var qs = function(val){
+				queryString.push(name + '=' + encodeURIComponent(val));
+			};
+			if ($type(value) == 'array') value.each(qs);
+			else qs(value);
+		});
+		return queryString.join('&');
+	}
+
+});
+
+Element.extend({
+
+	scrollTo: function(x, y){
+		this.scrollLeft = x;
+		this.scrollTop = y;
+	},
+
+	getSize: function(){
+		return {
+			'scroll': {'x': this.scrollLeft, 'y': this.scrollTop},
+			'size': {'x': this.offsetWidth, 'y': this.offsetHeight},
+			'scrollSize': {'x': this.scrollWidth, 'y': this.scrollHeight}
+		};
+	},
+
+	getPosition: function(overflown){
+		overflown = overflown || [];
+		var el = this, left = 0, top = 0;
+		do {
+			left += el.offsetLeft || 0;
+			top += el.offsetTop || 0;
+			el = el.offsetParent;
+		} while (el);
+		overflown.each(function(element){
+			left -= element.scrollLeft || 0;
+			top -= element.scrollTop || 0;
+		});
+		return {'x': left, 'y': top};
+	},
+
+	getTop: function(overflown){
+		return this.getPosition(overflown).y;
+	},
+
+	getLeft: function(overflown){
+		return this.getPosition(overflown).x;
+	},
+
+	getCoordinates: function(overflown){
+		var position = this.getPosition(overflown);
+		var obj = {
+			'width': this.offsetWidth,
+			'height': this.offsetHeight,
+			'left': position.x,
+			'top': position.y
+		};
+		obj.right = obj.left + obj.width;
+		obj.bottom = obj.top + obj.height;
+		return obj;
+	}
+
+});
+
+Element.Events.domready = {
+
+	add: function(fn){
+		if (window.loaded){
+			fn.call(this);
+			return;
+		}
+		var domReady = function(){
+			if (window.loaded) return;
+			window.loaded = true;
+			window.timer = $clear(window.timer);
+			this.fireEvent('domready');
+		}.bind(this);
+		if (document.readyState && window.webkit){
+			window.timer = function(){
+				if (['loaded','complete'].contains(document.readyState)) domReady();
+			}.periodical(50);
+		} else if (document.readyState && window.ie){
+			if (!$('ie_ready')){
+				var src = (window.location.protocol == 'https:') ? '://0' : 'javascript:void(0)';
+				document.write('<script id="ie_ready" defer src="' + src + '"><\/script>');
+				$('ie_ready').onreadystatechange = function(){
+					if (this.readyState == 'complete') domReady();
+				};
+			}
+		} else {
+			window.addListener("load", domReady);
+			document.addListener("DOMContentLoaded", domReady);
+		}
+	}
+
+};
+
+window.onDomReady = function(fn){
+	return this.addEvent('domready', fn);
+};
+
+window.extend({
+
+	getWidth: function(){
+		if (this.webkit419) return this.innerWidth;
+		if (this.opera) return document.body.clientWidth;
+		return document.documentElement.clientWidth;
+	},
+
+	getHeight: function(){
+		if (this.webkit419) return this.innerHeight;
+		if (this.opera) return document.body.clientHeight;
+		return document.documentElement.clientHeight;
+	},
+
+	getScrollWidth: function(){
+		if (this.ie) return Math.max(document.documentElement.offsetWidth, document.documentElement.scrollWidth);
+		if (this.webkit) return document.body.scrollWidth;
+		return document.documentElement.scrollWidth;
+	},
+
+	getScrollHeight: function(){
+		if (this.ie) return Math.max(document.documentElement.offsetHeight, document.documentElement.scrollHeight);
+		if (this.webkit) return document.body.scrollHeight;
+		return document.documentElement.scrollHeight;
+	},
+
+	getScrollLeft: function(){
+		return this.pageXOffset || document.documentElement.scrollLeft;
+	},
+
+	getScrollTop: function(){
+		return this.pageYOffset || document.documentElement.scrollTop;
+	},
+
+	getSize: function(){
+		return {
+			'size': {'x': this.getWidth(), 'y': this.getHeight()},
+			'scrollSize': {'x': this.getScrollWidth(), 'y': this.getScrollHeight()},
+			'scroll': {'x': this.getScrollLeft(), 'y': this.getScrollTop()}
+		};
+	},
+	getPosition: function(){return {'x': 0, 'y': 0}}
+
+});
+
+var Fx = {Shared: {}};
 
 Fx.Base = new Class({
 
-	setOptions: function(options){
-		this.options = Object.extend({
-			onStart: Class.empty,
-			onComplete: Class.empty,
-			transition: Fx.Transitions.sineInOut,
-			duration: 500,
-			unit: 'px',
-			wait: true,
-			fps: 50
-		}, options || {});
+	options: {
+		onStart: Class.empty,
+		onComplete: Class.empty,
+		onCancel: Class.empty,
+		transition: function(p){
+			return -(Math.cos(Math.PI * p) - 1) / 2;
+		},
+		duration: 500,
+		unit: 'px',
+		wait: true,
+		fps: 50
+	},
+
+	initialize: function(options){
+		this.element = this.element || null;
+		this.setOptions(options);
+		if (this.options.initialize) this.options.initialize.call(this);
 	},
 
 	step: function(){
-		var time = new Date().getTime();
+		var time = $time();
 		if (time < this.time + this.options.duration){
-			this.cTime = time - this.time;
+			this.delta = this.options.transition((time - this.time) / this.options.duration);
 			this.setNow();
+			this.increase();
 		} else {
-			this.options.onComplete.pass(this.element, this).delay(10);
-			this.clearTimer();
+			this.stop(true);
+			this.set(this.to);
+			this.fireEvent('onComplete', this.element, 10);
 			this.callChain();
-			this.now = this.to;
 		}
-		this.increase();
 	},
 
 	set: function(to){
@@ -571,79 +1576,141 @@ Fx.Base = new Class({
 	},
 
 	compute: function(from, to){
-		return this.options.transition(this.cTime, from, (to - from), this.options.duration);
+		return (to - from) * this.delta + from;
 	},
 
-	custom: function(from, to){
-		if (!this.options.wait) this.clearTimer();
-		if (this.timer) return;
-		this.options.onStart.pass(this.element, this).delay(10);
+	start: function(from, to){
+		if (!this.options.wait) this.stop();
+		else if (this.timer) return this;
 		this.from = from;
 		this.to = to;
-		this.time = new Date().getTime();
-		this.timer = this.step.periodical(Math.round(1000/this.options.fps), this);
-		return this;
-	},
-	clearTimer: function(){
-		this.timer = $clear(this.timer);
+		this.change = this.to - this.from;
+		this.time = $time();
+		this.timer = this.step.periodical(Math.round(1000 / this.options.fps), this);
+		this.fireEvent('onStart', this.element);
 		return this;
 	},
 
-	setStyle: function(element, property, value){
-		element.setStyle(property, value + this.options.unit);
-	}
+	stop: function(end){
+		if (!this.timer) return this;
+		this.timer = $clear(this.timer);
+		if (!end) this.fireEvent('onCancel', this.element);
+		return this;
+	},
+	custom: function(from, to){return this.start(from, to)},
+	clearTimer: function(end){return this.stop(end)}
 
 });
 
-Fx.Base.implement(new Chain);
+Fx.Base.implement(new Chain, new Events, new Options);
+
+Fx.CSS = {
+
+	select: function(property, to){
+		if (property.test(/color/i)) return this.Color;
+		if (to.contains && to.contains(' ')) return this.Multi;
+		return this.Single;
+	},
+
+	parse: function(el, property, fromTo){
+		if (!fromTo.push) fromTo = [fromTo];
+		var from = fromTo[0], to = fromTo[1];
+		if (!to && to != 0){
+			to = from;
+			from = el.getStyle(property);
+		}
+		var css = this.select(property, to);
+		return {from: css.parse(from), to: css.parse(to), css: css};
+	}
+
+};
+
+Fx.CSS.Single = {
+
+	parse: function(value){
+		return parseFloat(value);
+	},
+
+	getNow: function(from, to, fx){
+		return fx.compute(from, to);
+	},
+
+	getValue: function(value, unit, property){
+		if (unit == 'px' && property != 'opacity') value = Math.round(value);
+		return value + unit;
+	}
+
+};
+
+Fx.CSS.Multi = {
+
+	parse: function(value){
+		return value.push ? value : value.split(' ').map(function(v){
+			return parseFloat(v);
+		});
+	},
+
+	getNow: function(from, to, fx){
+		var now = [];
+		for (var i = 0; i < from.length; i++) now[i] = fx.compute(from[i], to[i]);
+		return now;
+	},
+
+	getValue: function(value, unit, property){
+		if (unit == 'px' && property != 'opacity') value = value.map(Math.round);
+		return value.join(unit + ' ') + unit;
+	}
+
+};
+
+Fx.CSS.Color = {
+
+	parse: function(value){
+		return value.push ? value : value.hexToRgb(true);
+	},
+
+	getNow: function(from, to, fx){
+		var now = [];
+		for (var i = 0; i < from.length; i++) now[i] = Math.round(fx.compute(from[i], to[i]));
+		return now;
+	},
+
+	getValue: function(value){
+		return 'rgb(' + value.join(',') + ')';
+	}
+
+};
 
 Fx.Style = Fx.Base.extend({
 
 	initialize: function(el, property, options){
 		this.element = $(el);
-		this.setOptions(options);
-		this.property = property.camelCase();
+		this.property = property;
+		this.parent(options);
 	},
 
 	hide: function(){
 		return this.set(0);
 	},
 
-	goTo: function(val){
-		return this.custom(this.now || 0, val);
-	},
-
-	increase: function(){
-		this.setStyle(this.element, this.property, this.now);
-	}
-
-});
-
-Fx.Styles = Fx.Base.extend({
-
-	initialize: function(el, options){
-		this.element = $(el);
-		this.setOptions(options);
-		this.now = {};
-	},
-
 	setNow: function(){
-		for (var p in this.from) this.now[p] = this.compute(this.from[p], this.to[p]);
+		this.now = this.css.getNow(this.from, this.to, this);
 	},
 
-	custom: function(objFromTo){
-		if (this.timer && this.options.wait) return;
-		var from = {};
-		var to = {};
-		for (var p in objFromTo){
-			from[p] = objFromTo[p][0];
-			to[p] = objFromTo[p][1];
-		}
-		return this.parent(from, to);
+	set: function(to){
+		this.css = Fx.CSS.select(this.property, to);
+		return this.parent(this.css.parse(to));
+	},
+
+	start: function(from, to){
+		if (this.timer && this.options.wait) return this;
+		var parsed = Fx.CSS.parse(this.element, this.property, [from, to]);
+		this.css = parsed.css;
+		return this.parent(parsed.from, parsed.to);
 	},
 
 	increase: function(){
-		for (var p in this.now) this.setStyle(this.element, p, this.now[p]);
+		this.element.setStyle(this.property, this.css.getValue(this.now, this.options.unit, this.property));
 	}
 
 });
@@ -652,7 +1719,52 @@ Element.extend({
 
 	effect: function(property, options){
 		return new Fx.Style(this, property, options);
+	}
+
+});
+
+Fx.Styles = Fx.Base.extend({
+
+	initialize: function(el, options){
+		this.element = $(el);
+		this.parent(options);
 	},
+
+	setNow: function(){
+		for (var p in this.from) this.now[p] = this.css[p].getNow(this.from[p], this.to[p], this);
+	},
+
+	set: function(to){
+		var parsed = {};
+		this.css = {};
+		for (var p in to){
+			this.css[p] = Fx.CSS.select(p, to[p]);
+			parsed[p] = this.css[p].parse(to[p]);
+		}
+		return this.parent(parsed);
+	},
+
+	start: function(obj){
+		if (this.timer && this.options.wait) return this;
+		this.now = {};
+		this.css = {};
+		var from = {}, to = {};
+		for (var p in obj){
+			var parsed = Fx.CSS.parse(this.element, p, obj[p]);
+			from[p] = parsed.from;
+			to[p] = parsed.to;
+			this.css[p] = parsed.css;
+		}
+		return this.parent(from, to);
+	},
+
+	increase: function(){
+		for (var p in this.now) this.element.setStyle(p, this.css[p].getValue(this.now[p], this.options.unit, p));
+	}
+
+});
+
+Element.extend({
 
 	effects: function(options){
 		return new Fx.Styles(this, options);
@@ -660,886 +1772,700 @@ Element.extend({
 
 });
 
-Fx.Transitions = {
-	linear: function(t, b, c, d){
-		return c*t/d + b;
+Fx.Elements = Fx.Base.extend({
+
+	initialize: function(elements, options){
+		this.elements = $$(elements);
+		this.parent(options);
 	},
-	sineInOut: function(t, b, c, d){
-		return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;
+
+	setNow: function(){
+		for (var i in this.from){
+			var iFrom = this.from[i], iTo = this.to[i], iCss = this.css[i], iNow = this.now[i] = {};
+			for (var p in iFrom) iNow[p] = iCss[p].getNow(iFrom[p], iTo[p], this);
+		}
+	},
+
+	set: function(to){
+		var parsed = {};
+		this.css = {};
+		for (var i in to){
+			var iTo = to[i], iCss = this.css[i] = {}, iParsed = parsed[i] = {};
+			for (var p in iTo){
+				iCss[p] = Fx.CSS.select(p, iTo[p]);
+				iParsed[p] = iCss[p].parse(iTo[p]);
+			}
+		}
+		return this.parent(parsed);
+	},
+
+	start: function(obj){
+		if (this.timer && this.options.wait) return this;
+		this.now = {};
+		this.css = {};
+		var from = {}, to = {};
+		for (var i in obj){
+			var iProps = obj[i], iFrom = from[i] = {}, iTo = to[i] = {}, iCss = this.css[i] = {};
+			for (var p in iProps){
+				var parsed = Fx.CSS.parse(this.elements[i], p, iProps[p]);
+				iFrom[p] = parsed.from;
+				iTo[p] = parsed.to;
+				iCss[p] = parsed.css;
+			}
+		}
+		return this.parent(from, to);
+	},
+
+	increase: function(){
+		for (var i in this.now){
+			var iNow = this.now[i], iCss = this.css[i];
+			for (var p in iNow) this.elements[i].setStyle(p, iCss[p].getValue(iNow[p], this.options.unit, p));
+		}
 	}
 
-};
+});
 
-function $S(){
-	var els = [];
-	$A(arguments).each(function(sel){
-		if ($type(sel) == 'string') els.extend(document.getElementsBySelector(sel));
-		else if ($type(sel) == 'element') els.push($(sel));
+Fx.Transition = function(transition, params){
+	params = params || [];
+	if ($type(params) != 'array') params = [params];
+	return $extend(transition, {
+		easeIn: function(pos){
+			return transition(pos, params);
+		},
+		easeOut: function(pos){
+			return 1 - transition(1 - pos, params);
+		},
+		easeInOut: function(pos){
+			return (pos <= 0.5) ? transition(2 * pos, params) / 2 : (2 - transition(2 * (1 - pos), params)) / 2;
+		}
 	});
-	return $Elements(els);
 };
 
-var $$ = $S;
+Fx.Transitions = new Abstract({
 
-function $E(selector, filter){
-	return ($(filter) || document).getElement(selector);
-};
-
-function $ES(selector, filter){
-	return ($(filter) || document).getElementsBySelector(selector);
-};
-
-function $Elements(elements){
-	return Object.extend(elements, new Elements);
-};
-
-Element.extend({
-
-	getElements: function(selector){
-		var filters = [];
-		selector.clean().split(' ').each(function(sel, i){
-			var bits = sel.test('^(\\w*|\\*)(?:#(\\w+)|\\.(\\w+))?(?:\\[["\']?(\\w+)["\']?([\\*\\^\\$]?=)["\']?(\\w*)["\']?\\])?$');
-			if (!bits) return;
-			if (!bits[1]) bits[1] = '*';
-			var param = bits.remove(bits[0]).associate(['tag', 'id', 'class', 'attribute', 'operator', 'value']);
-			if (i == 0){
-				if (param['id']){
-					var el = this.getElementById(param['id']);
-					if (!el || (param['tag'] != '*' && $(el).getTag() != param['tag'])) return false;
-					filters = [el];
-				} else {
-					filters = $A(this.getElementsByTagName(param['tag']));
-				}
-			} else {
-				if (param['id']) filters = $Elements(filters).filterById(param['id']);
-				filters = $Elements(filters).filterByTagName(param['tag']);
-			}
-			if (param['class']) filters = $Elements(filters).filterByClassName(param['class']);
-			if (param['attribute']) filters = $Elements(filters).filterByAttribute(param['attribute'], param['value'], param['operator']);
-
-		}, this);
-		filters.each(function(el){
-			$(el);
-		});
-		return $Elements(filters);
-	},
-
-	getElement: function(selector){
-		return this.getElementsBySelector(selector)[0];
-	},
-
-	getElementsBySelector: function(selector){
-		var els = [];
-		selector.split(',').each(function(sel){
-			els.extend(this.getElements(sel));
-		}, this);
-		return $Elements(els);
+	linear: function(p){
+		return p;
 	}
 
 });
 
-document.extend = Object.extend;
+Fx.Transitions.extend = function(transitions){
+	for (var transition in transitions){
+		Fx.Transitions[transition] = new Fx.Transition(transitions[transition]);
+		Fx.Transitions.compat(transition);
+	};
+};
 
-document.extend({
-	getElementsByClassName: function(className){
-		return document.getElements('.'+className);
+Fx.Transitions.compat = function(transition){
+	['In', 'Out', 'InOut'].each(function(easeType){
+		Fx.Transitions[transition.toLowerCase() + easeType] = Fx.Transitions[transition]['ease' + easeType];
+	});
+};
+
+Fx.Transitions.extend({
+
+	Pow: function(p, x){
+		return Math.pow(p, x[0] || 6);
 	},
-	getElement: Element.prototype.getElement,
-	getElements: Element.prototype.getElements,
-	getElementsBySelector: Element.prototype.getElementsBySelector
 
-});
+	Expo: function(p){
+		return Math.pow(2, 8 * (p - 1));
+	},
 
-var Elements = new Class({
+	Circ: function(p){
+		return 1 - Math.sin(Math.acos(p));
+	},
 
-	action: function(actions){
-		this.each(function(el){
-			el = $(el);
-			if (actions.initialize) actions.initialize.apply(el);
-			for(var action in actions){
-				var evt = false;
-				if (action.test('^on[\\w]{1,}')) el[action] = actions[action];
-				else if (evt = action.test('([\\w-]{1,})event$')) el.addEvent(evt[1], actions[action]);
+	Sine: function(p){
+		return 1 - Math.sin((1 - p) * Math.PI / 2);
+	},
+
+	Back: function(p, x){
+		x = x[0] || 1.618;
+		return Math.pow(p, 2) * ((x + 1) * p - x);
+	},
+
+	Bounce: function(p){
+		var value;
+		for (var a = 0, b = 1; 1; a += b, b /= 2){
+			if (p >= (7 - 4 * a) / 11){
+				value = - Math.pow((11 - 6 * a - 11 * p) / 4, 2) + b * b;
+				break;
 			}
-		});
+		}
+		return value;
 	},
 
-	//internal methods
-
-	filterById: function(id){
-		var found = [];
-		this.each(function(el){
-			if (el.id == id) found.push(el);
-		});
-		return found;
-	},
-
-	filterByClassName: function(className){
-		var found = [];
-		this.each(function(el){
-			if ($Element(el, 'hasClass', className)) found.push(el);
-		});
-		return found;
-	},
-
-	filterByTagName: function(tagName){
-		var found = [];
-		this.each(function(el){
-			found.extend($A(el.getElementsByTagName(tagName)));
-		});
-		return found;
-	},
-
-	filterByAttribute: function(name, value, operator){
-		var found = [];
-		this.each(function(el){
-			var att = el.getAttribute(name);
-			if(!att) return;
-			if (!operator) return found.push(el);
-		
-			switch(operator){
-				case '*=': if (att.test(value)) found.push(el); break;
-				case '=': if (att == value) found.push(el); break;
-				case '^=': if (att.test('^'+value)) found.push(el); break;
-				case '$=': if (att.test(value+'$')) found.push(el);
-			}
-
-		});
-		return found;
+	Elastic: function(p, x){
+		return Math.pow(2, 10 * --p) * Math.cos(20 * p * Math.PI * (x[0] || 1) / 3);
 	}
 
 });
 
-new Object.Native(Elements);
+['Quad', 'Cubic', 'Quart', 'Quint'].each(function(transition, i){
+	Fx.Transitions[transition] = new Fx.Transition(function(p){
+		return Math.pow(p, [i + 2]);
+	});
+	Fx.Transitions.compat(transition);
+});
 
-var Ajax = ajax = new Class({
+var XHR = new Class({
 
-	setOptions: function(options){
-		this.options = {
-			method: 'post',
-			postBody: null,
-			async: true,
-			onComplete: Class.empty,
-			onStateChange: Class.empty,
-			update: null,
-			evalScripts: false
-		};
-		Object.extend(this.options, options || {});
+	options: {
+		method: 'post',
+		async: true,
+		onRequest: Class.empty,
+		onSuccess: Class.empty,
+		onFailure: Class.empty,
+		urlEncoded: true,
+		encoding: 'utf-8',
+		autoCancel: false,
+		headers: {}
 	},
 
-	initialize: function(url, options){
-		this.setOptions(options);
-		this.url = url;
-		this.transport = this.getTransport();
-	},
-
-	request: function(){
-		this.transport.open(this.options.method, this.url, this.options.async);
-		this.transport.onreadystatechange = this.onStateChange.bind(this);
-		if (this.options.method == 'post'){
-			this.transport.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-			if (this.transport.overrideMimeType) this.transport.setRequestHeader('Connection', 'close');
-		}
-		switch($type(this.options.postBody)){
-			case 'element': this.options.postBody = $(this.options.postBody).toQueryString(); break;
-			case 'object': this.options.postBody = Object.toQueryString(this.options.postBody);
-		}
-		if($type(this.options.postBody) == 'string') this.transport.send(this.options.postBody);
-		else this.transport.send(null);
+	setTransport: function(){
+		this.transport = (window.XMLHttpRequest) ? new XMLHttpRequest() : (window.ie ? new ActiveXObject('Microsoft.XMLHTTP') : false);
 		return this;
 	},
 
+	initialize: function(options){
+		this.setTransport().setOptions(options);
+		this.options.isSuccess = this.options.isSuccess || this.isSuccess;
+		this.headers = {};
+		if (this.options.urlEncoded && this.options.method == 'post'){
+			var encoding = (this.options.encoding) ? '; charset=' + this.options.encoding : '';
+			this.setHeader('Content-type', 'application/x-www-form-urlencoded' + encoding);
+		}
+		if (this.options.initialize) this.options.initialize.call(this);
+	},
+
 	onStateChange: function(){
-		this.options.onStateChange.delay(10, this);
-		if (this.transport.readyState == 4 && this.transport.status == 200){
-			if (this.options.update) $(this.options.update).setHTML(this.transport.responseText);
-			this.options.onComplete.pass([this.transport.responseText, this.transport.responseXML], this).delay(20);
-			if (this.options.evalScripts) this.evalScripts.delay(30, this);
-			this.transport.onreadystatechange = Class.empty;
-			this.callChain();
-		}
+		if (this.transport.readyState != 4 || !this.running) return;
+		this.running = false;
+		var status = 0;
+		try {status = this.transport.status} catch(e){};
+		if (this.options.isSuccess.call(this, status)) this.onSuccess();
+		else this.onFailure();
+		this.transport.onreadystatechange = Class.empty;
 	},
 
-	evalScripts: function(){
-		if(scripts = this.transport.responseText.match(/<script[^>]*?>[\S\s]*?<\/script>/g)){
-			scripts.each(function(script){
-				eval(script.replace(/^<script[^>]*?>/, '').replace(/<\/script>$/, ''));
-			});
-		}
+	isSuccess: function(status){
+		return ((status >= 200) && (status < 300));
 	},
 
-	getTransport: function(){
-		if (window.XMLHttpRequest) return new XMLHttpRequest();
-		else if (window.ActiveXObject) return new ActiveXObject('Microsoft.XMLHTTP');
+	onSuccess: function(){
+		this.response = {
+			'text': this.transport.responseText,
+			'xml': this.transport.responseXML
+		};
+		this.fireEvent('onSuccess', [this.response.text, this.response.xml]);
+		this.callChain();
+	},
+
+	onFailure: function(){
+		this.fireEvent('onFailure', this.transport);
+	},
+
+	setHeader: function(name, value){
+		this.headers[name] = value;
+		return this;
+	},
+
+	send: function(url, data){
+		if (this.options.autoCancel) this.cancel();
+		else if (this.running) return this;
+		this.running = true;
+		if (data && this.options.method == 'get') url = url + (url.contains('?') ? '&' : '?') + data, data = null;
+		this.transport.open(this.options.method, url, this.options.async);
+		this.transport.onreadystatechange = this.onStateChange.bind(this);
+		if ((this.options.method == 'post') && this.transport.overrideMimeType) this.setHeader('Connection', 'close');
+		$extend(this.headers, this.options.headers);
+		for (var type in this.headers) try {this.transport.setRequestHeader(type, this.headers[type]);} catch(e){};
+		this.fireEvent('onRequest');
+		this.transport.send($pick(data, null));
+		return this;
+	},
+
+	cancel: function(){
+		if (!this.running) return this;
+		this.running = false;
+		this.transport.abort();
+		this.transport.onreadystatechange = Class.empty;
+		this.setTransport();
+		this.fireEvent('onCancel');
+		return this;
 	}
 
 });
 
-Ajax.implement(new Chain);
+XHR.implement(new Chain, new Events, new Options);
+
+var Ajax = XHR.extend({
+
+	options: {
+		data: null,
+		update: null,
+		onComplete: Class.empty,
+		evalScripts: false,
+		evalResponse: false
+	},
+
+	initialize: function(url, options){
+		this.addEvent('onSuccess', this.onComplete);
+		this.setOptions(options);
+		this.options.data = this.options.data || this.options.postBody;
+		if (!['post', 'get'].contains(this.options.method)){
+			this._method = '_method=' + this.options.method;
+			this.options.method = 'post';
+		}
+		this.parent();
+		this.setHeader('X-Requested-With', 'XMLHttpRequest');
+		this.setHeader('Accept', 'text/javascript, text/html, application/xml, text/xml, */*');
+		this.url = url;
+	},
+
+	onComplete: function(){
+		if (this.options.update) $(this.options.update).empty().setHTML(this.response.text);
+		if (this.options.evalScripts || this.options.evalResponse) this.evalScripts();
+		this.fireEvent('onComplete', [this.response.text, this.response.xml], 20);
+	},
+
+	request: function(data){
+		data = data || this.options.data;
+		switch($type(data)){
+			case 'element': data = $(data).toQueryString(); break;
+			case 'object': data = Object.toQueryString(data);
+		}
+		if (this._method) data = (data) ? [this._method, data].join('&') : this._method;
+		return this.send(this.url, data);
+	},
+
+	evalScripts: function(){
+		if (this.options.evalResponse || /(ecma|java)script/.test(this.getHeader('Content-type'))) var scripts = this.response.text;
+		else {
+			var script, scripts = [], regexp = /<script[^>]*>([\s\S]*?)<\/script>/gi;
+			while ((script = regexp.exec(this.response.text))) scripts.push(script[1]);
+			scripts = scripts.join('\n');
+		}
+		if (scripts) (window.execScript) ? window.execScript(scripts) : window.setTimeout(scripts, 0);
+	},
+
+	getHeader: function(name) {
+		try {return this.transport.getResponseHeader(name);} catch(e){};
+		return null;
+	}
+
+});
 
 Object.toQueryString = function(source){
 	var queryString = [];
-	for (var property in source) queryString.push(encodeURIComponent(property)+'='+encodeURIComponent(source[property]));
+	for (var property in source) queryString.push(encodeURIComponent(property) + '=' + encodeURIComponent(source[property]));
 	return queryString.join('&');
 };
 
 Element.extend({
 
 	send: function(options){
-		options = Object.extend(options, {postBody: this.toQueryString(), method: 'post'});
-		return new Ajax(this.getProperty('action'), options).request();
-	},
-
-	toQueryString: function(){
-		var queryString = [];
-		$A(this.getElementsByTagName('*')).each(function(el){
-			var name = $(el).name;
-			var value = el.getValue();
-			if (value && name) queryString.push(encodeURIComponent(name)+'='+encodeURIComponent(value));
-		});
-		return queryString.join('&');
-	}
-
-});
-var Drag = {};
-
-Drag.Base = new Class({
-
-	setOptions: function(options){
-		this.options = Object.extend({
-			handle: false,
-			unit: 'px', 
-			onStart: Class.empty, 
-			onComplete: Class.empty, 
-			onDrag: Class.empty,
-			xMax: false,
-			xMin: false,
-			yMax: false,
-			yMin: false
-		}, options || {});
-	},
-
-	initialize: function(el, xModifier, yModifier, options){
-		this.setOptions(options);
-		this.element = $(el);
-		this.handle = $(this.options.handle) || this.element;
-		if (xModifier) this.xp = xModifier.camelCase();
-		if (yModifier) this.yp = yModifier.camelCase();
-		this.handle.onmousedown = this.start.bind(this);
-	},
-
-	start: function(evt){
-		evt = evt || window.event;
-		this.startX = evt.clientX;
-		this.startY = evt.clientY;
-	
-		this.handleX = this.startX - this.handle.getLeft();
-		this.handleY = this.startY - this.handle.getTop();
-	
-		this.set(evt);
-		this.options.onStart.pass(this.element, this).delay(10);
-		document.onmousemove = this.drag.bind(this);
-		document.onmouseup = this.end.bind(this);
-		return false;
-	},
-
-	addStyles: function(x, y){
-		if (this.xp){
-			var stylex = this.element.getStyle(this.xp).toInt();
-	
-			var movex = function(val){
-				this.element.setStyle(this.xp, val+this.options.unit);
-			}.bind(this);
-	
-			if (this.options.xMax && stylex >= this.options.xMax){
-				if (this.clientX <= this.handleX+this.handle.getLeft()) movex(stylex+x);
-				if (stylex > this.options.xMax) movex(this.options.xMax);
-			} else if(this.options.xMin && stylex <= this.options.xMin){
-				if (this.clientX >= this.handleX+this.handle.getLeft()) movex(stylex+x);
-				if (stylex < this.options.xMin) movex(this.options.xMin);
-			} else movex(stylex+x);
-		}
-		if (this.yp){
-			var styley = this.element.getStyle(this.yp).toInt();
-
-			var movey = function(val){
-				this.element.setStyle(this.yp, val+this.options.unit);
-			}.bind(this);
-
-			if (this.options.yMax && styley >= this.options.yMax){
-				if (this.clientY <= this.handleY+this.handle.getTop()) movey(styley+y);
-				if (styley > this.options.yMax) movey(this.options.yMax);
-			} else if(this.options.yMin && styley <= this.options.yMin){
-				if (this.clientY >= this.handleY+this.handle.getTop()) movey(styley+y);
-				if (styley < this.options.yMin) movey(this.options.yMin);
-			} else movey(styley+y);
-		}
-	},
-
-	drag: function(evt){
-		evt = evt || window.event;
-		this.clientX = evt.clientX;
-		this.clientY = evt.clientY;
-		this.options.onDrag.pass(this.element, this).delay(5);
-		this.addStyles((this.clientX-this.lastMouseX), (this.clientY-this.lastMouseY));
-		this.set(evt);
-		return false;
-	},
-
-	set: function(evt){
-		this.lastMouseX = evt.clientX;
-		this.lastMouseY = evt.clientY;
-		return false;
-	},
-
-	end: function(){
-		document.onmousemove = null;
-		document.onmouseup = null;
-		this.options.onComplete.pass(this.element, this).delay(10);
+		return new Ajax(this.getProperty('action'), $merge({postBody: this.toQueryString()}, options, {method: 'post'})).request();
 	}
 
 });
 
-Drag.Move = Drag.Base.extend({
+var Cookie = new Abstract({
 
-	extendOptions: function(options){
-		this.options = Object.extend(this.options || {}, Object.extend({
-			onSnap: Class.empty,
-			droppables: [],
-			snapDistance: 8,
-			snap: true,
-			xModifier: 'left',
-			yModifier: 'top',
-			container: false
-		}, options || {}));
+	options: {
+		domain: false,
+		path: false,
+		duration: false,
+		secure: false
 	},
 
-	initialize: function(el, options){
-		this.extendOptions(options);
-		this.container = $(this.options.container);
-		this.parent(el, this.options.xModifier, this.options.yModifier, this.options);
-	},
-
-	start: function(evt){
-		if (this.options.container) {
-			var cont = $(this.options.container).getPosition();
-			Object.extend(this.options, {
-				xMax: cont.right-this.element.offsetWidth,
-				xMin: cont.left,
-				yMax: cont.bottom-this.element.offsetHeight,
-				yMin: cont.top
-			});
+	set: function(key, value, options){
+		options = $merge(this.options, options);
+		value = encodeURIComponent(value);
+		if (options.domain) value += '; domain=' + options.domain;
+		if (options.path) value += '; path=' + options.path;
+		if (options.duration){
+			var date = new Date();
+			date.setTime(date.getTime() + options.duration * 24 * 60 * 60 * 1000);
+			value += '; expires=' + date.toGMTString();
 		}
-		this.parent(evt);
-		if (this.options.snap) document.onmousemove = this.checkAndDrag.bind(this);
-		return false;
-	},
-
-	drag: function(evt){
-		this.parent(evt);
-		this.options.droppables.each(function(drop){
-			if (this.checkAgainst(drop)){
-				if (drop.onOver && !drop.dropping) drop.onOver.pass([this.element, this], drop).delay(10);
-				drop.dropping = true;
-			} else {
-				if (drop.onLeave && drop.dropping) drop.onLeave.pass([this.element, this], drop).delay(10);
-				drop.dropping = false;
-			}
-		}, this);
-		return false;
-	},
-
-	checkAndDrag: function(evt){
-		evt = evt || window.event;
-		var distance = Math.round(Math.sqrt(Math.pow(evt.clientX - this.startX, 2)+Math.pow(evt.clientY - this.startY, 2)));
-		if (distance > this.options.snapDistance){
-			this.set(evt);
-			this.options.onSnap.pass(this.element, this).delay(10);
-			document.onmousemove = this.drag.bind(this);
-			this.addStyles(-(this.startX-evt.clientX), -(this.startY-evt.clientY));
-		}
-		return false;
-	},
-
-	checkAgainst: function(el){
-		x = this.clientX+Window.getScrollLeft();
-		y = this.clientY+Window.getScrollTop();
-		var el = $(el).getPosition();
-		return (x > el.left && x < el.right && y < el.bottom && y > el.top);
-	},
-
-	end: function(){
-		this.parent();
-		this.options.droppables.each(function(drop){
-			if (drop.onDrop && this.checkAgainst(drop)) drop.onDrop.pass([this.element, this], drop).delay(10);
-		}, this);
-	}
-
-});
-
-Element.extend({
-
-	makeDraggable: function(options){
-		return new Drag.Move(this, options);
-	},
-
-	makeResizable: function(options){
-		return new Drag.Base(this, 'width', 'height', options);
-	},
-
-	getPosition: function(){
-		var obj = {};
-		obj.width = this.offsetWidth;
-		obj.height = this.offsetHeight;
-		obj.left = this.getLeft();
-		obj.top = this.getTop();
-		obj.right = obj.left + obj.width;
-		obj.bottom = obj.top + obj.height;
-		return obj;
-	}
-
-});
-
-var Window = {
-
-	disableImageCache: function(){
-		if (window.ActiveXObject) document.execCommand("BackgroundImageCache", false, true);
-	},
-
-	extend: Object.extend,
-
-	getWidth: function(){
-		return window.innerWidth || document.documentElement.clientWidth || 0;
-	},
-
-	getHeight: function(){
-		return window.innerHeight || document.documentElement.clientHeight || 0;
-	},
-
-	getScrollHeight: function(){
-		return document.documentElement.scrollHeight;
-	},
-
-	getScrollWidth: function(){
-		return document.documentElement.scrollWidth;
-	},
-
-	getScrollTop: function(){
-		return document.documentElement.scrollTop || window.pageYOffset || 0;
-	},
-
-	getScrollLeft: function(){
-		return document.documentElement.scrollLeft || window.pageXOffset || 0;
-	},
-
-	onDomReady: function(init){
-		var state = document.readyState;
-		if (state && document.childNodes && !document.all && !navigator.taintEnabled){ //khtml
-			if (state.test(/loaded|complete/)) return init();
-			else return Window.onDomReady.pass(init).delay(100);
-		} else if (state && window.ActiveXObject){ //ie
-			var script = $('_ie_ready_');
-			if (!script) document.write("<script id='_ie_ready_' defer='true' src='://'></script>");
-			$('_ie_ready_').addEvent('readystatechange', function(){
-				if (this.readyState == 'complete') init();
-			});
-			return;
-		} else { //others
-			var myInit = function() {
-				if (arguments.callee.done) return;
-				arguments.callee.done = true;
-				init();
-			};
-			window.addEvent("load", myInit);
-			document.addEvent("DOMContentLoaded", myInit);
-		}
-	}
-
-};
-
-var Cookie = {
-
-	set: function(key, value, duration){
-		var date = new Date();
-		date.setTime(date.getTime()+((duration || 365)*86400000));
-		document.cookie = key+"="+value+"; expires="+date.toGMTString()+"; path=/";
+		if (options.secure) value += '; secure';
+		document.cookie = key + '=' + value;
+		return $extend(options, {'key': key, 'value': value});
 	},
 
 	get: function(key){
-		var myValue, myVal;
-		document.cookie.split(';').each(function(cookie){
-			if(myVal = cookie.trim().test(key+'=(.*)')) myValue = myVal[1];
-		});
-		return myValue;
+		var value = document.cookie.match('(?:^|;)\\s*' + key.escapeRegExp() + '=([^;]*)');
+		return value ? decodeURIComponent(value[1]) : false;
 	},
 
-	remove: function(key){
-		this.set(key, '', -1);
+	remove: function(cookie, options){
+		if ($type(cookie) == 'object') this.set(cookie.key, '', $merge(cookie, {duration: -1}));
+		else this.set(cookie, '', $merge(options, {duration: -1}));
+	}
+
+});
+
+var Json = {
+
+	toString: function(obj){
+		switch($type(obj)){
+			case 'string':
+				return '"' + obj.replace(/(["\\])/g, '\\$1') + '"';
+			case 'array':
+				return '[' + obj.map(Json.toString).join(',') + ']';
+			case 'object':
+				var string = [];
+				for (var property in obj) string.push(Json.toString(property) + ':' + Json.toString(obj[property]));
+				return '{' + string.join(',') + '}';
+		}
+		return String(obj);
+	},
+
+	evaluate: function(str, secure){
+		return (($type(str) != 'string') || (secure && !str.test(/^("(\\.|[^"\\\n\r])*?"|[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t])+?$/))) ? false : eval('(' + str + ')');
 	}
 
 };
 
-Fx.Scroll = Fx.Base.extend({
+var Color = new Class({
 
-	initialize: function(el, options) {
-		this.element = $(el);
-		this.setOptions(options);
+	initialize: function(color, type){
+		type = type || (color.push ? 'rgb' : 'hex');
+		var rgb, hsb;
+		switch(type){
+			case 'rgb':
+				rgb = color;
+				hsb = rgb.rgbToHsb();
+				break;
+			case 'hsb':
+				rgb = color.hsbToRgb();
+				hsb = color;
+				break;
+			default:
+				rgb = color.hexToRgb(true);
+				hsb = rgb.rgbToHsb();
+		}
+		rgb.hsb = hsb;
+		rgb.hex = rgb.rgbToHex();
+		return $extend(rgb, Color.prototype);
 	},
 
-	down: function(){
-		return this.custom(this.element.scrollTop, this.element.scrollHeight-this.element.offsetHeight);
+	mix: function(){
+		var colors = $A(arguments);
+		var alpha = ($type(colors[colors.length - 1]) == 'number') ? colors.pop() : 50;
+		var rgb = this.copy();
+		colors.each(function(color){
+			color = new Color(color);
+			for (var i = 0; i < 3; i++) rgb[i] = Math.round((rgb[i] / 100 * (100 - alpha)) + (color[i] / 100 * alpha));
+		});
+		return new Color(rgb, 'rgb');
 	},
 
-	up: function(){
-		return this.custom(this.element.scrollTop, 0);
+	invert: function(){
+		return new Color(this.map(function(value){
+			return 255 - value;
+		}));
 	},
 
-	increase: function(){
-		this.element.scrollTop = this.now;
-	}
-});
-
-Fx.Slide = Fx.Base.extend({
-
-	initialize: function(el, options){
-		this.element = $(el);
-		this.wrapper = new Element('div').injectAfter(this.element).setStyle('overflow', 'hidden').adopt(this.element);
-		this.setOptions(options);
-		if (!this.options.mode) this.options.mode = 'vertical';
-		this.now = [];
+	setHue: function(value){
+		return new Color([value, this.hsb[1], this.hsb[2]], 'hsb');
 	},
 
-	setNow: function(){
-		[0,1].each(function(i){
-			this.now[i] = this.compute(this.from[i], this.to[i]);
-		}, this);
+	setSaturation: function(percent){
+		return new Color([this.hsb[0], percent, this.hsb[2]], 'hsb');
 	},
 
-	vertical: function(){
-		this.margin = 'top';
-		this.layout = 'height';
-		this.startPosition = [this.element.scrollHeight, '0'];
-		this.endPosition = ['0', -this.element.scrollHeight];
-		return this;
-	},
-
-	horizontal: function(){
-		this.margin = 'left';
-		this.layout = 'width';
-		this.startPosition = [this.element.scrollWidth, '0'];
-		this.endPosition = ['0', -this.element.scrollWidth];
-		return this;
-	},
-
-	hide: function(){
-		this[this.options.mode]();
-		this.wrapper.setStyle(this.layout, '0');
-		this.element.setStyle('margin-'+this.margin, -this.element['scroll'+this.layout.capitalize()]+this.options.unit);
-		return this;
-	},
-
-	show: function(){
-		this[this.options.mode]();
-		this.wrapper.setStyle(this.layout, this.element['scroll'+this.layout.capitalize()]+this.options.unit);
-		this.element.setStyle('margin-'+this.margin, '0');
-		return this;
-	},
-
-	toggle: function(mode){
-		this[this.options.mode]();
-		if (this.wrapper['offset'+this.layout.capitalize()] > 0) return this.custom(this.startPosition, this.endPosition);
-		else return this.custom(this.endPosition, this.startPosition);
-	},
-
-	increase: function(){	
-		this.wrapper.setStyle(this.layout, this.now[0]+this.options.unit);
-		this.element.setStyle('margin-'+this.margin, this.now[1]+this.options.unit);
+	setBrightness: function(percent){
+		return new Color([this.hsb[0], this.hsb[1], percent], 'hsb');
 	}
 
 });
 
-Fx.Color = Fx.Base.extend({
+function $RGB(r, g, b){
+	return new Color([r, g, b], 'rgb');
+};
 
-	initialize: function(el, property, options){
-		this.element = $(el);
-		this.setOptions(options);
-		this.property = property;
-		this.now = [];
-	},
+function $HSB(h, s, b){
+	return new Color([h, s, b], 'hsb');
+};
 
-	custom: function(from, to){
-		return this.parent(from.hexToRgb(true), to.hexToRgb(true));
-	},
+Array.extend({
 
-	setNow: function(){
-		[0,1,2].each(function(i){
-			this.now[i] = Math.round(this.compute(this.from[i], this.to[i]));
-		}, this);
-	},
-
-	increase: function(){
-		this.element.setStyle(this.property, "rgb("+this.now[0]+","+this.now[1]+","+this.now[2]+")");
-	},
-
-	fromColor: function(color){
-		return this.custom(color, this.element.getStyle(this.property));
-	},
-
-	toColor: function(color){
-		return this.custom(this.element.getStyle(this.property), color);
-	}
-
-});
-
-Fx.Height = Fx.Style.extend({
-
-	initialize: function(el, options){
-		this.parent(el, 'height', options);
-		this.element.setStyle('overflow', 'hidden');
-	},
-
-	toggle: function(){
-		if (this.element.offsetHeight > 0) return this.custom(this.element.offsetHeight, 0);
-		else return this.custom(0, this.element.scrollHeight);
-	},
-
-	show: function(){
-		return this.set(this.element.scrollHeight);
-	}
-
-});
-
-Fx.Width = Fx.Style.extend({
-
-	initialize: function(el, options){
-		this.parent(el, 'width', options);
-		this.element.setStyle('overflow', 'hidden');
-		this.iniWidth = this.element.offsetWidth;
-	},
-
-	toggle: function(){
-		if (this.element.offsetWidth > 0) return this.custom(this.element.offsetWidth, 0);
-		else return this.custom(0, this.iniWidth);
-	},
-
-	show: function(){
-		return this.set(this.iniWidth);
-	}
-
-});
-
-Fx.Opacity = Fx.Style.extend({
-
-	initialize: function(el, options){
-		this.parent(el, 'opacity', options);
-		this.now = 1;
-	},
-
-	toggle: function(){
-		if (this.now > 0) return this.custom(1, 0);
-		else return this.custom(0, 1);
-	},
-
-	show: function(){
-		return this.set(1);
-	}
-
-});
-
-Fx.Transitions = {
-	linear: function(t, b, c, d){
-		return c*t/d + b;
-	},
-	quadIn: function(t, b, c, d){
-		return c*(t/=d)*t + b;
-	},
-	quadOut: function(t, b, c, d){
-		return -c *(t/=d)*(t-2) + b;
-	},
-	quadInOut: function(t, b, c, d){
-		if ((t/=d/2) < 1) return c/2*t*t + b;
-		return -c/2 * ((--t)*(t-2) - 1) + b;
-	},
-	cubicIn: function(t, b, c, d){
-		return c*(t/=d)*t*t + b;
-	},
-	cubicOut: function(t, b, c, d){
-		return c*((t=t/d-1)*t*t + 1) + b;
-	},
-	cubicInOut: function(t, b, c, d){
-		if ((t/=d/2) < 1) return c/2*t*t*t + b;
-		return c/2*((t-=2)*t*t + 2) + b;
-	},
-	quartIn: function(t, b, c, d){
-		return c*(t/=d)*t*t*t + b;
-	},
-	quartOut: function(t, b, c, d){
-		return -c * ((t=t/d-1)*t*t*t - 1) + b;
-	},
-	quartInOut: function(t, b, c, d){
-		if ((t/=d/2) < 1) return c/2*t*t*t*t + b;
-		return -c/2 * ((t-=2)*t*t*t - 2) + b;
-	},
-	quintIn: function(t, b, c, d){
-		return c*(t/=d)*t*t*t*t + b;
-	},
-	quintOut: function(t, b, c, d){
-		return c*((t=t/d-1)*t*t*t*t + 1) + b;
-	},
-	quintInOut: function(t, b, c, d){
-		if ((t/=d/2) < 1) return c/2*t*t*t*t*t + b;
-		return c/2*((t-=2)*t*t*t*t + 2) + b;
-	},
-	sineIn: function(t, b, c, d){
-		return -c * Math.cos(t/d * (Math.PI/2)) + c + b;
-	},
-	sineOut: function(t, b, c, d){
-		return c * Math.sin(t/d * (Math.PI/2)) + b;
-	},
-	sineInOut: function(t, b, c, d){
-		return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;
-	},
-	expoIn: function(t, b, c, d){
-		return (t==0) ? b : c * Math.pow(2, 10 * (t/d - 1)) + b;
-	},
-	expoOut: function(t, b, c, d){
-		return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;
-	},
-	expoInOut: function(t, b, c, d){
-		if (t==0) return b;
-		if (t==d) return b+c;
-		if ((t/=d/2) < 1) return c/2 * Math.pow(2, 10 * (t - 1)) + b;
-		return c/2 * (-Math.pow(2, -10 * --t) + 2) + b;
-	},
-	circIn: function(t, b, c, d){
-		return -c * (Math.sqrt(1 - (t/=d)*t) - 1) + b;
-	},
-	circOut: function(t, b, c, d){
-		return c * Math.sqrt(1 - (t=t/d-1)*t) + b;
-	},
-	circInOut: function(t, b, c, d){
-		if ((t/=d/2) < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;
-		return c/2 * (Math.sqrt(1 - (t-=2)*t) + 1) + b;
-	},
-	elasticIn: function(t, b, c, d, a, p){
-		if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3; if (!a) a = 1;
-		if (a < Math.abs(c)){ a=c; var s=p/4; }
-		else var s = p/(2*Math.PI) * Math.asin(c/a);
-		return -(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
-	},
-	elasticOut: function(t, b, c, d, a, p){
-		if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3; if (!a) a = 1;
-		if (a < Math.abs(c)){ a=c; var s=p/4; }
-		else var s = p/(2*Math.PI) * Math.asin(c/a);
-		return a*Math.pow(2,-10*t) * Math.sin( (t*d-s)*(2*Math.PI)/p ) + c + b;
-	},
-	elasticInOut: function(t, b, c, d, a, p){
-		if (t==0) return b;  if ((t/=d/2)==2) return b+c;  if (!p) p=d*(.3*1.5); if (!a) a = 1;
-		if (a < Math.abs(c)){ a=c; var s=p/4; }
-		else var s = p/(2*Math.PI) * Math.asin(c/a);
-		if (t < 1) return -.5*(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
-		return a*Math.pow(2,-10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )*.5 + c + b;
-	},
-	backIn: function(t, b, c, d, s){
-		if (!s) s = 1.70158;
-		return c*(t/=d)*t*((s+1)*t - s) + b;
-	},
-	backOut: function(t, b, c, d, s){
-		if (!s) s = 1.70158;
-		return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
-	},
-	backInOut: function(t, b, c, d, s){
-		if (!s) s = 1.70158;
-		if ((t/=d/2) < 1) return c/2*(t*t*(((s*=(1.525))+1)*t - s)) + b;
-		return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2) + b;
-	},
-	bounceIn: function(t, b, c, d){
-		return c - Fx.Transitions.bounceOut (d-t, 0, c, d) + b;
-	},
-	bounceOut: function(t, b, c, d){
-		if ((t/=d) < (1/2.75)){
-			return c*(7.5625*t*t) + b;
-		} else if (t < (2/2.75)){
-			return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;
-		} else if (t < (2.5/2.75)){
-			return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;
+	rgbToHsb: function(){
+		var red = this[0], green = this[1], blue = this[2];
+		var hue, saturation, brightness;
+		var max = Math.max(red, green, blue), min = Math.min(red, green, blue);
+		var delta = max - min;
+		brightness = max / 255;
+		saturation = (max != 0) ? delta / max : 0;
+		if (saturation == 0){
+			hue = 0;
 		} else {
-			return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;
+			var rr = (max - red) / delta;
+			var gr = (max - green) / delta;
+			var br = (max - blue) / delta;
+			if (red == max) hue = br - gr;
+			else if (green == max) hue = 2 + rr - br;
+			else hue = 4 + gr - rr;
+			hue /= 6;
+			if (hue < 0) hue++;
+		}
+		return [Math.round(hue * 360), Math.round(saturation * 100), Math.round(brightness * 100)];
+	},
+
+	hsbToRgb: function(){
+		var br = Math.round(this[2] / 100 * 255);
+		if (this[1] == 0){
+			return [br, br, br];
+		} else {
+			var hue = this[0] % 360;
+			var f = hue % 60;
+			var p = Math.round((this[2] * (100 - this[1])) / 10000 * 255);
+			var q = Math.round((this[2] * (6000 - this[1] * f)) / 600000 * 255);
+			var t = Math.round((this[2] * (6000 - this[1] * (60 - f))) / 600000 * 255);
+			switch(Math.floor(hue / 60)){
+				case 0: return [br, t, p];
+				case 1: return [q, br, p];
+				case 2: return [p, br, t];
+				case 3: return [p, q, br];
+				case 4: return [t, p, br];
+				case 5: return [br, p, q];
+			}
+		}
+		return false;
+	}
+
+});
+
+var Sortables = new Class({
+
+	options: {
+		handles: false,
+		onStart: Class.empty,
+		onComplete: Class.empty,
+		ghost: true,
+		snap: 3,
+		onDragStart: function(element, ghost){
+			ghost.setStyle('opacity', 0.7);
+			element.setStyle('opacity', 0.7);
+		},
+		onDragComplete: function(element, ghost){
+			element.setStyle('opacity', 1);
+			ghost.remove();
+			this.trash.remove();
 		}
 	},
-	bounceInOut: function(t, b, c, d){
-		if (t < d/2) return Fx.Transitions.bounceIn(t*2, 0, c, d) * .5 + b;
-		return Fx.Transitions.bounceOut(t*2-d, 0, c, d) * .5 + c*.5 + b;
+
+	initialize: function(list, options){
+		this.setOptions(options);
+		this.list = $(list);
+		this.elements = this.list.getChildren();
+		this.handles = (this.options.handles) ? $$(this.options.handles) : this.elements;
+		this.bound = {
+			'start': [],
+			'moveGhost': this.moveGhost.bindWithEvent(this)
+		};
+		for (var i = 0, l = this.handles.length; i < l; i++){
+			this.bound.start[i] = this.start.bindWithEvent(this, this.elements[i]);
+		}
+		this.attach();
+		if (this.options.initialize) this.options.initialize.call(this);
+		this.bound.move = this.move.bindWithEvent(this);
+		this.bound.end = this.end.bind(this);
+	},
+
+	attach: function(){
+		this.handles.each(function(handle, i){
+			handle.addEvent('mousedown', this.bound.start[i]);
+		}, this);
+	},
+
+	detach: function(){
+		this.handles.each(function(handle, i){
+			handle.removeEvent('mousedown', this.bound.start[i]);
+		}, this);
+	},
+
+	start: function(event, el){
+		this.active = el;
+		this.coordinates = this.list.getCoordinates();
+		if (this.options.ghost){
+			var position = el.getPosition();
+			this.offset = event.page.y - position.y;
+			this.trash = new Element('div').inject(document.body);
+			this.ghost = el.clone().inject(this.trash).setStyles({
+				'position': 'absolute',
+				'left': position.x,
+				'top': event.page.y - this.offset
+			});
+			document.addListener('mousemove', this.bound.moveGhost);
+			this.fireEvent('onDragStart', [el, this.ghost]);
+		}
+		document.addListener('mousemove', this.bound.move);
+		document.addListener('mouseup', this.bound.end);
+		this.fireEvent('onStart', el);
+		event.stop();
+	},
+
+	moveGhost: function(event){
+		var value = event.page.y - this.offset;
+		value = value.limit(this.coordinates.top, this.coordinates.bottom - this.ghost.offsetHeight);
+		this.ghost.setStyle('top', value);
+		event.stop();
+	},
+
+	move: function(event){
+		this.active.active = true;
+		this.previous = this.previous || event.page.y;
+		this.now = event.page.y;
+		var direction = ((this.previous - this.now) <= 0) ? 'down' : 'up';
+		var prev = this.active.getPrevious();
+		var next = this.active.getNext();
+		if (prev && direction == 'up'){
+			var prevPos = prev.getCoordinates();
+			if (event.page.y < prevPos.bottom) this.active.injectBefore(prev);
+		}
+		if (next && direction == 'down'){
+			var nextPos = next.getCoordinates();
+			if (event.page.y > nextPos.top) this.active.injectAfter(next);
+		}
+		this.previous = event.page.y;
+	},
+
+	serialize: function(){
+		var serial = [];
+		this.list.getChildren().each(function(el, i){
+			serial[i] = this.elements.indexOf(el);
+		}, this);
+		return serial;
+	},
+
+	end: function(){
+		this.previous = null;
+		document.removeListener('mousemove', this.bound.move);
+		document.removeListener('mouseup', this.bound.end);
+		if (this.options.ghost){
+			document.removeListener('mousemove', this.bound.moveGhost);
+			this.fireEvent('onDragComplete', [this.active, this.ghost]);
+		}
+		this.fireEvent('onComplete', this.active);
 	}
 
-};
+});
+
+Sortables.implement(new Events, new Options);
 
 var Tips = new Class({
 
-	setOptions: function(options){
-		this.options = {
-			transitionStart: Fx.Transitions.sineInOut,
-			transitionEnd: Fx.Transitions.sineInOut,
-			maxTitleChars: 30,
-			fxDuration: 150,
-			maxOpacity: 1,
-			timeOut: 100,
-			className: 'tooltip'
-		}
-		Object.extend(this.options, options || {});
+	options: {
+		onShow: function(tip){
+			tip.setStyle('visibility', 'visible');
+		},
+		onHide: function(tip){
+			tip.setStyle('visibility', 'hidden');
+		},
+		maxTitleChars: 30,
+		showDelay: 100,
+		hideDelay: 100,
+		className: 'tool',
+		offsets: {'x': 16, 'y': 16},
+		fixed: false
 	},
 
 	initialize: function(elements, options){
-		this.elements = elements;
 		this.setOptions(options);
-		this.toolTip = new Element('div').addClassName(this.options.className).setStyle('position', 'absolute').injectInside(document.body);
-		this.toolTitle = new Element('H4').injectInside(this.toolTip);
-		this.toolText = new Element('p').injectInside(this.toolTip);
-		this.fx = new fx.Style(this.toolTip, 'opacity', {duration: this.options.fxDuration, wait: false}).hide();
-		$A(elements).each(function(el){
-			$(el).myText = el.title || false;
-			if (el.myText) el.removeAttribute('title');
-			if (el.href){
-				if (el.href.test('http://')) el.myTitle = el.href.replace('http://', '');
-				if (el.href.length > this.options.maxTitleChars) el.myTitle = el.href.substr(0,this.options.maxTitleChars-3)+"...";
+		this.toolTip = new Element('div', {
+			'class': this.options.className + '-tip',
+			'styles': {
+				'position': 'absolute',
+				'top': '0',
+				'left': '0',
+				'visibility': 'hidden'
 			}
-			if (el.myText && el.myText.test('::')){
-				var dual = el.myText.split('::');
-				el.myTitle = dual[0].trim();
-				el.myText = dual[1].trim();
-			} 
-			el.onmouseover = function(){
-				this.show(el);
-				return false;
-			}.bind(this);
-			el.onmousemove = this.locate.bindAsEventListener(this);
-			el.onmouseout = function(){
-				this.timer = $clear(this.timer);
-				this.disappear();
-			}.bind(this);
-		}, this);
+		}).inject(document.body);
+		this.wrapper = new Element('div').inject(this.toolTip);
+		$$(elements).each(this.build, this);
+		if (this.options.initialize) this.options.initialize.call(this);
 	},
 
-	show: function(el){
-		this.toolTitle.innerHTML = el.myTitle;
-		this.toolText.innerHTML = el.myText;
-		this.timer = $clear(this.timer);
-		this.fx.options.transition = this.options.transitionStart;
-		this.timer = this.appear.delay(this.options.timeOut, this);
+	build: function(el){
+		el.$tmp.myTitle = (el.href && el.getTag() == 'a') ? el.href.replace('http://', '') : (el.rel || false);
+		if (el.title){
+			var dual = el.title.split('::');
+			if (dual.length > 1) {
+				el.$tmp.myTitle = dual[0].trim();
+				el.$tmp.myText = dual[1].trim();
+			} else {
+				el.$tmp.myText = el.title;
+			}
+			el.removeAttribute('title');
+		} else {
+			el.$tmp.myText = false;
+		}
+		if (el.$tmp.myTitle && el.$tmp.myTitle.length > this.options.maxTitleChars) el.$tmp.myTitle = el.$tmp.myTitle.substr(0, this.options.maxTitleChars - 1) + "&hellip;";
+		el.addEvent('mouseenter', function(event){
+			this.start(el);
+			if (!this.options.fixed) this.locate(event);
+			else this.position(el);
+		}.bind(this));
+		if (!this.options.fixed) el.addEvent('mousemove', this.locate.bindWithEvent(this));
+		var end = this.end.bind(this);
+		el.addEvent('mouseleave', end);
+		el.addEvent('trash', end);
 	},
 
-	appear: function(){
-		this.fx.custom(this.fx.now, this.options.maxOpacity);
+	start: function(el){
+		this.wrapper.empty();
+		if (el.$tmp.myTitle){
+			this.title = new Element('span').inject(
+				new Element('div', {'class': this.options.className + '-title'}).inject(this.wrapper)
+			).setHTML(el.$tmp.myTitle);
+		}
+		if (el.$tmp.myText){
+			this.text = new Element('span').inject(
+				new Element('div', {'class': this.options.className + '-text'}).inject(this.wrapper)
+			).setHTML(el.$tmp.myText);
+		}
+		$clear(this.timer);
+		this.timer = this.show.delay(this.options.showDelay, this);
 	},
 
-	locate: function(evt){
-		var doc = document.documentElement;
-		this.toolTip.setStyles({'top': evt.clientY + doc.scrollTop + 15 + 'px', 'left': evt.clientX + doc.scrollLeft - 30 + 'px'});
+	end: function(event){
+		$clear(this.timer);
+		this.timer = this.hide.delay(this.options.hideDelay, this);
 	},
 
-	disappear: function(){
-		this.fx.options.transition = this.options.transitionEnd;
-		this.fx.custom(this.fx.now, 0);
+	position: function(element){
+		var pos = element.getPosition();
+		this.toolTip.setStyles({
+			'left': pos.x + this.options.offsets.x,
+			'top': pos.y + this.options.offsets.y
+		});
+	},
+
+	locate: function(event){
+		var win = {'x': window.getWidth(), 'y': window.getHeight()};
+		var scroll = {'x': window.getScrollLeft(), 'y': window.getScrollTop()};
+		var tip = {'x': this.toolTip.offsetWidth, 'y': this.toolTip.offsetHeight};
+		var prop = {'x': 'left', 'y': 'top'};
+		for (var z in prop){
+			var pos = event.page[z] + this.options.offsets[z];
+			if ((pos + tip[z] - scroll[z]) > win[z]) pos = event.page[z] - this.options.offsets[z] - tip[z];
+			this.toolTip.setStyle(prop[z], pos);
+		};
+	},
+
+	show: function(){
+		if (this.options.timeout) this.timer = this.hide.delay(this.options.timeout, this);
+		this.fireEvent('onShow', [this.toolTip]);
+	},
+
+	hide: function(){
+		this.fireEvent('onHide', [this.toolTip]);
 	}
 
 });
+
+Tips.implement(new Events, new Options);

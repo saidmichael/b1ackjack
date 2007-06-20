@@ -1,0 +1,9 @@
+BLACKJACK
+
+Installing:
+
+1. Run the commands in blackjack.sql.
+2. Open bj_config.php and change the configuration there.
+3. Run admin/install.php and then delete it.
+
+...That's all there is. :P

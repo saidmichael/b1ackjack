@@ -22,11 +22,11 @@ if(we_can('edit_skins')) {
 			<div class="clear"></div>
 			<h2><?php _e('Skins'); ?></h2>
 			<table class="edit">
-				<tr id="headings">
+				<tr class="ths">
 					<th class="width20"><?php _e('Skin'); ?></th>
 					<th class="width50"><?php _e('Description'); ?></th>
 					<th class="width15"><?php _e('Version'); ?></th>
-					<th class="width20">&nbsp;</th>
+					<th class="width20"><?php _e('Action'); ?></th>
 				</tr>
 <?php
 			if(count($bj_skins) < 1) { ?>
@@ -36,10 +36,10 @@ if(we_can('edit_skins')) {
 <?php
 			}
 			else {
-				$i = 0;
+				$i = 1;
 				foreach($bj_skins as $name=>$skin) {
 					$skin_data = parse_file_info(BJPATH.'content/skins/'.$name.'/style.css',array('Skin Name','Skin URL','Version','Description','Author Name','Author URL')); ?>
-				<tr<?php tablealt($i); ?>>
+				<tr class="<?php tablealt($i); ?>">
 					<td class="aligncenter"><strong><?php echo $skin_data['Skin Name']; ?></strong></td>
 					<td><?php echo $skin_data['Description']; ?></td>
 					<td class="aligncenter"><?php echo $skin_data['Version']; ?></td>

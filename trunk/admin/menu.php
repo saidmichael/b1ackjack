@@ -1,35 +1,32 @@
 <?php
 
-$menu[] = array(_r('Front Page'),1,'index.php');
-$menu[] = array(_r('Organize'),3,'sections.php');
-$menu[] = array(_r('Entries'),2,'entries.php');
-$menu[] = array(_r('Look &amp; Feel'),4,'skins.php');
-if(we_can('edit_users')) {
-	$menu[] = array(_r('Users'),4,'users.php');
-}
-else {
-	$menu[] = array(_r('Profile'),1,'profile.php');
-}
-$menu[] = array(_r('Options'),4,'options.php');
-$menu = run_filters('admin_menu',$menu);
+$menu['index.php'] = array(_r('Moonbase'),1,'index.php');
+$menu['sections.php'] = array(_r('Organize'),2,'sections.php');
+$menu['entries.php'] = array(_r('Content'),1);
+$menu['skins.php'] = array(_r('Look &amp; Feel'),3);
+if(we_can('edit_users'))
+	$menu['users.php'] = array(_r('Users'),3);
+else
+	$menu['profile.php'] = array(_r('Profile'),1);
+$menu['settings.php'] = array(_r('Settings'),3);
+$menu = run_actions('admin_menu',$menu);
 
 $submenu['index.php'][] = array(_r('Front Page'),1,'index.php');
-$submenu['sections.php'][] = array(_r('Sections'),3,'sections.php');
-$submenu['sections.php'][] = array(_r('Tags'),3,'tags.php');
-$submenu['entries.php'][] = array(_r('Manage'),2,'entries.php');
-$submenu['entries.php'][] = array(_r('Write'),2,'entry-write.php');
-$submenu['entries.php'][] = array(_r('Comments'),2,'comments.php');
-$in_mod = mysql_num_rows($bj_db->query("SELECT * FROM `".$bj_db->comments."` WHERE `status` = 'hidden'"));
-$submenu['entries.php'][] = array(sprintf(_r('Moderation (%1$s)'),$in_mod),2,'comments-mod.php');
-$submenu['skins.php'][] = array(_r('Skins'),3,'skins.php');
-$submenu['skins.php'][] = array(_r('Skin Editor'),3,'skin-editor.php');
+$submenu['sections.php'][] = array(_r('Sections'),2,'sections.php');
+$submenu['sections.php'][] = array(_r('Tags'),2,'tags.php');
+$submenu['entries.php'][] = array(_r('Manage'),1,'entries.php');
+$submenu['entries.php'][] = array(_r('Write'),1,'entry-write.php');
+$submenu['entries.php'][] = array(_r('Comments'),1,'comments.php');
+$submenu['skins.php'][] = array(_r('Skins'),2,'skins.php');
+#$submenu['skins.php'][] = array(_r('Skin Editor'),2,'skin-editor.php'); Maybe tomorrow.
 if(we_can('edit_users')) {
-	$submenu['users.php'][] = array(_r('Manage'),4,'users.php');
+	$submenu['users.php'][] = array(_r('Manage'),3,'users.php');
 	$submenu['users.php'][] = array(_r('Profile'),1,'profile.php');
 }
-else {
+else
 	$submenu['profile.php'][] = array(_r('Profile'),1,'profile.php');
-}
-$submenu = run_filters('admin_submenu',$submenu);
+$submenu['settings.php'][] = array(_r('Settings'),3,'settings.php');
+$submenu['settings.php'][] = array(_r('Custom Fields'),3,'custom-fields.php');
+$submenu = run_actions('admin_submenu',$submenu);
 
 ?>

@@ -44,13 +44,27 @@ p {
 }
 
 ul {
-	padding:6px 0 6px 16px;
+	padding:6px 0 6px 25px;
 	list-style-type:square;
 }
 
 ol {
-	padding:6px 0 6px 16px;
+	padding:6px 0 6px 25px;
 }
+
+blockquote {
+	background: url(images/blockquote.png) no-repeat top left;
+	padding:3px 0 3px 27px;
+	font-size:11px;
+}
+
+	blockquote p,
+	blockquote ul,
+	blockquote ol {
+		padding-top:5px;
+		padding-bottom:5px;
+	}
+		
 	
 
 /*
@@ -129,6 +143,10 @@ h2 {
 
 h3 {
 	font-size:20px;
+}
+
+h4 {
+	font-size:16px;
 }
 
 /*
@@ -230,6 +248,124 @@ h3 {
 			background:url(images/pencil.png) no-repeat center left;
 			padding-left:17px;
 			margin-left:3px;
+		}
+
+/*
+ * Comments
+ */
+
+.commentlist {
+	list-style:none;
+	padding:5px 0 10px 0;
+}
+
+	.commentlist li {
+		padding:3px;
+		margin:6px 0;
+	}
+
+		.commentlist .counter {
+			float:left;
+			font-size:40px;
+			line-height:35px;
+			display:none;
+		}
+
+			.commentlist .counter a {
+				text-decoration:none;
+				color:#888;
+			}
+
+		.comment-meta {
+			font-size:11px;
+			color:#666;
+		}
+
+			.comment-meta a {
+				color:#666;
+				text-decoration:none;
+			}
+
+			.comment-meta .meta-date {
+				background:url(images/clock.png) no-repeat center left;
+				padding-left:18px;
+			}
+
+			.comment-meta .comment-edit a {
+				background:url(images/comment_edit.png) no-repeat center;
+				padding:1px 0 1px 16px;
+			}
+
+	.commentlist li.byuser {
+		background:#ededed;
+	}
+
+	.commentlist li.byauthor {
+		background:#e4eaf0;
+	}
+
+p.nocomments {
+	padding:25px 0 25px 0;
+	text-align:center;
+	font-size:20px;
+	color:#ddd;
+}
+
+$commentform {}
+
+	#commentform .info {
+		font-size:10px;
+		width:450px;
+	}
+
+		#commentform .info .xhtml {
+			color:#333;
+		}
+
+	#commentform input,
+	#commentform textarea,
+	#commentform select {
+		background:#f8f8f8;
+		border:1px solid #ccc;
+		padding:3px;
+		font-size:11px;
+		font-family:inherit;
+	}
+
+	#commentform input {
+		width:175px;
+	}
+
+	#commentform p.textarea {
+		padding-bottom:0;
+	}
+
+		#commentform textarea {
+			width:450px;
+			height:160px;
+		}
+
+	#commentform input:focus,
+	#commentform textarea:focus {
+		background:#fcfcfc;
+		border:1px solid #ddd;
+	}
+
+	#commentform p.submit {
+		padding-top:0;
+		text-align:right;
+		width:450px;
+	}
+
+		#commentform #submit {
+			background:transparent url(images/comment_add_bg.png) no-repeat bottom right;
+			border:0;
+			padding:0;
+			padding-right:45px;
+			width:auto;
+			height:40px;
+			text-align:left;
+			font-size:14px;
 		}
 
 /*

@@ -6,11 +6,16 @@ if(we_can('edit_entries')) {
 		case "edit" :
 			if(isset($_GET['id'])) {
 				get_admin_header();
-				$entries = get_entries('id='.intval($_GET['id']).'&limit=1');
-				foreach($entries as $entry) { start_entry(); ?>
-			<h2><?php printf(_r('Editing %1$s'),return_title()); ?></h2>
+				$bj->query->setLimit(0,1);
+				$bj->query->setID(intval($_GET['id']));
+				$entries = $bj->query->fetch();
+				if($entries) {
+					foreach($entries as $entry) { ?>
+			<h2><?php printf(_r('Editing &#8220;%1$s&#8221;'),get_entry_title()); ?></h2>
 <?php do_editorform($entry); ?>
-<?php			}
+<?php
+					}
+				}
 				get_admin_footer();
 			}
 			break;
@@ -18,33 +23,34 @@ if(we_can('edit_entries')) {
 		case "delete" :
 			if(isset($_GET['id'])) {
 				bj_delete_entry(intval($_GET['id']));
-				@header("Location: ".load_option('siteurl')."admin/entries.php");
+				@header("Location: ".get_siteinfo('adminurl')."entries.php?deleted=true");
 			}
 			break;
 			
 		case "ajaxdelete" :
 			if(isset($_GET['id'])) {
 				bj_delete_entry(intval($_GET['id']));
-				echo '<strong class="error">'._r('Entry deleted.').'</strong>';
+				_e('Entry deleted.');
 			}
 			break;
-		
 		case "search" :
 		case "filtertag" :
 		case "filtersection" :
 		default :
+			if($_GET['deleted'] == 'true')
+				add_bj_notice(_r('Entry deleted.'));
 			get_admin_header();
 ?>
 			<h2><?php _e('Manage Entries'); ?></h2>
-			<div id="ajaxmessage"></div>
 <?php
-			$drafts = $bj_db->get_rows("SELECT `ID`,`title` FROM `".$bj_db->entries."` WHERE `ptype` = 'draft' ORDER BY `ID` DESC");
+			$drafts = $bj->db->get_rows("SELECT ID,title FROM ".$bj->db->entries." WHERE ptype = 'draft' ORDER BY ID DESC");
 			if($drafts) { ?>
 			<div class="drafts">
 				<h3><?php _e('Drafts'); ?></h3>
 <?php
 				foreach($drafts as $draft) {
-					$draft_string .= "<a href=\"entries.php?req=edit&amp;id=".$draft['ID']."\">".$draft['title']."</a>, ";
+					$title = (!empty($draft['title'])) ? $draft['title'] : sprintf(_r('Entry #%1$s'),$draft['ID']);
+					$draft_string .= "<a href=\"entries.php?req=edit&amp;id=".$draft['ID']."\">".$title."</a>, ";
 				} ?>
 				<p><?php echo preg_replace("{, $}","",$draft_string); ?></p>
 			</div>
@@ -55,13 +61,13 @@ if(we_can('edit_entries')) {
 					<form method="get" action="entries.php">
 						<label for="s"><?php _e('Search:'); ?></label><br />
 						<input type="hidden" name="req" value="search" />
-						<input type="text" name="s" id="s" value="" />
-						<input type="submit" class="inlinesubmit" value="<?php _e('Search'); ?>" />
+						<input type="text" name="s" id="s" value="<?php echo bj_clean_string($_GET['s']); ?>" />
+						<input type="submit" value="<?php _e('Search'); ?>" />
 					</form>
 				</div>
 				<div class="column width33 tagfilter">
 <?php
-				$tags = return_all_tags('orderby=ID');
+				$tags = return_all_tags();
 				if(is_array($tags)) { ?>
 					<form method="get" action="entries.php">
 						<label for="tag"><?php _e('Filter by Tag:'); ?></label><br />
@@ -73,7 +79,7 @@ if(we_can('edit_entries')) {
 <?php
 					} ?>
 						</select>
-						<input type="submit" class="inlinesubmit" value="<?php _e('Show'); ?>" />
+						<input type="submit" value="<?php _e('Show'); ?>" />
 					</form>
 <?php
 				} ?>
@@ -92,7 +98,7 @@ if(we_can('edit_entries')) {
 <?php
 					} ?>
 						</select>
-						<input type="submit" class="inlinesubmit" value="<?php _e('Show'); ?>" />
+						<input type="submit" value="<?php _e('Show'); ?>" />
 					</form>
 <?php
 				} ?>
@@ -100,38 +106,37 @@ if(we_can('edit_entries')) {
 				<div class="clear"></div>
 			</div>
 			<table class="edit" id="entries" cellspacing="2">
-				<tr id="headings">
+				<tr class="ths">
 					<th class="width5"><?php _e('ID'); ?></th>
-					<th class="width25"><?php _e('Title'); ?></th>
-					<th class="width20"><?php _e('Posted On'); ?></th>
-					<th class="width20"><?php _e('Tags'); ?></th>
-					<th class="width10"><?php _e('Type'); ?></th>
-					<th class="width10">&nbsp;</th>
-					<th class="width10">&nbsp;</th>
+					<th class="width20"><?php _e('Title'); ?></th>
+					<th class="width20"><?php _e('Posted'); ?></th>
+					<th class="width25"><?php _e('Tags'); ?></th>
+					<th class="width10"><?php _e('Status'); ?></th>
+					<th colspan="2"><?php _e('Action'); ?></th>
 				</tr>
 <?php
-				$offset = (isset($_GET['offset'])) ? intval($_GET['offset']) : 0;
-				$query_string = 'limit=16&type=public';
-				if($_GET['req'] == 'filtertag') {
-					$query_string .= '&tag='.intval($_GET['tag']);
+				$bj->query->setLimit(intval($_GET['offset']),16);
+				if($_GET['req'] == 'filtertag')
+					$bj->query->setTags(intval($_GET['tag']));
+				elseif($_GET['req'] == 'filtersection')
+					$bj->query->setSection(intval($_GET['section']));
+				elseif(is_search()) {
+					$bj->query->setPtype('public');
+					$bj->query->setSearch(bj_clean_string($_GET['s']));
 				}
-				elseif($_GET['req'] == 'filtersection') {
-					$query_string .= '&section='.intval($_GET['section']);
-				}
-				if(is_search()) {
-					$query_string .= '&search='.bj_clean_string($_GET['s']);
-				}
-				$entries = get_entries($query_string);
+				else
+					$bj->query->setPtype('public');
+				$entries = $bj->query->fetch();
 				if($entries) {
-					foreach($entries as $entry) { start_entry(); ?>
-				<tr<?php tablealt($i); ?> id="post-<?php echo_ID(); ?>">
-					<td class="aligncenter"><?php echo_ID(); ?></td>
-					<td><?php echo_title(); ?></td>
+					foreach($entries as $entry) { thru_loop(); ?>
+				<tr class="<?php tablealt($i); ?>" id="entry-<?php entry_ID(); ?>">
+					<td class="aligncenter"><?php entry_ID(); ?></td>
+					<td><?php entry_title(); ?></td>
 					<td><?php entry_date("M jS Y, h:i a"); ?></td>
-					<td><?php echo_tags(", ","","","admin=true"); ?></td>
+					<td><?php entry_tags(", ","","","admin=true"); ?></td>
 					<td class="capitalize aligncenter"><?php _e(get_entry_type()); ?></td>
-					<td class="editbutton"><a href="entries.php?req=edit&amp;id=<?php echo_ID(); ?>" class="blockit"><?php _e('Edit'); ?></a></td>
-					<td class="editbutton"><a href="entries.php?req=delete&amp;id=<?php echo_ID(); ?>" class="blockit deleteme" rel="entries.php?req=ajaxdelete&amp;id=<?php echo_ID(); ?>$post-<?php echo_ID(); ?>$<?php _e('Are you sure you wish to delete this post? Comments made to this post will be deleted as well.'); ?>"><?php _e('Delete'); ?></a></td>
+					<td class="editbutton width10"><a href="entries.php?req=edit&amp;id=<?php entry_ID(); ?>" class="blockit"><?php _e('Edit'); ?></a></td>
+					<td class="editbutton width10"><a href="entries.php?req=delete&amp;id=<?php entry_ID(); ?>" class="blockit deleteme" rel="entries.php?req=ajaxdelete&amp;id=<?php entry_ID(); ?>$entry-<?php entry_ID(); ?>"><?php _e('Delete'); ?></a></td>
 				</tr>
 <?php
 					}
@@ -144,8 +149,8 @@ if(we_can('edit_entries')) {
 				} ?>
 			</table>
 			<div class="navigation">
-			<?php prev_page_link(_r('&laquo; Newer'),'<div class="alignleft">','</div>','num=16'); ?>
-			<?php next_page_link(_r('Older &raquo;'),'<div class="alignright">','</div>','num=16'); ?>
+			<?php $bj->query->prev_page(_r('&laquo; Newer'),'<div class="alignleft">','</div>'); ?>
+			<?php $bj->query->next_page(_r('Older &raquo;'),'<div class="alignright">','</div>'); ?>
 			</div>
 <?php
 		get_admin_footer();

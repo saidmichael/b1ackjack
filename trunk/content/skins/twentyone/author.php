@@ -9,12 +9,12 @@
 					</div>
 					<div class="entry-content">
 <?php
-				if(get_about_author() == '') { ?>
+				if(get_author_desc() == '') { ?>
 						<p><?php _e('This user has provided no biographical data.'); ?></p>
 <?php
 				}
 				else {
-					about_author();
+					author_desc();
 				} ?>
 					</div>
 <?php
