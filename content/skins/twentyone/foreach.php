@@ -6,7 +6,7 @@
 					<div class="page-head">
 						<h2><?php
 						if(is_tag()) {
-							printf(_r('<span>Tag Archive: </span>%1$s'),wptexturize($tag['name']));
+							printf(_r('<span>Tag: </span>%1$s'),wptexturize($tag['name']));
 						}
 						elseif(is_section()) {
 							echo wptexturize($section['title']);
@@ -15,7 +15,7 @@
 <?php
 					} ?>
 <?php
-					foreach($entries as $entry) { start_entry(); //$entry should stay $entry. Don't change.
+					foreach($entries as $entry) { thru_loop(); //$entry should stay $entry. Don't change.
 						if($single) { ?>
 					<div class="entry-content">
 						<?php echo_content(); ?>
@@ -23,22 +23,20 @@
 <?php
 						}
 						else { ?>
-					<div class="<?php TO_post_class(); ?>" id="entry-<?php echo_ID(); ?>">
+					<div class="<?php TO_post_class(); ?>" id="entry-<?php entry_ID(); ?>">
 						<div class="entry-head">
-							<h3 class="entry-title"><a href="<?php echo_permalink(); ?>"><?php echo_title(); ?></a></h3>
+							<h3 class="entry-title"><a href="<?php entry_permalink(); ?>"><?php entry_title(); ?></a></h3>
 							<div class="entry-meta">
 								<span class="meta-date"><?php printf(_r('Published %1$s'),get_entry_date()); ?></span>
-								<?php if($mtou) { ?><span class="meta-author"><?php printf(_r('by %1$s'),get_entry_author()); ?></span><?php echo"\n\t\t\t\t\t\t\t\t"; } ?><span class="meta-tags"><span><?php _e('Tags:'); ?> </span><?php echo_tags(); ?></span>
+								<?php if($mtou) { ?><span class="meta-author"><?php printf(_r('by %1$s'),get_entry_author()); ?></span><?php echo"\n\t\t\t\t\t\t\t\t"; } ?><span class="meta-tags"><span><?php _e('Tags:'); ?> </span><?php entry_tags(); ?></span>
 							</div>
 						</div>
 						<div class="entry-content">
 							<?php
-								if(is_entry()) {
-									echo_content();
-								}
-								else {
-									echo_snippet();
-								} ?>
+								if(is_entry())
+									entry_content();
+								else
+									entry_snippet(); ?>
 						</div>
 						<div class="entry-meta-footer">
 							<?php if(!is_entry()) { ?><span class="readmore"><?php more_link(_r('Read More')); ?></span>

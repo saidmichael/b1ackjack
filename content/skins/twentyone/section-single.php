@@ -2,7 +2,7 @@
 /*
  Handler: Single Post
  */
-$single = 1;
+$hide_archive = 1;
 ?>
 <?php skin_header(); ?>
 

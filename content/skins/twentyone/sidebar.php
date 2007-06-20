@@ -1,12 +1,15 @@
 <?php
-global $skin_settings,$single;
+global $skin_settings,$hide_archive;
 ?>
 			<hr />
 			<div id="sidebar">
 				<ul class="modules">
 <?php
 if($skin_settings['sidenotes_position'] == 'sidebar' and $skin_settings['sidenotes_tag'] != '' and $skin_settings['sidenotes_num'] != '') {
-	$entries = get_entries('limit='.$skin_settings['sidenotes_num'].'&tag='.$skin_settings['sidenotes_tag']);
+	$bj->query->saveas('default');
+	$bj->query->setLimit(0,$skin_settings['sidenotes_num']);
+	$bj->query->setTags($skin_settings['sidenotes_tag']);
+	$entries = $bj->query->fetch();
 	if($entries) { ?>
 					<li class="module module_sidenotes">
 						<h3><?php _e('Sidenotes'); ?></h3>
@@ -27,7 +30,7 @@ if($skin_settings['sidenotes_position'] == 'sidebar' and $skin_settings['sidenot
 <?php
 	}
 }
-if(is_section() and !$single) { ?>
+if(is_section() and !$hide_archive) { ?>
 					<li class="module module_archive">
 						<h3><?php _e('Archive'); ?></h3>
 						<p><?php printf(_r('Check out the <a href="%1$s">archive</a> for this section.'),get_siteinfo('siteurl').'archive/'.$section['shortname']); ?>

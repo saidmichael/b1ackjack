@@ -3,9 +3,8 @@
 #Function: bj_shortname(Title)
 #Description: Converts the title into a friendlier name.
 function bj_shortname($title) {
-	
-    $title = strtolower($title);
-    $title = str_replace(
+	$title = strtolower($title);
+	$title = str_replace(
 		array(
 			"å",
 			"ø",
@@ -32,12 +31,11 @@ function bj_shortname($title) {
 			'',
 			'-'),
 	$title);
-    $title = trim($title, '-');
-    if(empty($title)) {
+	$title = trim($title, '-');
+	if(empty($title)) {
 		$title = '-';
 	}
-
-    return $title;
+	return $title;
 }
 
 #Function: Formatted_for_editing(Content)
@@ -54,6 +52,10 @@ function formatted_for_editing($content) {
 	$content = str_replace(
 		'"',
 		'&#34;',
+		$content);
+	$content = str_replace(
+		'&amp;amp;',
+		'&amp;',
 		$content);
 	return $content;
 }

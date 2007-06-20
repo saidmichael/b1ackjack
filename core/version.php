@@ -1,5 +1,6 @@
 <?php
 
-$bj_version = "0.1";
+$bj->vars->version = "0.42a";
+$bj->vars->db_version = 1;
 
 ?>

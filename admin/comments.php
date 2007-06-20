@@ -5,55 +5,50 @@ if(we_can('edit_comments')) {
 	switch($_GET['req']) {
 		case "edit" :
 			$id = (isset($_GET['id'])) ? intval($_GET['id']) : 0;
-			$comments = get_comments('id='.$id);
-			if($comments) {
-				foreach($comments as $comment) {
-					get_admin_header(); ?>
+			$comment = get_comment('id='.$id);
+			if($comment) {
+				get_admin_header(); ?>
 			<h2><?php printf(_r('Comment by %1$s'),return_comment_name()); ?></h2>
 <?php
-					comment_editor($comment);
-					get_admin_footer();
-				}
+				comment_editor($comment);
+				get_admin_footer();
 			}
 			break;
 		case "delete" :
 			$id = (isset($_GET['id'])) ? intval($_GET['id']) : 0;
-			$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `ID` = '".$id."' LIMIT 1");
+			bj_delete_comment($id);
 			@header('Location: '.load_option('siteurl').'admin/comments.php');
 			break;
 		case "ajaxdelete" :
 			$id = (isset($_GET['id'])) ? intval($_GET['id']) : 0;
-			$comment = $bj_db->get_item("SELECT * FROM `".$bj_db->comments."` WHERE `ID` = '".$id."' LIMIT 1");
-			if($comment) {
-				$bj_db->query("DELETE FROM `".$bj_db->comments."` WHERE `ID` = '".$id."' LIMIT 1");
-				echo '<strong class="error">'.sprintf(_r('The comment by %1$s was deleted.'),return_comment_name()).'</strong>';
-			}
+			bj_delete_comment($id);
+			printf(_r('The comment by %1$s was deleted.'),return_comment_name());
 			break;
 		case "status" :
 			if(isset($_GET['id'])) {
-				switch($_GET['to']) {
-					case 'hidden' :
-						$bj_db->query("UPDATE `".$bj_db->comments."` SET `status` = 'hidden' WHERE `ID` = ".intval($_GET['id'])." LIMIT 1");
-						break;
-					case 'spam' :
-						$bj_db->query("UPDATE `".$bj_db->comments."` SET `status` = 'spam' WHERE `ID` = ".intval($_GET['id'])." LIMIT 1");
-						break;
-					case 'normal' :
-						$bj_db->query("UPDATE `".$bj_db->comments."` SET `status` = 'normal' WHERE `ID` = ".intval($_GET['id'])." LIMIT 1");
-						break;
-				}
-				@header('Location: '.load_option('siteurl').'admin/comments.php');
+				$bj->db->query("UPDATE `".$bj->db->comments."` SET `status` = '".bj_clean_string($_GET['to'])."' WHERE `ID` = ".intval($_GET['id'])." LIMIT 1");
+				run_actions('comment_status_changed',bj_clean_string($_GET['to']));
+				@header('Location: '.get_siteinfo('adminurl').'comments.php?changedto='.bj_clean_string($_GET['to']));
 			}
 			break;
 		case "search" :
 		default :
+			if($_GET['changedto'])
+				add_bj_notice(_r('The comment\'s status was successfully changed.'));
 			get_admin_header();
-			if($_GET['req'] == 'search') {
-				$comments = get_comments('status=normal&search='.bj_clean_string($_GET['s']));
+			switch($_GET['mod']) {
+			case 'mod' :
+				$status = 'hidden';
+				break;
+			default :
+				$status = run_actions('comment_status_filter','normal');
 			}
-			else {
-				$comments = get_comments('status=normal',' LIMIT 0,20');
-			} ?>
+			if($_GET['req'] == 'search')
+				$comments = get_comments('status='.$status.'&search='.bj_clean_string($_GET['s']));
+			elseif($_GET['req'] == 'entry')
+				$comments = get_comments('status='.$status.'&postid='.intval($_GET['entry']));
+			else
+				$comments = get_comments('status='.$status,' LIMIT 0,20'); ?>
 			<h2><?php _e('Manage Comments'); ?></h2>
 			<div class="page-options">
 				<div class="column width50">
@@ -64,12 +59,21 @@ if(we_can('edit_comments')) {
 						<input type="submit" class="inlinesubmit" value="<?php _e('Search'); ?>" />
 					</form>
 				</div>
+				<div class="column width50">
+					<form method="get" action="comments.php">
+						<label for="switch"><?php _e('Switch to:'); ?></label><br />
+						<select name="mod" id="switch">
+							<option value="normal"<?php bj_selected($status,'normal'); ?>><?php _e('Approved'); ?></option>
+							<option value="mod"<?php bj_selected($status,'hidden'); ?>><?php _e('Unapproved'); ?></option>
+						</select>
+						<input type="submit" class="inlinesubmit" value="<?php _e('Show'); ?>" />
+					</form>
+				</div>
 				<div class="clear"></div>
 			</div>
-			<div id="ajaxmessage"></div>
 <?php
 			if($comments) { ?>
-			<ol id="commentlist">
+			<ol class="commentlist">
 <?php
 				foreach($comments as $comment) { ?>
 				<li id="comment-<?php comment_ID(); ?>" class="comment<?php echo $oddcom; ?>">
@@ -81,10 +85,17 @@ if(we_can('edit_comments')) {
 					</div>
 					<div class="comment-options">
 						<a href="comments.php?req=edit&amp;id=<?php comment_ID(); ?>"><?php _e('Edit'); ?></a> &#8212; 
-						<a href="comments.php?req=delete&amp;id=<?php comment_ID(); ?>" class="deleteme" rel="comments.php?req=ajaxdelete&amp;id=<?php comment_id(); ?>$comment-<?php comment_ID(); ?>$<?php _e('Are you sure you wish to delete this comment?'); ?>"><?php _e('Delete'); ?></a> &#8212; 
+						<a href="comments.php?req=delete&amp;id=<?php comment_ID(); ?>" class="deleteme" rel="comments.php?req=ajaxdelete&amp;id=<?php comment_id(); ?>$comment-<?php comment_ID(); ?>"><?php _e('Delete'); ?></a> &#8212; 
+<?php
+					if($status == 'hidden') { ?>
+						<a href="comments.php?req=status&amp;to=normal&amp;id=<?php comment_ID(); ?>"><?php _e('Approve'); ?></a> &#8212; 
+<?php
+					}
+					else { ?>
 						<a href="comments.php?req=status&amp;to=hidden&amp;id=<?php comment_ID(); ?>"><?php _e('Unapprove'); ?></a> &#8212; 
-						<a href="comments.php?req=status&amp;to=spam&amp;id=<?php comment_ID(); ?>"><?php _e('Spam'); ?></a> &#8212; 
-						<a href="entries.php?req=edit&amp;id=<?php echo comment_postid(); ?>"><?php _e('Edit Post'); ?></a>
+<?php
+					} ?>
+						<a href="entries.php?req=edit&amp;id=<?php echo comment_postid(); ?>"><?php _e('Edit Entry'); ?></a>
 					</div>
 				</li>
 <?php
@@ -94,14 +105,13 @@ if(we_can('edit_comments')) {
 <?php
 			}
 			else { ?>
-			<p><?php _e('No comments here. :-)'); ?></p>
+			<p><?php _e('No comments found.'); ?></p>
 <?php
 			}
 			get_admin_footer();
 	}
 }
-else {
+else
 	_e('You don\'t have permission to access this file.');
-}
 
 ?>

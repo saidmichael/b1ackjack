@@ -1,132 +1,62 @@
 <?php
-#Borrowed from AJ-Fork
 
-function available_plugins() {
-	$ffl = FileFolderList(BJPATH . 'content/plugins',1);
-	$plugins = $ffl['files'];
-	if (!empty($plugins))
-		foreach ($plugins as $null => $pluginfile) {
-			if (stristr($pluginfile, ".htaccess")) { continue; }
-			
-			$plugin_data = file_get_contents($pluginfile);
-			$names = array(
-				'Plugin Name',
-				'Plugin URI',
-				'Description',
-				'Author',
-				'Author URI',
-				'Version',
-				'Application'
-			);
-			$data = parse_file_info($plugin_data,$names);
-
-			$available_plugins[] = array(
-				'name'			=> $data['Plugin Name'],
-				'uri'			=> $data['Plugin URI'],
-				'description'	=> $data['Description'],
-				'author'		=> $data['Author'],
-				'author_uri'	=> $data['Author URI'],
-				'version'		=> $data['Version'],
-				'application'	=> $data['Application'],
-				'file'			=> basename($pluginfile),
-			);
-		}
-	else
-		$available_plugins = array();
-	return $available_plugins;
-}
+require_once BJPATH . 'core/functions-general.php';
 
 function load_plugins() {
-	foreach (load_option('active_plugins') as $plugin_filename => $active) {
-		$path = BJPATH . 'content/plugins/'.$plugin_filename;
-		if (is_file($path))
-			include($path);
-		else
-			disable_plugin($plugin_filename);
+	global $bj;
+	$bj->vars->plugins = array();
+	$ffl = FileFolderList(BJPATH . 'content/plugins');
+	if($ffl['files']) {
+		foreach($ffl['files'] as $file) {
+			$extension = explode('.',$file);
+			$info = parse_file_info($file,array('Disable'));
+			if(end($extension) == 'php' and empty($info['Disable'])) {
+				$bj->vars->plugins[basename($file,'.php')] = true;
+				require_once($file);
+			}
+		}
 	}
 }
 
-function return_plugins() {
-	$plug_arr = array();
-	foreach (load_option('active_plugins') as $plugin_filename => $active) {
-		$path = BJPATH . 'content/plugins/'.$plugin_filename;
-		if (is_file($path))
-			$plug_arr[$plugin_filename] = true;
-		else
-			disable_plugin($plugin_filename);
-	}
-	return $plug_arr;
-}
-
-function is_plugin_enabled($name) {
-	$plugins = load_option('active_plugins');
-	if($plugins[$name]) {
+function plugin_is_enabled($name) {
+	global $bj;
+	if($bj->vars->plugins[$name])
 		return true;
-	}
+	return false;
 }
-
-function enable_plugin($name) {
-	$plugins = load_option('active_plugins');
-	$plugins[$name] = true;
-	update_option('active_plugins',serialize($plugins));
-}
-
-function disable_plugin($name) {
-	$plugins = load_option('active_plugins');
-	unset($plugins[$name]);
-	update_option('active_plugins',serialize($plugins));
-}
-
-
 
 function add_action($hook, $functionname) {
-	global $actions;
-	$actions[$hook][$functionname] = true;
+	global $bj;
+	$bj->vars->actions[$hook][] = array('function_name'=>$functionname);
 	return true;
 }
 
 function remove_action($hook, $functionname) {
-	global $actions;
-	if(isset($actions[$hook][$functionname])) {
-		unset($actions[$hook][$functionname]);
-		return true;
+	global $bj;
+	if(isset($bj->vars->actions[$hook])) {
+		foreach($bj->vars->actions[$hook] as $null=>$info) {
+			if($info['function_name'] == $functionname) {
+				unset($bj->vars->actions[$hook][$null]);
+				return true;
+			}
+		}
 	}
 	return false;
 }
 
-function run_actions($hookname) {
-	global $actions;
-	$todo = $actions[$hookname];
-	if ($todo) {
-		foreach ($todo as $action => $null)
-			$buffer .= $action($tofilter, $hookname);
-	}
-	return $buffer;
-}
-
-function add_filter($hook, $functionname) {
-	global $filters;
-	$filters[$hook][$functionname] = true;
-	return true;
-}
-
-function remove_filter($hook, $functionname) {
-	global $filters;
-	if(isset($filters[$hook][$functionname])) {
-		unset($filters[$hook][$functionname]);
-		return true;
-	}
-	return false;
-}
-
-function run_filters($hookname, $tofilter) {
-	global $filters;
-	$todo = $filters[$hookname];
-	if ($todo) {
-		foreach ($todo as $filter => $null)
-			$tofilter = $filter($tofilter, $hookname);
-	}
+function run_actions($hookname, $tofilter='') {
+	global $bj;
+	$bj->vars->actions_run[$hookname] = true;
+	$todo = $bj->vars->actions[$hookname];
+	if ($todo)
+		foreach ($todo as $null => $info)
+			$tofilter = call_user_func_array($info['function_name'], array($tofilter, $hookname));
 	return $tofilter;
+}
+
+function actions_were_run($hookname) {
+	global $bj;
+	return (isset($bj->vars->actions_run[$hookname])) ? true : false;
 }
 
 ?>
