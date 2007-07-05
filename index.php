@@ -79,7 +79,7 @@ switch($bj->vars->load[0]) {
 		break;
 	default :
 		$section = $bj->cache->get_section(load_option('default_section'));
-		if(!$section)
+		if(!$section or $bj->vars->load[0] != '')
 			load_404_instead();
 		$bj->query->setLimit($bj->vars->offset,load_option('entries_per_page'));
 		$bj->query->setSection($section['ID']);

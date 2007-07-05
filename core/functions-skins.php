@@ -82,6 +82,7 @@ function load_404_instead() {
 	global $section,$tag,$entries,$four04;
 	unset($section,$tag,$entries);
 	$four04 = true;
+	header("HTTP/1.1 404 Not Found");
 	if(file_exists(BJPATH . 'content/skins/' . current_skinname() . '/404.php'))
 		include(BJPATH . 'content/skins/' . current_skinname() . '/404.php');
 	else
