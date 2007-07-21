@@ -71,7 +71,7 @@ function get_siteinfo($name) {
 		return get_siteinfo('siteurl').ADMIN_DIR.'/';
 		break;
 	case 'stylesheet' :
-		if(is_section() or is_archive($section['ID']))
+		if(is_section() or is_archive($section['ID']) or is_entry())
 			return section_stylesheet();
 		else
 			return get_siteinfo('static_stylesheet');

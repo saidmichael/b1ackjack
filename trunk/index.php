@@ -39,6 +39,7 @@ switch($bj->vars->load[0]) {
 		$entries = $bj->query->fetch();
 		if(!$entries)
 			load_404_instead();
+		$section = $bj->db->get_item("SELECT * FROM `".$bj->db->sections."` WHERE `ID` = '".$entries[0]['section']."' LIMIT 1");
 		if(file_exists(BJTEMPLATE . '/entry.php'))
 			include(BJTEMPLATE . '/entry.php');
 		else
