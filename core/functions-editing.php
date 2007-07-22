@@ -5,9 +5,9 @@ function bj_edit_entry($id,$entry=array()) {
 	if(we_can('edit_entries')) {
 		run_actions('pre_entry_edit');
 		$id = intval($id);
-		$query = new bj_entries(0,1);
-		$query->setID($id);
-		$former = $query->fetch();
+		$retquery = new bj_entries(0,1);
+		$retquery->setID($id);
+		$former = $retquery->fetch();
 		if(!$former)
 			return false;
 		else
@@ -31,6 +31,13 @@ function bj_edit_entry($id,$entry=array()) {
 			foreach($entry['meta'] as $key=>$value)
 				if(empty($value))
 					unset($entry['meta'][$key]);
+		$retquery->restore();
+		$retquery->setLimit(false,false);
+		$retquery->fromCache(false);
+		$retquery->setTitle($entry['title']);
+		$entries = $retquery->fetch();
+		if($entries)
+			$entry['shortname'] .= '-'.count($entries);
 		$entry['meta'] = serialize(bj_clean_deep($entry['meta']));
 		$entry = run_actions('entry_edit',$entry);
 		#Now let's build our update query.
@@ -65,6 +72,12 @@ function bj_new_entry($entry=array()) {
 				if(empty($value))
 					unset($entry['meta'][$key]);
 		$entry['meta'] = serialize(bj_clean_deep($entry['meta']));
+		$retquery = new bj_entries(false,false,false);
+		$retquery->setTitle($entry['title']);
+		$entries = $retquery->fetch();
+		#Prevent duplicate shortnames, thus breaking the tubes.
+		if($entries)
+			$entry['shortname'] .= '-'.count($entries);
 		$entry = run_actions('entry_new',$entry);
 		#Now let's build our insert query.
 		$keys = ''; $values = '';
@@ -77,7 +90,9 @@ function bj_new_entry($entry=array()) {
 		$query .= " VALUES (''".$values.")";
 		$bj->db->query($query);
 		$bj->cache->drop_caches('entries');
-		$retquery = new bj_entries(0,1,false);
+		$retquery->restore();
+		$retquery->setLimit(0,1);
+		$retquery->fromCache(false);
 		$retquery->setShortname($entry['shortname']);
 		$entries = $retquery->fetch();
 		return $entries[0];
