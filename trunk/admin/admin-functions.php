@@ -133,6 +133,8 @@ function do_editorform($entry = array('ID'=>'0','title'=>'','shortname'=>'','con
 					</div>
 				</div>
 				<div class="clear"></div>
+<?php
+	if(is_array(load_option('custom_fields'))) { ?>
 				<div id="custom_fields">
 					<h3><?php _e('Custom Fields'); ?></h3>
 					<table class="edit">
@@ -141,9 +143,9 @@ function do_editorform($entry = array('ID'=>'0','title'=>'','shortname'=>'','con
 							<th class="width60"><?php _e('Value'); ?></th>
 						</tr>
 <?php
-	$i = 1;
-	$meta = unserialize($entry['meta']); #With convenience in mind. :D
-	foreach(load_option('custom_fields') as $key) { ?>
+		$i = 1;
+		$meta = unserialize($entry['meta']); #With convenience in mind. :D
+		foreach(load_option('custom_fields') as $key) { ?>
 						<tr id="entry-meta-<?php echo bj_shortname($key); ?>" class="<?php tablealt($i); ?>">
 							<td class="aligncenter">
 								<?php echo $key; ?>
@@ -153,10 +155,12 @@ function do_editorform($entry = array('ID'=>'0','title'=>'','shortname'=>'','con
 							</td>
 						</tr>
 <?php
-		$i++;
-	} ?>
+			$i++;
+		} ?>
 					</table>
 				</div>
+<?php
+	} ?>
 			</form>
 <?php
 	$content = run_actions('entry_editor',ob_get_contents());
