@@ -235,6 +235,18 @@ class bj_entries {
 		return false;
 	}
 	
+	function restore() {
+		global $i;
+		$i = 0;
+		$this->args = array();
+		$this->tags = '';
+		$this->search = '';
+		$this->sortby = 'posted';
+		$this->sort = 'DESC';
+		$this->normal = true;
+		$this->fromcache = true;
+		return true;
+	}
 	
 	function next_page($text,$before='',$after='') {
 		global $bj;
