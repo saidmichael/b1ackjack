@@ -36,6 +36,7 @@ switch($bj->vars->load[0]) {
 	case 'entry' :
 		$bj->query->setLimit(0,1);
 		$bj->query->setShortname($bj->vars->load[1]);
+		$bj->query->setPtype('public');
 		$entries = $bj->query->fetch();
 		if(!$entries)
 			load_404_instead();
