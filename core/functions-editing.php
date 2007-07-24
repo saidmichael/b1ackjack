@@ -36,8 +36,10 @@ function bj_edit_entry($id,$entry=array()) {
 		$retquery->fromCache(false);
 		$retquery->setTitle($entry['title']);
 		$entries = $retquery->fetch();
-		if($entries)
-			$entry['shortname'] .= '-'.count($entries);
+		if(count($entries) > 1) {
+			$num = count($entries) - 1;
+			$entry['shortname'] .= '-'.$num;
+		}
 		$entry['meta'] = serialize(bj_clean_deep($entry['meta']));
 		$entry = run_actions('entry_edit',$entry);
 		#Now let's build our update query.
