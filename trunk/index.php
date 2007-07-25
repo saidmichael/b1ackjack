@@ -15,6 +15,8 @@ switch($bj->vars->load[0]) {
 		$bj->query->setLimit($bj->vars->offset,load_option('entries_per_page'));
 		$bj->query->setSection($section['ID']);
 		$entries = $bj->query->fetch();
+		if(!$entries)
+			load_404_instead();
 		if(file_exists(BJTEMPLATE .'/'.$section['handler']) and $section['handler'] != '')
 			include(BJTEMPLATE .'/'.$section['handler']);
 		if(file_exists(BJTEMPLATE .'/section.php'))
@@ -53,6 +55,8 @@ switch($bj->vars->load[0]) {
 		$bj->query->setLimit($bj->vars->offset,load_option('entries_per_page'));
 		$bj->query->setTags($tag['ID']);
 		$entries = $bj->query->fetch();
+		if(!$entries)
+			load_404_instead();
 		if(file_exists(BJTEMPLATE . '/tag-'.$tag['ID'].'.php'))
 			include(BJTEMPLATE . '/tag-'.$tag['ID'].'.php');
 		elseif(file_exists(BJTEMPLATE . '/tag.php'))

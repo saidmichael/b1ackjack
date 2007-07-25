@@ -491,7 +491,7 @@ function comments_allowed_html() {
 }
 function get_comments_allowed_html() {
 	$output = '';
-	foreach(get_html() as $tag=>$attrs) {
+	foreach(get_html_comment() as $tag=>$attrs) {
 		$output .= '&lt;'.$tag;
 		foreach ($attrs as $attr=>$null) {
 			$output .= ' '.$attr.'=""';
