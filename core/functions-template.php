@@ -195,11 +195,9 @@ function get_entry_snippet() {
 
 #Function: more_link(Text)
 #Description: Outputs a link to the full content. Super!
-function more_link($text='Read More') {
+function more_link($text='Read More',$before='',$after='') {
 	global $entry;
-	if(strpos($entry['content'],run_actions('snippet_separator','__More__'))) { ?>
-<a href="<?php entry_permalink(); ?>#more-<?php entry_ID(); ?>"><?php echo $text; ?></a>
-<?php
+	if(strpos($entry['content'],run_actions('snippet_separator','__More__'))) { echo $before; ?><a href="<?php entry_permalink(); ?>#more-<?php entry_ID(); ?>"><?php echo $text; ?></a><?php echo $after;
 	}
 }
 
