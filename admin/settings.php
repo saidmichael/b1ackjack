@@ -9,7 +9,7 @@ if(we_can('edit_settings')) {
 			'default_section'=>intval($_POST['default_section']),
 			'enable_commenting'=>intval($_POST['enable_commenting'])
 		);
-		run_actions('settings_edit');
+		run_actions('settings_edit',$saved);
 		foreach($saved as $key=>$option)
 			if(load_option($key) != $option)
 				update_option($key,$option);

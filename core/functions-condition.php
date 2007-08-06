@@ -6,7 +6,7 @@ function is_front() {
 	global $bj,$section;
 	if($bj->vars->load[0] == 'section' && $section['ID'] == load_option('default_section'))
 		return true;
-	elseif(!isset($bj->vars->load[0]))
+	elseif(empty($bj->vars->load[0]))
 		return true;
 	return false;
 }
