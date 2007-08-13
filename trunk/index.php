@@ -85,8 +85,9 @@ switch($bj->vars->load[0]) {
 		break;
 	default :
 		$section = $bj->cache->get_section(load_option('default_section'));
-		if(!$section or $bj->vars->load[0] != '')
+		if(!$section or !empty($bj->vars->load[0]) and $bj->vars->load[0] != 'page')
 			load_404_instead();
+		$bj->vars->offset = ($bj->vars->load[0] == 'page') ? intval($bj->vars->load[1]) : 0;
 		$bj->query->setLimit($bj->vars->offset,load_option('entries_per_page'));
 		$bj->query->setSection($section['ID']);
 		$entries = $bj->query->fetch();
