@@ -283,7 +283,7 @@ class bj_entries {
 		$newer = $this->offset - $this->limit;
 		if($this->offset > 0 && !is_entry()) {
 			if(!is_admin()) {
-				if(is_section())
+				if(is_section() and !is_front())
 					$extra_string = 'section/'.$bj->vars->load[1].'/';
 				elseif(is_tag())
 					$extra_string = 'tag/'.$bj->vars->load[1].'/';
