@@ -4,7 +4,7 @@
 function is_front() {
 	if(is_404()) return false;
 	global $bj,$section;
-	if($bj->vars->load[0] == 'section' && $section['ID'] == load_option('default_section'))
+	if(($bj->vars->load[0] == 'section' && $section['ID'] == load_option('default_section')) or $bj->vars->load[0] == 'page')
 		return true;
 	elseif(empty($bj->vars->load[0]))
 		return true;
@@ -34,13 +34,13 @@ function is_section($name='') {
 	if($name == '') {
 		if($bj->vars->load[0] == 'section' and $section)
 			return true;
-		elseif($bj->vars->load[0] == '' and $section['ID'] == load_option('default_section') and $section)
+		elseif(($bj->vars->load[0] == '' or $bj->vars->load[0] == 'page') and $section['ID'] == load_option('default_section') and $section)
 			return true;
 	}
 	else {
 		if($bj->vars->load[0] == 'section' and $section['ID'] == $name and $section)
 			return true;
-		elseif($bj->vars->load[0] == '' and $name == load_option('default_section') and $section)
+		elseif(($bj->vars->load[0] == '' or $bj->vars->load[0] == 'page') and $name == load_option('default_section') and $section)
 			return true;
 	}
 	return false;
