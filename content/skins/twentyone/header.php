@@ -3,6 +3,7 @@
 		<title><?php printf(_r('%1$s - %2$s'),get_siteinfo('sitename'),get_bj_title()); ?></title>
 		<link rel="stylesheet" href="<?php siteinfo('stylesheet'); ?>" type="text/css" />
 <?php /*		<link rel="stylesheet" href="<?php siteinfo('skinurl'); ?>/print.css" type="text/css" media="print" />*/ ?>
+		<?php bj_feed_head(); ?>
 		<?php run_actions('site_header'); ?>
 	</head>
 	<body class="<?php TO_body_class(); ?>">
