@@ -15,14 +15,13 @@ if($bj->vars->load[0] == 'entry') {
 	header('Content-type: text/xml; charset=iso-8859-1', true);
 	echo "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?".">\n"; ?>
 <rss version="2.0"
-	xmlns:content="http://purl.org/rss/1.0/modules/content/"
 	xmlns:dc="http://purl.org/dc/elements/1.1/"
 	<?php run_actions('rss_namespace'); ?>
 >
 	<channel>
-		<title><?php printf(_r('%1$s - Feed: %2$s'),get_siteinfo('sitename'),get_bj_title()); ?></title>
+		<title><?php echo run_actions('rss_title',sprintf(_r('%1$s - Feed: %2$s'),get_siteinfo('sitename'),get_bj_title())); ?></title>
 		<link><?php siteinfo('siteurl'); ?></link>
-		<description><?php printf(_r('%1$s Feed for the %2$s %3$s'),get_siteinfo('sitename'),get_bj_title(),ucfirst($bj->vars->load[0])); ?></description>
+		<description><?php echo run_actions('rss_description',sprintf(_r('%1$s Feed for the %2$s %3$s'),get_siteinfo('sitename'),get_bj_title(),ucfirst($bj->vars->load[0]))); ?></description>
 		<pubDate><?php entry_date('D, d M Y H:i:s +0000',$entries[0]['posted']); ?></pubDate>
 		<generator>http://code.google.com/p/b1ackjack/</generator>
 		<language><?php siteinfo('rss_language'); ?></language>
@@ -66,14 +65,13 @@ else {
 	header('Content-type: text/xml; charset=iso-8859-1', true);
 	echo "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?".">\n"; ?>
 <rss version="2.0" 
-	xmlns:content="http://purl.org/rss/1.0/modules/content/"
 	xmlns:dc="http://purl.org/dc/elements/1.1/"
 	<?php run_actions('rss_namespace'); ?>
 >
 	<channel>
-		<title><?php printf(_r('%1$s - Feed: %2$s'),get_siteinfo('sitename'),get_bj_title()); ?></title>
+		<title><?php echo run_actions('rss_title',sprintf(_r('%1$s - Feed: %2$s'),get_siteinfo('sitename'),get_bj_title())); ?></title>
 		<link><?php siteinfo('siteurl'); ?></link>
-		<description><?php printf(_r('%1$s Feed for the %2$s %3$s'),get_siteinfo('sitename'),get_bj_title(),ucfirst($bj->vars->load[0])); ?></description>
+		<description><?php echo run_actions('rss_description',sprintf(_r('%1$s Feed for the %2$s %3$s'),get_siteinfo('sitename'),get_bj_title(),ucfirst($bj->vars->load[0]))); ?></description>
 		<pubDate><?php entry_date('D, d M Y H:i:s +0000',$entries[0]['posted']); ?></pubDate>
 		<generator>http://code.google.com/p/b1ackjack/</generator>
 		<language><?php siteinfo('rss_language'); ?></language><?php run_actions('rss_head'); ?>
@@ -85,7 +83,11 @@ else {
 			<title><?php entry_title(); ?></title>
 			<link><?php entry_permalink(); ?></link>
 			<pubDate><?php entry_date('D, d M Y H:i:s +0000'); ?></pubDate>
+<?php
+			if(!commenting_is_disabled()) { ?>
 			<comments><?php entry_permalink(); ?>#comments</comments>
+<?php
+			} ?>
 			<dc:creator><?php entry_author(); ?></dc:creator>
 			<?php rss_tags(); ?>
 			<description><![CDATA[<?php entry_snippet(); ?>]]></description>
