@@ -7,7 +7,7 @@ if(we_can('edit_profile')) {
 			add_bj_notice(_r('The new passwords did not match.'));
 		else {
 			$u['display_name'] = bj_clean_string($_POST['display_name']);
-			$u['bj_group'] = intval($_POST['bj_group']);
+			if(we_can('edit_users')) $u['bj_group'] = intval($_POST['bj_group']);
 			$u['user_email'] = bj_clean_string($_POST['user_email']);
 			$u['user_url'] = bj_clean_string($_POST['user_url']);
 			if(!empty($_POST['user_pass']) and !empty($_POST['user_pass2']))
@@ -32,6 +32,22 @@ if(we_can('edit_profile')) {
 					<div class="column width50">
 						<div class="c-ontent">
 							<h3><?php _e('Account Data'); ?></h3>
+
+<?php
+	if(we_can('edit_users')) { ?>
+							<p class="label"><label for="form_bj_group"><?php _e('Group'); ?></label></p>
+							<p>
+								<select name="bj_group" id="form_bj_group">
+<?php
+							$groups = get_groups();
+							foreach($groups as $id=>$group) { ?>
+									<option value="<?php echo $id; ?>"<?php bj_selected($id,$bj->user['bj_group']); ?>><?php echo $group; ?></option>
+<?php
+							} ?>
+								</select>
+							</p>
+<?php
+	} ?>
 
 							<p class="label"><label for="form_user_email"><?php _e('Email'); ?></label></p>
 							<p><input type="text" name="user_email" id="form_user_email" value="<?php echo formatted_for_editing($bj->user['user_email']); ?>" class="text100" /></p>
