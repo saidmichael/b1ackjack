@@ -17,10 +17,11 @@ switch($_GET['req']) {
 		if($_POST['name']) {
 			$saved = bj_new_tag();
 			if(!$_GET['li']) { ?>
+					<td class="aligncenter"><?php echo $saved['ID']; ?></td>
 					<td><span id="latest_id" class="tag-<?php echo $saved['ID']; ?>"></span><?php echo $saved['name']; ?></td>
 					<td class="aligncenter"><a href="posts.php?req=filtertag&amp;tag=<?php echo $saved['ID']; ?>"><?php echo $saved['posts_num']; ?></a></td>
-					<td class="editbutton"><a href="tags.php?req=edit&amp;id=<?php echo $saved['ID']; ?>" class="blockit"><?php _e('Edit'); ?></a></td>
-					<td class="editbutton"><a href="tags.php?req=delete&amp;id=<?php echo $saved['ID']; ?>" class="blockit deleteme" rel="tags.php?req=ajaxdelete&amp;id=<?php echo $tag['ID']; ?>$tag-<?php echo $tag['ID']; ?>"><?php _e('Delete'); ?></a></td>
+					<td class="editbutton width15"><a href="tags.php?req=edit&amp;id=<?php echo $saved['ID']; ?>" class="blockit"><?php _e('Edit'); ?></a></td>
+					<td class="editbutton width15"><a href="tags.php?req=delete&amp;id=<?php echo $saved['ID']; ?>" class="blockit deleteme" rel="tags.php?req=ajaxdelete&amp;id=<?php echo $tag['ID']; ?>$tag-<?php echo $tag['ID']; ?>"><?php _e('Delete'); ?></a></td>
 <?php
 			}
 			else { ?>
